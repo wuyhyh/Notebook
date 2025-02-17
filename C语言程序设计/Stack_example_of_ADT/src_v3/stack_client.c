@@ -18,7 +18,7 @@ int main(void)
 	s2 = create();
 
 	push(s1, 1);
-	push(s2, 2);
+	push(s1, 2);
 
 	n = pop(s1);
 	printf("Popped %d from s1\n", n);
