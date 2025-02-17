@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Name: stackADT.c - 用定长数组实现栈抽象数据类型
+ * Name: stackADT.c - 用动态分配数组实现栈抽象数据类型
  * Created on 2025/02/17
  * Copyright (C) 2022 - 2025, wyh.
  *
@@ -59,7 +59,7 @@ bool is_full(Stack s)
 	return s->top == s->size;
 }
 
-void push(Stack s, int i)
+void push(Stack s, Item i)
 {
 	if (is_full(s)) {
 		terminate("Error in push: stack is full.");
@@ -67,7 +67,7 @@ void push(Stack s, int i)
 	s->contents[s->top++] = i;
 }
 
-int pop(Stack s)
+Item pop(Stack s)
 {
 	if (is_empty(s)) {
 		terminate("Error in pop: stack is empty.");
