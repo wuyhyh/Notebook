@@ -19,8 +19,8 @@ chapters = [
     "第14章 系统虚拟化",
 ]
 
-# 获取当前脚本的根目录（.scripts 目录的上一级）
-script_dir = os.path.dirname(os.path.abspath(__file__))  # .scripts 目录
+# 获取当前脚本的根目录（scripts 目录的上一级）
+script_dir = os.path.dirname(os.path.abspath(__file__))  # scripts 目录
 project_root = os.path.abspath(os.path.join(script_dir, ".."))  # 项目根目录
 
 # 目标 `chapters/` 目录路径
