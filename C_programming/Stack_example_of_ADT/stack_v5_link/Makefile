@@ -1,32 +1,30 @@
-# 编译器
 CC = gcc
-
-# 编译选项
-CFLAGS = -Wall -g
-
-# 目标可执行文件
-TARGET = stack_test
-
-# 源文件
+CFLAGS = -g -Wall -O0  # 开启调试信息
+TARGET = stack_program  # 生成的可执行文件
 SRCS = stack_client.c stackADT.c
-
-# 目标文件
 OBJS = $(SRCS:.c=.o)
 
-# 默认目标
+# Fedora Server 配置
+REMOTE_USER = root      # 远程服务器用户名
+REMOTE_HOST = 10.211.55.9  # 远程服务器 IP
+REMOTE_DIR = /home/CLionProjects/Notebook/C_programming/Stack_example_of_ADT/stack_v5_link  # 远程项目目录
+
 all: $(TARGET)
 
-# 生成可执行文件
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
 
-# 生成目标文件
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-# 清理生成的文件
 clean:
 	rm -f $(OBJS) $(TARGET)
 
-# 伪目标
-.PHONY: all clean
+# 远程部署：将代码和可执行文件同步到 Fedora Server
+deploy:
+	rsync -avz --exclude '.*' ./ $(REMOTE_USER)@$(REMOTE_HOST):$(REMOTE_DIR)
+
+# 远程运行 gdbserver
+debug-server: deploy
+	ssh $(REMOTE_USER)@$(REMOTE_HOST) "cd $(REMOTE_DIR) && gdbserver :1234 ./$(TARGET)"
+
