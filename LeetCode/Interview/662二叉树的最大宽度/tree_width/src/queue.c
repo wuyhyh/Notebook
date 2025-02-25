@@ -26,6 +26,10 @@ Queue *create_queue()
 
 void enqueue(Queue *q, TreeNode *node, unsigned long index)
 {
+	if (node == NULL) {
+		return;
+	}
+
 	QueueNode *tmp = malloc(sizeof(QueueNode));
 	if (!tmp) {
 		printf("error\n");
@@ -46,15 +50,16 @@ void enqueue(Queue *q, TreeNode *node, unsigned long index)
 
 void dequeue(Queue *q)
 {
-	if (q->front == NULL) {
+	if (q == NULL || q->front == NULL) {
+		printf("Attempted to dequeue from an empty queue.\n");
 		return;
 	}
 
 	QueueNode *tmp = q->front;
 	q->front = q->front->next;
-	if (q->front == NULL) {
+	if (q->front == NULL)
 		q->rear = NULL;
-	}
+
 	free(tmp);
 }
 
@@ -63,9 +68,25 @@ QueueNode *front(Queue *q)
 	return q->front;
 }
 
+#if 0
 int is_empty(Queue *q)
 {
 	return q->front == NULL;
+}
+#endif
+
+int is_empty(Queue *q)
+{
+	if (q->front == NULL) {
+		printf("Queue is empty!\n");
+		fflush(stdout);
+		return 1;
+	} else {
+		printf("Queue is NOT empty! Front node value: %d\n",
+		       q->front->node->val);
+		fflush(stdout);
+		return 0;
+	}
 }
 
 void free_queue(Queue *q)

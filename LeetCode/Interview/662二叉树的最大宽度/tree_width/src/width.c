@@ -11,6 +11,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static int queue_size(Queue *q)
+{
+	if (q == NULL || q->front == NULL)
+		return 0;
+
+	int count = 0;
+	QueueNode *tmp = q->front;
+	while (tmp) {
+		count++;
+		tmp = tmp->next;
+	}
+
+	return count;
+}
+
 int widthOfBinaryTree(TreeNode *root)
 {
 	if (!root)
@@ -21,11 +36,11 @@ int widthOfBinaryTree(TreeNode *root)
 	int max_width = 0;
 
 	while (!is_empty(queue)) {
-		int level_size = 0;
+		int size = queue_size(queue);
 		unsigned long min_index = front(queue)->index;
 		unsigned long first, last;
 
-		for (int i = 0, size = 0; !is_empty(queue) && i < size; i++) {
+		for (int i = 0; i < size; i++) {
 			QueueNode *q_node = front(queue);
 			dequeue(queue);
 			TreeNode *t_node = q_node->node;
