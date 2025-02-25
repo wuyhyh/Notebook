@@ -1,5 +1,6 @@
 # Jetbrain
 .idea/
+__pycache__/
 
 # Prerequisites
 *.d
