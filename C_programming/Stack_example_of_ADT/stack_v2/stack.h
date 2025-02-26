@@ -14,7 +14,7 @@
 #define STACK_SIZE 100
 
 typedef struct {
-	int contents(STACK_SIZE);
+	int contents[STACK_SIZE];
 	int top;
 } Stack;
 
