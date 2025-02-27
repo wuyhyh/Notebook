@@ -4,10 +4,10 @@ CFLAGS = -g -Wall
 LDFLAGS =
 
 # 源文件
-SRC = stackADT.c stack_client.c
+SRC = lru.c lru_test.c hash.c
 
 # 生成的目标可执行文件
-TARGET = stack_executable
+TARGET = lru_test
 
 # 默认目标
 all: $(TARGET)
