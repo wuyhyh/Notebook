@@ -21,8 +21,7 @@
 
 示例
 
-```c
-
+```c++
 #include <stdio.h>
 
 struct Example {
@@ -36,7 +35,6 @@ int main()
 	printf("Size of struct Example: %lu\n", sizeof(struct Example));
 	return 0;
 }
-
 ```
 
 内存布局
