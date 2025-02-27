@@ -1,5 +1,7 @@
 # Zsh 及其配置
 
+在 Linux 下，我们可以设置一下 zsh 方便使用
+
 ---
 
 Linux 下有很多 Shell，最常见的是 Bash，此外还有 Zsh、csh、ksh。推荐使用 Zsh。
