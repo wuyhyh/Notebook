@@ -1,14 +1,19 @@
+# 设置编译器和编译选项
 CC = gcc
-CFLAGS = -Wall -g
-TARGET = stack_client
+CFLAGS = -g -Wall
+LDFLAGS =
 
+# 源文件
+SRC = stackADT.c stack_client.c
+
+# 生成的目标可执行文件
+TARGET = stack_v3_executable
+
+# 默认目标
 all: $(TARGET)
 
-$(TARGET): stack_client.o stackADT.o
-	$(CC) $(CFLAGS) -o $(TARGET) stack_client.o stackADT.o
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LDFLAGS)
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f $(TARGET)
