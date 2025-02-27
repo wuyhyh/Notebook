@@ -8,6 +8,7 @@
 
 #include "lru.h"
 #include "hash.h"
+#include <stdlib.h>
 
 static struct lru_node *create_node(int key, int value)
 {

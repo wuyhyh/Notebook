@@ -1,5 +1,5 @@
 /******************************************************************************
- *
+*
  * Name: lru.h - Description
  * Created on 2025/02/21
  * Copyright (C) 2022 - 2025, wyh.
@@ -8,9 +8,6 @@
 
 #ifndef NOTEBOOK_LRU_H
 #define NOTEBOOK_LRU_H
-
-#include <stdio.h>
-#include <stdlib.h>
 
 // LRU 缓存节点
 struct lru_node {
