@@ -7,7 +7,7 @@ LDFLAGS =
 SRC = stackADT.c stack_client.c
 
 # 生成的目标可执行文件
-TARGET = stack_v3_executable
+TARGET = stack_executable
 
 # 默认目标
 all: $(TARGET)
