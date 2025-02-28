@@ -229,14 +229,148 @@ git push origin --tags # 推送所有标签
 
 ## Git 的分支特性
 
-分支的本质是指向某个`commit`的指针
+分支的本质是指向某个`commit`的指针。
+创建一个新的分支本质上，是创建一个新的可移动的指针。
 
+`master` 分支和其他分支没有任何区别，就像 `origin` 仓库名和其他仓库名没有任何区别
 
+`HEAD` 是一个特殊的指针，指向当前所在的本地分支。
 
+切换分支的时候，对应的工作目录中的文件内容也会改变。
 
+查看分支
 
+```shell
+git branch -v # 列举本地分支
+git branch -r # 查看远程分支
+git branch -a # 查看本地和远程所有分支
+git branch | grep <feature> # 过滤分支
+```
 
-## 重要的 Git 命令
+创建分支
+
+```shell
+git branch <new_branch_name> # 创建分支
+git checkout <branch_name> # 切换到已有的分支
+```
+
+创建一个新分支并且切换过去是一个常用的命令
+
+```shell
+git checkout -b <new_branch>
+git checkout -b <new_branch> <remote_rep>/<remote_branch> # 创建一个新分支并且跟踪远程仓库中的分支
+```
+
+比如
+
+```shell
+git remote add upstream <url>
+git checkout -b new_feature upstream/master
+```
+
+本地分支跟踪远程分支
+
+```shell
+# 查看跟踪情况
+git branch -vv
+# 创建一个新分支并且跟踪远程仓库中的分支
+git checkout -b <new_branch> <remote_rep>/<remote_branch> 
+# 为本地分支设置一个远程跟踪分支
+git branch --set-upstram-to=<remote_rep>/<remote_branch> 
+```
+
+拉取远程分支的信息与推送
+
+```shell
+# 拉取 origin 仓库的 master 分支并合并数据到当前分支
+git pull origin master 
+
+# 拉取并且重置本地分支，本地的修改会丢弃，和远程分支完全同步
+git fetch origin
+git reset --hard origin/<branch_name>
+
+# 推送数据到远程仓库分支
+git push origin <branch_name>
+git push origin <tag-name> # 推送标签
+
+# 安全的强制推送，强制推送并检查是否会覆盖远程仓库中的内容，如果本地落后于远处，将拒绝推送
+git push --force-with-lease origin master
+```
+
+暂时保存当前修改的方法。
+`git stash`默认只会保存已跟踪的文件。
+查看`stash`
+
+```shell
+git stash list
+```
+
+删除`stash`
+
+```shell
+git stash drop stash@{0} # 删除某个 stash
+git stash clear # 删除所有的 stash
+git stash pop # 应用并删除 stash
+git stash apply # 应用最近的 stash，且不删除
+git stash apply stash@{1} # 应用某个 stash, 且不删除
+```
+
+临时切换分支
+
+```shell
+git stash # 保存已暂存和当前工作区的修改
+git checkout <other_branch> # 切换到目标分支
+git checkout <last_branch> # 完成工作后返回原来的分支
+git stash pop # 恢复之前的修改
+```
+
+避免冲突，在拉取远程数据合并到本地之前，可能会有冲突，可以先保存本地的修改
+
+```shell
+git stash # 暂存修改
+git pull origin master # 拉取远程更改
+git stash pop # 恢复本地修改
+```
+
+删除分支
+
+```shell
+git branch -d <branch_name>
+git branch -D <branch_name> # 强制删除未合并的分支
+git push origin --delete <branch_name> # 删除 origin 仓库中的远程分支
+```
+
+合并分支
+
+```shell
+git checkout master # 切换回 master
+git merge hot_fix # 在 master 上合并来自 hot_fix 的修改
+```
+
+合并冲突的解决
+
+合并如果产生冲突，需要我们手动解决。在 `======` 以上的部分是 `HEAD` 版本的内容
+
+变基
+
+`git rebase`会将一个分支的更改“复制”到另一个分支的顶部，实际上是重写历史，将目标分支的历史变基到当前分支之后。与合并不同，变基不会生成额外的合并提交。
+
+`git rebase` 会让 `feature` 分支的提交看起来像是直接在 `master` 分支上继续开发的，没有合并提交
+
+```shell
+# 切换到功能分支，并执行变基操作
+git checkout <feature_branch>
+git rebase master
+
+# 如果产生冲突
+git add <resolved_files>
+git rebase --continue
+```
+
+只对自己本地尚未推送的更改进行**变基**操作
+
+## 其他不常用的命令
+
 
 
 
