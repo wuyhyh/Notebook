@@ -1,18 +1,19 @@
 /******************************************************************************
  *
  * Name: lru.c - Description
- * Created on 2025/02/21
+ * Created on 2025/02/28
  * Copyright (C) 2022 - 2025, wyh.
  *
  *****************************************************************************/
 
-#include "lru.h"
 #include "hash.h"
+#include "lru.h"
 #include <stdlib.h>
 
 static struct lru_node *create_node(int key, int value)
 {
-	struct lru_node *node = malloc(sizeof(struct lru_node));
+	struct lru_node *node =
+		(struct lru_node *)malloc(sizeof(struct lru_node));
 	if (node == NULL) {
 		return NULL;
 	}

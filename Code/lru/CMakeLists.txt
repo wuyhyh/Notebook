@@ -1,6 +1,5 @@
 # 设置当前目录的源文件
 set(SOURCES
-        lru.c
         hash.c
         lru_test.c    # 如果你有测试文件或者其他的源文件也放在这里
 )
@@ -9,6 +8,7 @@ set(SOURCES
 set(HEADERS
         lru.h
         hash.h
+        lru.c
 )
 
 # 创建可执行文件
