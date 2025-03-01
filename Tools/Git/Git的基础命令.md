@@ -236,6 +236,13 @@ git push origin --tags # 推送所有标签
 
 `HEAD` 是一个特殊的指针，指向当前所在的本地分支。
 
+```shell
+git show HEAD    # 查看上一次 commit
+git show HEAD^   # 查看上上一次 commit
+git show HEAD^^  # 查看上上上一次 commit
+git show <SHA-1> # 查看指定 hash 值的 commit
+```
+
 切换分支的时候，对应的工作目录中的文件内容也会改变。
 
 查看分支
@@ -247,11 +254,17 @@ git branch -a # 查看本地和远程所有分支
 git branch | grep <feature> # 过滤分支
 ```
 
+切换分支
+
+```shell
+git switch <branch_name> # 切换分支推荐使用这个命令
+git checkout <branch_name> # 切换到已有的分支
+```
+
 创建分支
 
 ```shell
 git branch <new_branch_name> # 创建分支
-git checkout <branch_name> # 切换到已有的分支
 ```
 
 创建一个新分支并且切换过去是一个常用的命令
@@ -371,6 +384,27 @@ git rebase --continue
 
 ## 其他不常用的命令
 
+### 修订提交历史
 
+#### 修改最近一次提交，这种用法会改变`SHA-1`值
 
+```shell
+git commit --amend
+```
 
+#### 交互式变基
+
+```shell
+git rebase -i <SHA-1>
+```
+
+[交互式变基详细用法](./git_rebase_i.md)
+
+### 重置文件
+
+```shell
+git reset HEAD~ # 取消 commit 和 add
+git checkout -- <file_name> # 放弃修改，将某个文件恢复为上一次 commit 的状态
+```
+
+[reset 和 checkout 的详细用法](./git_reset_checkout.md)
