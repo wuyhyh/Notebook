@@ -62,17 +62,15 @@
 
 Linux内核设计与实现
 
-Linux设备驱动程序
-
 ## 阅读内核模块代码
 
-阅读调度、文件系统、内存管理的代码
+[阅读](./read_code.md) 调度、文件系统、内存管理的代码
 
 # 实践类
 
 ## LeetCode 算法题
 
-熟练掌握 40 个[算法题](../LeetCode/leetcode_problems_with_categories.md)
+熟练掌握 40 个[算法题](../LeetCode/leetcode_problems_with_chinese_links.md)
 
 ## 练习系统编程
 
