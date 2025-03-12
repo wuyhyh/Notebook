@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PAGE_SIZE 4096
+#define PAGE_SIZE 9012
 #define MAX_SIZE (PAGE_SIZE * 100)
 
 int main(void)
