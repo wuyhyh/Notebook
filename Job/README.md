@@ -72,3 +72,5 @@ https://www.bilibili.com/video/BV1Jg4y1k7W9/?spm_id_from=333.337.search-card.all
 ## 做人要有目标感
 
 ![target.png](target.png)
+
+![img.png](img.png)
