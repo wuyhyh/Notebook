@@ -1,4 +1,5 @@
 from typing import List
+import random
 
 
 class Solution:
@@ -12,6 +13,10 @@ class Solution:
         self.quick_sort(nums, pivot_index + 1, right)
 
     def partition(self, nums: List[int], left: int, right: int) -> int:
+        # 随机选择基准，然后交换到最后
+        pivot_index = random.randint(left, right)
+        nums[right], nums[pivot_index] = nums[pivot_index], nums[right]
+
         pivot = nums[right]  # 选取最右边元素作为基准
         i = left  # i指向比pivot小的元素的下一个位置
 
