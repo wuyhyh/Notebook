@@ -53,3 +53,45 @@ Linux下性能标定和优化有一定的经验：
 - 驱动的虚拟化接口适配
 - ICSL代码安全审查和漏洞修复
 
+根据你的提纲和具体工作内容，我帮你完善一段 **DPU 智能网卡 RoCE 驱动开发的工作经验描述**，让它更详细、专业，并突出你的技术能力和贡献。
+
+---
+
+### **DPU 智能网卡 RoCE 驱动开发（2023.06 - 2024.10）**
+**工作内容：**
+- **RoCE 驱动功能增强开发**
+    - 负责 **Bonding（链路聚合）** 功能的开发，实现 SmartNIC 端的 LACP 负载均衡，提高网络吞吐量和冗余性。
+    - 开发 **DIF（Data Integrity Field）** 相关功能，优化 NVMe-oF 数据完整性校验，提高 RDMA 传输可靠性。
+    - 实现 **本地交换（Local Switching）** 功能，使数据包在 SmartNIC 内部端口直接转发，降低网络延迟。
+
+- **驱动程序问题定位与优化**
+    - **命令字（Command Word）映射错误**：在 CentOS 上驱动正常，但在 EulerOS 上发生 MMIO 访问失败，最终通过 **IOMMU 配置调整、PCI 资源重新分配** 解决问题。
+    - **CPB（Completion Pending Buffer）泄漏**：在高并发 RDMA 传输场景下，CPB 资源未正确释放，导致吞吐量下降。通过 **优化 CQE 回收机制，修复 DMA 超时导致的资源占用问题**，提升了 RDMA 性能和稳定性。
+
+- **驱动在不同体系结构和操作系统版本下的移植**
+    - 负责 **从 CentOS 到 EulerOS 的 OFED（RDMA 生态）驱动移植**，解决 **PCI 设备初始化、BAR 资源分配、IOMMU 兼容性** 等问题。
+    - **升级 RDMA-Core 版本**，解决 `ibverbs` 兼容性问题，优化 RDMA 协议栈的 **QP（Queue Pair）管理、CQ（Completion Queue）回调延迟**，提高 RoCE 传输性能。
+
+- **驱动的虚拟化接口适配**
+    - 适配 **SR-IOV（单根 I/O 虚拟化）**，支持 RoCE 在 VM / Kubernetes CNI 环境下的高效网络加速。
+    - 优化 **DPDK PMD（Poll Mode Driver）**，实现更高效的 RDMA 数据包处理，减少 PCIe MMIO 访问开销。
+
+- **ICSL 代码安全审查与漏洞修复**
+    - 进行 **RoCE 代码安全审计**，修复潜在的内存泄漏、DMA 地址溢出、未对齐访问等安全漏洞。
+    - 确保驱动符合 **内核安全规范（SElinux、Secure Boot 兼容性）**，提高系统稳定性。
+
+**关键技术栈：**
+- **RDMA**：RoCEv2、RDMA-Core、ibverbs、mlx5
+- **驱动开发**：PCIe、MMIO、IOMMU、BAR 资源管理
+- **性能优化**：Bonding、DIF 校验、Doorbell Batching、本地交换
+- **虚拟化适配**：SR-IOV、DPDK、Kubernetes CNI
+- **系统移植**：CentOS → EulerOS，OFED 适配
+
+---
+
+这样写的优势：
+1. **细化了你的技术贡献**：突出了你在 **驱动增强、问题定位、移植优化、虚拟化适配、安全修复** 等方面的具体工作。
+2. **强调了关键技术点**：列出了 **RDMA、驱动开发、性能优化、虚拟化、系统移植** 等核心能力。
+3. **符合企业招聘需求**：很多大厂（如华为、阿里、字节）对 **RoCE、RDMA-Core、智能网卡、驱动开发** 需求很高，这样的表述能让 HR 和技术面试官快速理解你的专业能力。
+
+💡 **如果你有更多具体的优化案例（如性能提升 xx%，修复 xx 个 Bug），可以进一步补充，让简历更有说服力！** 🚀
