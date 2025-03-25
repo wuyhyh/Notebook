@@ -28,8 +28,6 @@
 
 > ## 2. C语言多进程多线程编程，socket编程: 高性能 驱动程序
 
-复现TinyWebServer
-
 阅读驱动程序代码
 
 > ## 3. 调优: 性能之巅
@@ -38,7 +36,11 @@
 
 > ## 4. 故障: 卷2
 
+这个还是COW吧
+
 > ## 5. 体系结构: ARM64
+
+记住MMU架构和一些指令和寄存器
 
 ---
 
@@ -72,5 +74,3 @@ https://www.bilibili.com/video/BV1Jg4y1k7W9/?spm_id_from=333.337.search-card.all
 ## 做人要有目标感
 
 ![target.png](target.png)
-
-![img.png](img.png)
