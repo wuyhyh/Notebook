@@ -12,7 +12,7 @@ John Madieu: Linux Device Driver Development
 - **第3章** [介绍内核的常见功能和机制](3_内核工具和辅助函数.md)
 - **第4章** [介绍字符设备如何将设备功能输出到用户空间](4_字符设备驱动程序.md)
 - 第5章 解释平台设备
-- **第6章** 讨论内核提供设备描述的机制:设备树DT
+- **第6章** [讨论内核提供设备描述的机制:设备树DT](6_设备树的概念.md)
 - 第7章 I2C设备驱动
 - 第8章 SPI设备驱动
 - 第9章 Regmap API 对 I2C 和 SPI的抽象
@@ -28,4 +28,4 @@ John Madieu: Linux Device Driver Development
 - 第19章 PWM框架
 - 第20章 电源管理
 - 第21章 帧缓冲区
-- **第22章** 网卡(NIC)驱动
+- 第22章 网卡(NIC)驱动
