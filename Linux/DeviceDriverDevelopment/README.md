@@ -17,12 +17,12 @@ John Madieu: Linux Device Driver Development
 - 第8章 SPI设备驱动
 - 第9章 Regmap API 对 I2C 和 SPI的抽象
 - 第10章 内核数据采集和测量 ADC DAC
-- **第11章** 虚拟内存概念
-- **第12章** DMA内核API
-- **第13章** 介绍内核中对象的表示方法：Linux设备模型
+- **第11章** [虚拟内存概念](11_内核内存管理.md)
+- **第12章** [DMA内核API](12_DMA.md)
+- **第13章** [介绍内核中对象的表示方法：Linux设备模型](13_Linux设备模型.md)
 - 第14章 内核引脚控制 GPIO
 - 第15章 GPIO控制器
-- **第16章** Linux IRQ 中断
+- **第16章** [Linux IRQ 中断](16_高级IRQ管理.md)
 - 第17章 处理基于IRQ输入设备和轮询输入设备：输入设备驱动程序
 - 第18章 RTC子系统
 - 第19章 PWM框架
