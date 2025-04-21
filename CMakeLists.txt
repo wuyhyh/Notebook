@@ -19,6 +19,7 @@ add_subdirectory(Code/stack_v5_link)
 add_subdirectory(Code/gcc)
 add_subdirectory(Code/list_user)
 add_subdirectory(Code/rbtree_user)
+add_subdirectory(Code/test_process)
 
 # leetcode
 add_subdirectory(LeetCode/Interview/160寻找两个链表的交点)
