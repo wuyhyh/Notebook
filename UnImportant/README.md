@@ -11,3 +11,14 @@
 oceanclub 论坛 https://www.oceanclub.org/portal/index/index
 
 操作系统:原理与实现
+
+使用lima虚拟机编译linux内核
+
+```shell
+time intercept-build make -j6
+
+real    8m12.976s
+user    42m57.333s
+sys     5m30.359s
+```
+
