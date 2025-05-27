@@ -1,8 +1,7 @@
 # U-Boot
 
 以下是 U-Boot 项目 README 文件的第一部分中文翻译，对应原文中的 **Summary（概述）**、**Status（状态）**、**Where to get
-help（获取帮助）**、**Where to get source code（获取源代码）**、**Where we come from（项目起源）** 和 **Names and Spelling（命名规范）
-**：
+help（获取帮助）**、**Where to get source code（获取源代码）**、**Where we come from（项目起源）** 和 **Names and Spelling（命名规范）**：
 
 ---
 
