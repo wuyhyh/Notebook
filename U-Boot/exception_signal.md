@@ -63,3 +63,15 @@ cp ./isafety/image_fix_0909/d2000v-security-user-fip-all.bin /mnt/c/Users/wuyhy/
 ```shell
 flashcp d2000v-security-user-fip-all.bin /dev/mtd0
 ```
+
+- 切换启动flash
+```shell
+pri
+```
+```shell
+setenv load_sys_remote_ft 'sys_remote 2 800000 1 0 0 0'
+```
+
+```shell
+run boot_ft
+```
