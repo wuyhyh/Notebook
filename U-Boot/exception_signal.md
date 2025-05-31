@@ -65,13 +65,39 @@ flashcp d2000v-security-user-fip-all.bin /dev/mtd0
 ```
 
 - 切换启动flash
+
 ```shell
 pri
 ```
+
 ```shell
 setenv load_sys_remote_ft 'sys_remote 2 800000 1 0 0 0'
 ```
 
 ```shell
 run boot_ft
+```
+
+## 测试用户板
+
+- 读取分区信息
+
+```shell
+cat /proc/mtd
+```
+
+```shell
+vmtd_opration
+```
+
+- 向flash分区写入U-Boot
+
+```shell
+flashcp d2000v-security-54s-new-satellite-user-evb-fip-all.bin /dev/mtd16
+```
+
+```shell
+vmtd_opration /dev/mtd16 --vmtd_mode 0
+vmtd_opration /dev/mtd16 --flash_id 7
+xxd /dev/mtd16 |head -n 30
 ```
