@@ -168,6 +168,7 @@ void lru_cache_free(struct lru_cache *cache)
 		cur = cur->next;
 		free(tmp);
 	}
+
 	free(cache->hash_table);
 	free(cache);
 }
