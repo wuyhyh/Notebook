@@ -28,8 +28,8 @@ int main()
 {
 	unsigned int cmd_value = 0;
 	cmd_value = SPI_CFG_CMD_RDID | SPI_CFG_DATA_TRANSFER |
-		    SPI_CFG_CMD_THROUGH | SPI_CFG_RW_NUM_3 |
-		    PHYTIUM_CMD_SCK_SEL;
+	            SPI_CFG_CMD_THROUGH | SPI_CFG_RW_NUM_3 |
+	            PHYTIUM_CMD_SCK_SEL;
 
 	printf("原始值: 0x%08X\n", cmd_value);
 	printf("二进制分组: ");

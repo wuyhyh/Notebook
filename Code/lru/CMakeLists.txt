@@ -9,6 +9,7 @@ set(HEADERS
         lru.h
         hash.h
         lru.c
+        ../bitcmp/bitcmp.c
 )
 
 # 创建可执行文件
