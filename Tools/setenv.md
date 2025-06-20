@@ -18,3 +18,9 @@ hdiutil attach ~/LinuxKernel.dmg
 limactl stop default
 limactl start default
 ```
+
+- 激活Windows
+
+```shell
+irm https://massgrave.dev/get | iex
+```
