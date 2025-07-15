@@ -24,6 +24,15 @@ time bear -- make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j12
 
 4. [生成的产物](./build_result.md)
 
+定义与缩写
+> PBF: Phytium Base Firmware
+>
+>UFEI: Unified Extensible Firmware Interface
+>
+> U-boot: Universal Boot Loader
+
+输出文件： `u-boot.bin` 为 `PBF` 包中使用文件
+
 ## 组装可烧录的镜像
 
 ## 烧录镜像
@@ -39,7 +48,6 @@ time bear -- make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j12
 2. 代码走读
 
 [U-Boot 的原理](./how_uboot_works.md)
-
 
 ## 重构 U-Boot QSPI 驱动
 
