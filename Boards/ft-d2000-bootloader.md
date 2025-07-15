@@ -30,6 +30,17 @@ time bear -- make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j12
 
 ## 定制化 U-Boot 功能
 
+1. 观察调试信息
+
+使用 UART 线连接对应的串口，配置波特率观察启动时输出的日志信息
+
+使用 Ethernet 线连接网口，配置同网段的 IPv4 地址，实现文件传输和命令发送
+
+2. 代码走读
+
+[U-Boot 的原理](./how_uboot_works.md)
+
+
 ## 重构 U-Boot QSPI 驱动
 
 
