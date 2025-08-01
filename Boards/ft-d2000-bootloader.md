@@ -189,7 +189,7 @@ mii read 0x7 0x01              # 查看链路状态
 => mii write 0x00 0x00 0x9140  # Bit 15=1 (复位) + Bit 12=1 (自动协商)
 
 # 3. 等待链路建立（检查状态寄存器 Reg 1 的 Bit 2）
-=> mii read 0x00 0x01
+=> mii read 0x00 0x01  
 # 输出应为 0x796D（Bit 2=1 表示链路正常）
 
 mii read 0x07 0x14
