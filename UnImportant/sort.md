@@ -4,7 +4,8 @@
 
 ## 🎬 开场介绍（10 秒）
 
-大家好，我是宇航，这里是我的技术分享频道。本期视频我们来实现一个经典算法 —— 快速排序。快速排序是一种高效的排序算法，广泛应用于实际工程中。今天我们将用 C 语言完整实现它，并一步步讲清原理。
+大家好，我是宇航，这里是我的技术分享频道。本期视频我们来实现一个经典算法 —— 快速排序。快速排序是一种高效的排序算法，广泛应用于实际工程中。今天我们将用
+C 语言完整实现它，并一步步讲清原理。
 
 ---
 
@@ -24,7 +25,7 @@
 
 ### 1. 交换函数 swap
 
-```c
+```c++
 void swap(int *a, int *b) {
     int temp = *a;
     *a = *b;
@@ -37,7 +38,7 @@ void swap(int *a, int *b) {
 
 ### 2. 分区函数 partition
 
-```c
+```c++
 int partition(int arr[], int low, int high) {
     int pivot = arr[high];
     int i = low - 1;
@@ -59,7 +60,7 @@ int partition(int arr[], int low, int high) {
 
 ### 3. 快速排序函数 quicksort
 
-```c
+```c++
 void quicksort(int arr[], int low, int high) {
     if (low < high) {
         int pi = partition(arr, low, high);
@@ -74,7 +75,7 @@ void quicksort(int arr[], int low, int high) {
 
 ### 4. 辅助函数：打印数组
 
-```c
+```c++
 void print_array(int arr[], int size) {
     for (int i = 0; i < size; i++) {
         printf("%d ", arr[i]);
@@ -87,7 +88,7 @@ void print_array(int arr[], int size) {
 
 ### 5. 主函数 main
 
-```c
+```c++
 int main() {
     int arr[] = {7, 2, 1, 6, 8, 5, 3, 4};
     int size = sizeof(arr) / sizeof(arr[0]);
