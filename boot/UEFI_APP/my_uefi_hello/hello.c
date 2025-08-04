@@ -1,11 +1,16 @@
-// hello.c
 #include <efi.h>
 #include <efilib.h>
 
-EFI_STATUS
-efi_main (EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table)
+EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-	InitializeLib(image_handle, system_table);
-	Print(L"Hello from my own UEFI bootloader!\n");
+	InitializeLib(ImageHandle, SystemTable);
+
+	int count = 0;
+	while (1) {
+		Print(L"[UEFI] Hello! Count = %d\n", count++);
+		// 延时 1 秒（单位为微秒）
+		udelay(1000000);
+	}
+
 	return EFI_SUCCESS;
 }
