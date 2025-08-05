@@ -33,15 +33,19 @@ sudo dnf install ncurses-devel bison flex elfutils-libelf-devel openssl-devel \
   dwarves perl gcc make bc wget zstd xz
 ```
 
-- 生成编译配置文件
+- 配置内核
+
+最小化组件，一般用来验证编译工具链的完整性
 
 ```shell
 make defconfig
 ```
 
-使用tui图形界面选择编译的组件
+当前硬件的实用编译配置
 
 ```shell
+cp /boot/config-$(uname -r) .config
+make olddefconfig      
 make menuconfig
 ```
 
@@ -57,6 +61,13 @@ make -j${nproc}
 time bear -- make -j12
 ```
 
+分步编译
+
+```shell
+make bzImage
+make modules
+```
+
 - 安装内核模块
 
 ```shell
@@ -69,6 +80,13 @@ make modules_install
 make install
 ```
 
+- 更新启动项 UEFI 固件
+
+```shell
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+sudo reboot
+```
+
 - 清理编译产物，彻底清理生成的文件
 
 ```shell
@@ -76,8 +94,34 @@ make clean
 make mrproper
 ```
 
-## 在 Ubuntu 上编译内核
+- 显示fedora的图标
 
+```shell
+dnf install fastfetch
+```
 
+- 查看可以启动的内核
 
+```shell
+cat /boot/loader/entries/
+```
+
+查看默认启动内核
+
+```shell
+grub2-editenv list
+```
+
+```text
+[root@Fedora ~]# ls /boot/loader/entries/
+2f88f64cb26a4c31afec27c8a0dcb800-0-rescue.conf
+2f88f64cb26a4c31afec27c8a0dcb800-6.16.0+.conf
+2f88f64cb26a4c31afec27c8a0dcb800-6.14.0-63.fc42.x86_64.conf
+```
+
+前面的字符串是机器 ID
+
+```shell
+cat /etc/machine-id
+```
 

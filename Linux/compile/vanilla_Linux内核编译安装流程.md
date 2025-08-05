@@ -79,7 +79,6 @@ awk -F\' '$1=="menuentry " {print i++ " : " $2}' /boot/efi/EFI/fedora/grub.cfg
 ### 🍰 前提准备：
 
 ```bash
-sudo dnf groupinstall "Development Tools" "Development Libraries"
 sudo dnf install ncurses-devel bison flex elfutils-libelf-devel openssl-devel \
   dwarves perl gcc make bc zstd xz wget
 ```

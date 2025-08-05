@@ -163,4 +163,3 @@ sudo reboot
 
 是否需要我再帮你准备一个实际例子，比如从 kernel.org 下载源码并构建一个简化内核？或者基于 Fedora `.src.rpm` 打个补丁再构建？
 
-
