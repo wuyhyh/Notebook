@@ -23,7 +23,11 @@ cd linux-6.9.3
 git clone https://mirrors.tuna.tsinghua.edu.cn/git/linux.git --depth=1
 ```
 
-自定义编译出的[内核的名称]()
+自定义编译出的[内核的名称](./set_kernel_name脚本.md)
+
+在 make menuconfig 中修改前缀；
+在顶层 Makefile 中修改后缀；
+最后生成的内核的前缀和后缀会合并
 
 ---
 
