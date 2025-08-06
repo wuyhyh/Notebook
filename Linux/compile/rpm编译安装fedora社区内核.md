@@ -236,3 +236,9 @@ rpmbuild -bb kernel.spec
 ---
 
 如你想操作一次这样的“替换 vanilla + 打补丁 + 构建 Fedora 内核 RPM 包”的完整实践，我可以帮你一步步写出来。是否继续？
+
+
+
+
+
+
