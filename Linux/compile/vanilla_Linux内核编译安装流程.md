@@ -23,6 +23,8 @@ cd linux-6.9.3
 git clone https://mirrors.tuna.tsinghua.edu.cn/git/linux.git --depth=1
 ```
 
+自定义编译出的[内核的名称]()
+
 ---
 
 ### ⚙️ 2. 准备配置文件（保留系统功能）

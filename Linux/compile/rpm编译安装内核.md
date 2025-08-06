@@ -1,0 +1,134 @@
+很好，你问到的是如何使用 **`make rpm-pkg` 方式生成并安装内核的 `.rpm` 包**，这确实是推荐在 Fedora 或 RHEL
+系列中管理内核的方式，支持自动安装、卸载、更新等。
+
+下面是完整详细的流程。
+
+---
+
+# ✅ 使用 `make rpm-pkg` 构建并安装内核 RPM 包
+
+---
+
+## 📦 一、准备环境
+
+### ✅ 安装构建依赖
+
+```bash
+sudo dnf groupinstall "Development Tools" -y
+sudo dnf install ncurses-devel elfutils-libelf-devel openssl-devel bc flex bison rpm-build -y
+```
+
+---
+
+## 📂 二、准备源码目录
+
+你应该已经有 Linux 内核源码，比如：
+
+```bash
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+cd linux
+git checkout v6.6  # 可选，指定版本
+```
+
+---
+
+## ⚙️ 三、配置内核（可选）
+
+你可以复制现有的 `.config`，或使用 `menuconfig` 自定义：
+
+```bash
+cp /boot/config-$(uname -r) .config
+make olddefconfig
+make menuconfig       # 如果你想定制一下版本后缀，可设定 CONFIG_LOCALVERSION
+```
+
+---
+
+## 🛠 四、编译生成 RPM 包
+
+```bash
+make -j$(nproc) rpm-pkg
+```
+
+这一步会花比较久时间，最终生成的 `.rpm` 包会保存在你的 `$HOME/rpmbuild/RPMS/x86_64/` 目录下（默认构建架构）。
+
+你可以查看：
+
+```bash
+ls ~/rpmbuild/RPMS/x86_64/kernel-*.rpm
+```
+
+你可能会看到类似：
+
+```text
+kernel-6.6.0_custom-1.x86_64.rpm
+kernel-devel-6.6.0_custom-1.x86_64.rpm
+kernel-headers-6.6.0_custom-1.x86_64.rpm
+```
+
+---
+
+## 📥 五、使用 `dnf` 安装内核 RPM 包
+
+```bash
+sudo dnf install ~/rpmbuild/RPMS/x86_64/kernel-6.6.0_custom-1.x86_64.rpm
+```
+
+也可以批量安装：
+
+```bash
+sudo dnf install ~/rpmbuild/RPMS/x86_64/kernel-*.rpm
+```
+
+---
+
+## 🔁 六、重启并选择新内核
+
+安装完成后：
+
+* 会自动生成 BLS 启动项 `/boot/loader/entries/*.conf`
+* 自动注册到 rpm 数据库
+* 无需手动修改 grub
+
+然后：
+
+```bash
+reboot
+```
+
+启动后验证：
+
+```bash
+uname -r
+```
+
+---
+
+## 🧹 七、卸载内核时可直接使用 dnf
+
+```bash
+sudo dnf remove kernel-6.6.0_custom-1.x86_64
+```
+
+这会：
+
+* 自动删除 `/boot/` 下对应的 `vmlinuz`、`initramfs`、`System.map`
+* 自动移除 BLS 启动项
+* 更加干净、可控，适合生产部署
+
+---
+
+## ✅ 总结
+
+| 步骤        | 命令                                                   |
+|-----------|------------------------------------------------------|
+| 安装依赖      | `dnf groupinstall "Development Tools"` + `rpm-build` |
+| 配置内核      | `make olddefconfig && make menuconfig`               |
+| 编译生成 RPM  | `make rpm-pkg`                                       |
+| 安装 RPM 内核 | `dnf install kernel-xxx.rpm`                         |
+| 卸载内核      | `dnf remove kernel-xxx`                              |
+
+---
+
+是否需要我帮你生成一个一键化自动构建 + 安装内核 RPM 的脚本？你只要传一个 tag 或 commit id 就能构建了。
+
