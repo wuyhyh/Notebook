@@ -14,8 +14,8 @@
 ### ✅ 安装构建依赖
 
 ```bash
-sudo dnf groupinstall "Development Tools" -y
-sudo dnf install ncurses-devel elfutils-libelf-devel openssl-devel bc flex bison rpm-build -y
+sudo dnf install ncurses-devel bison flex elfutils-libelf-devel elfutils-devel openssl-devel \
+  dwarves perl git gcc make bc zstd xz wget rpm-build -y
 ```
 
 ---
@@ -28,7 +28,7 @@ sudo dnf install ncurses-devel elfutils-libelf-devel openssl-devel bc flex bison
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 cd linux
 git checkout v6.6  # 可选，指定版本
-```
+```  
 
 ---
 

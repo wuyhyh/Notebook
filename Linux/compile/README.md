@@ -124,4 +124,3 @@ grub2-editenv list
 ```shell
 cat /etc/machine-id
 ```
-

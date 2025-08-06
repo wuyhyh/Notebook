@@ -4,7 +4,7 @@
 
 ```bash
 sudo dnf install ncurses-devel bison flex elfutils-libelf-devel openssl-devel \
-  dwarves perl gcc make bc zstd xz wget
+  dwarves perl git gcc make bc zstd xz wget -y
 ```
 
 ---
@@ -62,8 +62,6 @@ sudo make install
 * `initramfs-*`（可选，需手动生成）
 * `System.map-*`
 * 更新 `/boot/efi/EFI/fedora/` 目录下的引导项
-
----
 
 ---
 
