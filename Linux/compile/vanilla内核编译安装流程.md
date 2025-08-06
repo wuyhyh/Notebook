@@ -65,30 +65,9 @@ sudo make install
 
 ---
 
-### 🌀 5. 生成 initramfs（有时 `make install` 不自动生成）
-
-```bash
-sudo dracut --kver 6.9.3 --force
-```
-
 ---
 
-### 📑 6. 生成 grub 配置（Fedora UEFI 系统）
-
-```bash
-sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
-```
-
-更新启动项 UEFI 固件
-
-```shell
-sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-sudo reboot
-```
-
----
-
-### 🔁 7. 设置下次重启进入新内核
+### 🔁 5. 设置下次重启进入新内核
 
 ```bash
 sudo reboot
@@ -96,11 +75,17 @@ sudo reboot
 
 ---
 
-### ✅ 8. 启动后验证是否进入新内核
+### ✅ 6. 启动后验证是否进入新内核
 
 ```bash
 uname -r
 # 应该输出类似 6.9.3
+```
+
+查看新启动的系统信息
+
+```shell
+fastfetch
 ```
 
 ---
