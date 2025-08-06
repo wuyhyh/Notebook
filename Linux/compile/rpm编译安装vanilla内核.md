@@ -55,7 +55,7 @@ make -j$(nproc) rpm-pkg
 你可以查看：
 
 ```bash
-ls ~/rpmbuild/RPMS/x86_64/kernel-*.rpm
+ls /root/linux/rpmbuild/RPMS/x86_64/kernel-*.rpm
 ```
 
 你可能会看到类似：
@@ -118,17 +118,38 @@ sudo dnf remove kernel-6.6.0_custom-1.x86_64
 
 ---
 
-## ✅ 总结
+## ✅ 彻底清理 6.16 内核的方法
 
-| 步骤        | 命令                                                   |
-|-----------|------------------------------------------------------|
-| 安装依赖      | `dnf groupinstall "Development Tools"` + `rpm-build` |
-| 配置内核      | `make olddefconfig && make menuconfig`               |
-| 编译生成 RPM  | `make rpm-pkg`                                       |
-| 安装 RPM 内核 | `dnf install kernel-xxx.rpm`                         |
-| 卸载内核      | `dnf remove kernel-xxx`                              |
+### ✅ 方法 1：查找并手动删除文件
+
+```bash
+# 查找所有 6.16.0+ 的相关文件（含 modules）
+find /boot -name "*6.16.0*" -exec rm -v {} \;
+rm -rf /lib/modules/6.16.0+
+rm -rf /usr/src/kernels/6.16.0+
+```
 
 ---
 
-是否需要我帮你生成一个一键化自动构建 + 安装内核 RPM 的脚本？你只要传一个 tag 或 commit id 就能构建了。
+### ✅ 方法 2：查找残留的 6.16 包（更可靠地列出包名）
 
+```bash
+rpm -qa | grep 6.16.0
+```
+
+然后手动卸载：
+
+```bash
+dnf remove kernel-headers-0:6.16.0+-3.x86_64 \
+            kernel-devel-0:6.16.0+-3.x86_64 \
+            kernel-modules-0:6.16.0+-3.x86_64 \
+            kernel-0:6.16.0+-3.x86_64
+```
+
+注意 `+` 仍需加引号或使用通配符避免解释错误：
+
+```bash
+dnf remove "kernel*-6.16.0+-3*"
+```
+
+---
