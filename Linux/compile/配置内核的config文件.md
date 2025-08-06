@@ -131,3 +131,79 @@ sudo reboot
 
 如果你愿意，我可以帮你梳理一份完整的从 vanilla 源码编译 → 安装 → 配置 → 启动切换 → 卸载旧内核 的全流程脚本。是否需要？
 
+# 完整的 vanilla 内核编译、安装、启动流程（UEFI 专用）
+
+---
+
+## ✅ 问题 1：在执行 `make menuconfig` 之前需要准备 `.config` 文件吗？
+
+取决于你是否希望**复用当前系统的配置**：
+
+### ✅ 推荐操作：
+
+```bash
+cp /boot/config-$(uname -r) .config
+make olddefconfig     # 补齐新内核中新增的配置项
+make menuconfig       # 此时进去就是完整的、系统当前的配置基础
+```
+
+### 📌 为什么不直接 `make menuconfig`？
+
+如果你不手动准备 `.config` 文件，那么：
+
+* 会使用默认的 `defconfig`（通常是针对某些架构的最小功能集）
+* 很多你当前系统需要的驱动和模块不会启用
+* 编译出的内核可能无法驱动你的网络、显卡等
+
+### 总结：
+
+| 操作                                              | 是否建议  | 原因          |
+|-------------------------------------------------|-------|-------------|
+| 直接 `make menuconfig`                            | ❌ 不建议 | 缺少当前系统配置基础  |
+| 先 `cp config && make olddefconfig` 再 menuconfig | ✅ 推荐  | 保留现有功能并可自定义 |
+
+---
+
+## ✅ 问题 2：UEFI 系统中 grub 配置和默认项设置命令
+
+Fedora UEFI 系统的 grub 配置文件在：
+
+```
+/boot/efi/EFI/fedora/grub.cfg
+```
+
+但这是由 `/etc/grub2-efi.cfg` 链接生成的，一般我们使用如下命令管理 grub：
+
+### 🧭 1. 生成 grub 配置文件
+
+```bash
+sudo grub2-mkconfig -o /boot/efi/EFI/fedora/grub.cfg
+```
+
+或者（两者等价）：
+
+```bash
+sudo grub2-mkconfig -o /etc/grub2-efi.cfg
+```
+
+### 🔁 2. 设置下次重启临时使用某个内核（索引从 0 开始）
+
+```bash
+sudo grub2-reboot 1
+sudo reboot
+```
+
+### 🖥️ 3. 设置默认启动项
+
+```bash
+sudo grub2-set-default 1
+```
+
+### 👀 4. 查看当前启动项索引和列表
+
+```bash
+awk -F\' '$1=="menuentry " {print i++ " : " $2}' /boot/efi/EFI/fedora/grub.cfg
+```
+
+---
+
