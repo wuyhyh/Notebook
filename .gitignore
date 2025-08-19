@@ -7,5 +7,5 @@ __pycache__/
 .DS_Store
 
 # Sphinx 默认构建目录（我们用 site/）
-docs/_build/
+docs/site/
 
