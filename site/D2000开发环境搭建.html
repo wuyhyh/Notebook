@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2000 开发环境搭建 &mdash; HPC 项目文档  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="我的 Markdown 页面" href="dummy_doc.html" />
+    <link rel="prev" title="HPC 项目文档" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            HPC 项目文档
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">目录</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">D2000 开发环境搭建</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">一、硬件清单（单台）</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#openeuler">二、安装 openEuler 操作系统</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">1. 镜像下载</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">2. 安装操作系统</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">三、网络问题</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id5">1. 下载网络驱动程序</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">2. 解决兼容性错误</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">3. 操作系统网络配置问题</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">四、使用本地镜像源安装网络相关工具</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id9">1. 查看当前块设备</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">2. 创建本地仓库文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">3. 刷新本地缓存</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">4. 使用本地源安装软件</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#wifi">五、手动连接WiFi</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id13">1. 创建配置文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">2. 执行连接</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">3. 验证网络功能</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id16">六、配置启动自动配置网络</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id17">1、首先，假设你的脚本路径是</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#systemd">2、创建一个 systemd 服务文件：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id18">3、在文件中添加以下内容：</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id19">4、启用并启动服务：</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dummy_doc.html">我的 Markdown 页面</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HPC 项目文档</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">D2000 开发环境搭建</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/D2000开发环境搭建.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="d2000">
+<h1>D2000 开发环境搭建<a class="headerlink" href="#d2000" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>一、硬件清单（单台）<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>数量</p></th>
+<th class="head"><p>型号</p></th>
+<th class="head"><p>备注</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>飞腾D2000主板</p></td>
+<td><p>1</p></td>
+<td><p>GM9-2002</p></td>
+<td><p>目前该主板网卡驱动只支持麒麟操作系统，其他操作系统需使用USB网卡</p></td>
+</tr>
+<tr class="row-odd"><td><p>内存</p></td>
+<td><p>2</p></td>
+<td><p>七彩虹DDR4</p></td>
+<td><p>单条容量16G，频率3200MHz</p></td>
+</tr>
+<tr class="row-even"><td><p>SSD</p></td>
+<td><p>1</p></td>
+<td><p>七彩虹CN600</p></td>
+<td><p>256G，M.2接口</p></td>
+</tr>
+<tr class="row-odd"><td><p>机箱</p></td>
+<td><p>1</p></td>
+<td><p>AOCCG 391B</p></td>
+<td><p>支持M-ATX</p></td>
+</tr>
+<tr class="row-even"><td><p>电源</p></td>
+<td><p>1</p></td>
+<td><p>SEASONIC ATX3</p></td>
+<td><p>750W</p></td>
+</tr>
+<tr class="row-odd"><td><p>USB网卡</p></td>
+<td><p>1</p></td>
+<td><p>Tenda AX300</p></td>
+<td><p>需自行在飞腾平台上编译驱动</p></td>
+</tr>
+<tr class="row-even"><td><p>显卡</p></td>
+<td><p>1</p></td>
+<td><p>AMD R5 230</p></td>
+<td><p>主要用于前期调试，后面PCIE接扩展卡</p></td>
+</tr>
+<tr class="row-odd"><td><p>HDMI-HDMI线</p></td>
+<td><p>1</p></td>
+<td><p>山泽</p></td>
+<td><p>飞腾主板仅支持HDMI和VGA</p></td>
+</tr>
+<tr class="row-even"><td><p>U盘</p></td>
+<td><p>1</p></td>
+<td><p>Kingston 64GB</p></td>
+<td><p>安装操作系统（目前使用OpenEluer）镜像</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="openeuler">
+<h2>二、安装 openEuler 操作系统<a class="headerlink" href="#openeuler" title="Link to this heading"></a></h2>
+<section id="id2">
+<h3>1. 镜像下载<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<p>因为开发后续 DPU 驱动需要使用 5.10 linux kernel，因此选用工具链完善的 ARM64 架构的 openEuler 22.03 SP4 server edition.
+<img alt="openEuler.png" src="_images/openEuler.png" />
+操作系统镜像在<a class="reference external" href="https://www.openeuler.org/zh/download/archive/detail/?version=openEuler%2022.03%20LTS%20SP4">这里</a>
+，选择下载服务器版的Everything ISO 文件</p>
+</section>
+<section id="id3">
+<h3>2. 安装操作系统<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<p>官方的安装指导在<a class="reference external" href="https://docs.openeuler.org/zh/docs/24.03_LTS_SP2/server/installation_upgrade/installation/installation_preparations.html">这里</a>
+，可供参考</p>
+<p>我们采用 U 盘制作 USB 启动盘进行安装，后续还可以使用这个 U 盘作为无网络情况下的本地 yum 源安装软件。</p>
+<ol class="arabic simple">
+<li><p>下载 USB 盘制作工具，这里使用了 Ubuntu 社区的开源烧录工具 <a class="reference external" href="https://etcher.balena.io/">balenaEtcher</a></p></li>
+<li><p>准备一个 32G 或更大的U盘，使用 balenaEtcher 和下载好的 ISO 文件制作一个启动 U 盘</p></li>
+<li><p>上电后按 F11 进入启动选项的选择，选择从 USB 启动</p></li>
+<li><p>根据菜单提示进行安装，这里需要注意的是在 <code class="docutils literal notranslate"><span class="pre">software</span> <span class="pre">selection</span></code> 的时候选择上 <code class="docutils literal notranslate"><span class="pre">infiniband</span> <span class="pre">support</span></code> 和 <code class="docutils literal notranslate"><span class="pre">development</span> <span class="pre">tools</span></code></p></li>
+<li><p>系统安装好后重启进入 openEuler 系统</p></li>
+</ol>
+</section>
+</section>
+<section id="id4">
+<h2>三、网络问题<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id5">
+<h3>1. 下载网络驱动程序<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<p>北京集特智能制造的 D2000 主板上的以太网口的驱动目前只有 openKiny 麒麟操作系统支持，但是麒麟操作系统的开源版本是办公用途，不利于我们开发
+DPU 驱动。</p>
+<p>我们购买了 USB 无线网卡，使用 WIFI 连接到路由器，当我们的 Windows PC 与 D2000 环境连接到同一个路由器的时候，可以实现网络通信。</p>
+<p>我们购买了 Tenda AX300 wifi6 USB 无线网卡，这个网卡在 Linux 上需要自己编译驱动程序。</p>
+<p>网卡驱动程序从<a class="reference external" href="https://tenda.com.cn/material/show/690938082103365">这里</a>下载，下载后的压缩包中有 PDF 文档，根据文档安装网卡的
+firmware 和 ko。</p>
+</section>
+<section id="id6">
+<h3>2. 解决兼容性错误<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<p>网卡驱动程序在编译过程中遇到了多个内核版本相关的兼容性错误，需要修改
+<code class="docutils literal notranslate"><span class="pre">aic8800_linux_drvier/drivers/aic8800/aic8800_fdrv/aicwf_usb.c</span></code>，</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">AICWFDBG</span><span class="p">(</span><span class="n">LOGINFO</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s the cpu is:%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__func__</span><span class="p">,</span><span class="w"> </span><span class="n">current</span><span class="o">-&gt;</span><span class="n">cpu</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>改为</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">AICWFDBG</span><span class="p">(</span><span class="n">LOGINFO</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s the cpu is:%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">__func__</span><span class="p">,</span><span class="w"> </span><span class="n">get_cpu</span><span class="p">());</span>
+</pre></div>
+</div>
+<p>安装好驱动之后 <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code> 命令执行后可以看到一个 <code class="docutils literal notranslate"><span class="pre">wlan0</span></code> 的网络设备
+如果没看到，先执行一下</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ifconfig<span class="w"> </span>wlan0<span class="w"> </span>up
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">nmcli</span></code> 执行后会看见 <code class="docutils literal notranslate"><span class="pre">wlan0</span></code> 报错 <code class="docutils literal notranslate"><span class="pre">pluging</span> <span class="pre">missing</span></code></p>
+</section>
+<section id="id7">
+<h3>3. 操作系统网络配置问题<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<p>安装好驱动之后，网卡可以被系统识别到，但是无法使用 DHCP 协议获取 IP 地址与路由器通信，我们还需要一些工具和设置。</p>
+</section>
+</section>
+<section id="id8">
+<h2>四、使用本地镜像源安装网络相关工具<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<p>现在还没有网络，因此我们还要使用启动盘作为本地 yum 源。</p>
+<section id="id9">
+<h3>1. 查看当前块设备<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<p>插入 U 盘后，执行：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>lsblk
+</pre></div>
+</div>
+<p>可以看到U 盘分区，假设 U 盘分区是 /dev/sda1，你可以挂载它到 /mnt/iso：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>/mnt/iso
+mount<span class="w"> </span>/dev/sda1<span class="w"> </span>/mnt/iso
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>2. 创建本地仓库文件<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>首先需备份/etc/yum.repos.d/目录下的.repo源文件，再将其删除</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cp<span class="w"> </span>/etc/yum.repos.d/xxx.repo<span class="w"> </span>/etc/yum.repos.d/xxx.repo.backup
+rm<span class="w"> </span>-rf<span class="w"> </span>/etc/yum.repos.d/xxx.repo
+vi<span class="w"> </span>/etc/yum.repos.d/local.repo
+</pre></div>
+</div>
+<p>添加如下内容：</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[local]
+name=OpenEuler Local Repo
+baseurl=file:///mnt/iso
+enabled=1
+gpgcheck=0
+</pre></div>
+</div>
+<p>保存并退出（:wq）</p>
+</section>
+<section id="id11">
+<h3>3. 刷新本地缓存<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>dnf<span class="w"> </span>clean<span class="w"> </span>all
+dnf<span class="w"> </span>makecache
+</pre></div>
+</div>
+<p>查看是否识别成功：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>dnf<span class="w"> </span>repolist
+</pre></div>
+</div>
+<p>应该能看到：</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>repo id     repo name
+local       OpenEuler Local Repo
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>4. 使用本地源安装软件<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>dnf<span class="w"> </span>install<span class="w"> </span>wpa_supplicant<span class="w"> </span>-y
+dnf<span class="w"> </span>install<span class="w"> </span>make<span class="w"> </span>gcc<span class="w"> </span>kernel-headers<span class="w"> </span>kernel-devel<span class="w"> </span>-y
+</pre></div>
+</div>
+</section>
+</section>
+<section id="wifi">
+<h2>五、手动连接WiFi<a class="headerlink" href="#wifi" title="Link to this heading"></a></h2>
+<p>使用 wpa_supplicant + dhclient 方式手动连 WiFi：</p>
+<section id="id13">
+<h3>1. 创建配置文件<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>vi<span class="w"> </span>/etc/wpa_supplicant/wpa_supplicant.conf
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>network={
+    ssid=&quot;你的WiFi名称&quot;
+    psk=&quot;你的WiFi密码&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="id14">
+<h3>2. 执行连接<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>wpa_supplicant<span class="w"> </span>-B<span class="w"> </span>-i<span class="w"> </span>wlan0<span class="w"> </span>-c<span class="w"> </span>/etc/wpa_supplicant/wpa_supplicant.conf
+sudo<span class="w"> </span>dhclient<span class="w"> </span>wlan0
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>3. 验证网络功能<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<p>输入<code class="docutils literal notranslate"><span class="pre">ip</span> <span class="pre">a</span></code>可以看到 wlan0 已经通过 DHCP 从路由器那里获取了 IPv4 地址，使用 <code class="docutils literal notranslate"><span class="pre">ping</span> <span class="pre">www.baidu.com</span></code> 可以验证网络通信正常。</p>
+</section>
+</section>
+<section id="id16">
+<h2>六、配置启动自动配置网络<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
+<section id="id17">
+<h3>1、首先，假设你的脚本路径是<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>vim<span class="w"> </span>/usr/local/bin/config_wlan0.sh
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>#!/usr/bin/sh
+
+ifconfig wlan0 up
+
+sleep 3
+
+wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+
+dhclient wlan0
+</pre></div>
+</div>
+<p>可执行权限</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>chmod<span class="w"> </span>+x<span class="w"> </span>/usr/local/bin/config_wlan0.sh
+</pre></div>
+</div>
+</section>
+<section id="systemd">
+<h3>2、创建一个 systemd 服务文件：<a class="headerlink" href="#systemd" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>vim<span class="w"> </span>/etc/systemd/system/wlan0-config.service
+</pre></div>
+</div>
+</section>
+<section id="id18">
+<h3>3、在文件中添加以下内容：<a class="headerlink" href="#id18" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[Unit]
+Description=Configure wlan0 IPv4 address on boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/config_wlan0.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+</pre></div>
+</div>
+</section>
+<section id="id19">
+<h3>4、启用并启动服务：<a class="headerlink" href="#id19" title="Link to this heading"></a></h3>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>wlan0-config.service
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="HPC 项目文档" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dummy_doc.html" class="btn btn-neutral float-right" title="我的 Markdown 页面" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
