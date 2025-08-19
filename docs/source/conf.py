@@ -1,17 +1,11 @@
 # -- 基本项 -----------------------------------------------------------------
-project = "蓝焰的 Notebook"
+project = "蓝焰的notebook"
 extensions = [
     "myst_parser",  # 允许使用 Markdown（MyST）
 ]
 myst_enable_extensions = [
     "linkify", "attrs", "deflist", "tasklist", "colon_fence", "dollarmath"
 ]
-
-# 主题：Read the Docs 风格（离线搜索友好）
-# html_theme = "sphinx_rtd_theme"
-
-# 关键：保持默认的相对路径输出，方便离线 file:// 直接打开
-# 不要设置 html_baseurl（留空即可）
 
 html_theme = "pydata_sphinx_theme"
 
@@ -37,5 +31,3 @@ html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
 
 # 打开搜索框（pydata 顶栏自带，会调用 Sphinx 内置搜索）
-# 无需额外插件/JS
-
