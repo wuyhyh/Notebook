@@ -1,4 +1,4 @@
-# 使用 `make rpm-pkg` 构建并安装内核 RPM 包
+# 使用 make rpm-pkg 构建并安装内核 RPM 包
 
 ---
 
