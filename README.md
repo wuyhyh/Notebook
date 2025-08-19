@@ -23,6 +23,13 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ sphinx myst-parser pyda
 
 构建网页
 
+Python环境的激活与退出：
+
+```text
+source .venv/bin/activate
+deactivate
+```
+
 ```shell
 sh build.sh
 ```
