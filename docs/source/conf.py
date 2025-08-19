@@ -29,8 +29,8 @@ html_theme_options = {
 }
 
 # 站点信息（可选）
-html_logo = "_static/logo.png"            # 如果有
-html_favicon = "_static/favicon.ico"      # 如果有
+html_logo = "_static/logo.jpg"
+html_favicon = "_static/logo.jpg"
 
 # 自定义样式（放在 _static/css/custom.css）
 html_static_path = ["_static"]
