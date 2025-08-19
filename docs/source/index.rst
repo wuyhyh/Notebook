@@ -1,12 +1,18 @@
 蓝焰的Notebook
 ========
 
-欢迎！这是一个由 Sphinx 渲染的网页。左侧为目录，右上角有搜索框。
+欢迎！这是一个由 Sphinx 渲染的网页。
 
 .. toctree::
-   :maxdepth: 2
-   :caption: 目录
+    :caption: 安装指南
+    :maxdepth: 2
 
-   D2000开发环境搭建
-   dummy_doc
-   Linux/index
+    setenv/D2000开发环境搭建
+
+    dummy_doc
+
+.. toctree::
+    :caption: Linux 相关知识
+    :maxdepth: 2
+
+    Linux/index

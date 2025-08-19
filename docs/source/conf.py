@@ -10,23 +10,32 @@ myst_enable_extensions = [
 # 主题：Read the Docs 风格（离线搜索友好）
 # html_theme = "sphinx_rtd_theme"
 
-# 静态资源目录（可选）
-html_static_path = ["_static"]
-html_css_files = ["css/custom.css"]
-html_js_files = ["js/inpage-search.js"]
-
 # 关键：保持默认的相对路径输出，方便离线 file:// 直接打开
 # 不要设置 html_baseurl（留空即可）
 
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
+
 html_theme_options = {
-    "light_css_variables": {
-        "color-brand-primary": "#5aa7e0",
-        "color-brand-content": "#2b6cb0",
-        # 可继续调：
-        # "color-background-primary": "#ffffff",
-        # "color-background-secondary": "#f6fbff",
-        # "color-foreground-primary": "#0b2540",
-    },
-    # "dark_css_variables": { ... }  # 如需暗色方案
+    # 顶栏右侧：主题切换 + GitHub/主页等图标（按需）
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    # 右侧“本页目录”
+    "secondary_sidebar_items": ["page-toc"],
+    # 左侧导航展开层级
+    "show_nav_level": 2,       # 初始展开到2级
+    "show_toc_level": 2,       # 右侧目录显示到2级
+    # 颜色（接近 openEuler 风格）
+    "primary_color": "blue",
+    "accent_color": "blue",
 }
+
+# 站点信息（可选）
+html_logo = "_static/logo.png"            # 如果有
+html_favicon = "_static/favicon.ico"      # 如果有
+
+# 自定义样式（放在 _static/css/custom.css）
+html_static_path = ["_static"]
+html_css_files = ["css/custom.css"]
+
+# 打开搜索框（pydata 顶栏自带，会调用 Sphinx 内置搜索）
+# 无需额外插件/JS
+

@@ -1,61 +1,61 @@
-/* 仅在“浅色模式”下应用（Furo 支持 light/dark 切换） */
+/* ======= 浅色模式 ======= */
 :root[data-theme="light"] {
-    /* 主侧边栏（包含左上搜索与左侧目录）整体浅蓝背景 */
-    --my-left-bg: #f3f8ff;         /* 你想要的浅色，可自行改成更浅/更蓝 */
-    --my-left-border: #d7e9ff;     /* 右侧分割线颜色 */
+    --nb-left-bg: #f6f8fb;      /* 左侧背景 */
+    --nb-left-border: #e3e8f0;  /* 分隔线 */
+    --nb-current-bg: #e7f0ff;   /* 当前项底色（浅蓝） */
+    --nb-hover-bg: #eef4ff;     /* 悬停底色 */
+    --nb-brand: #2563eb;        /* 品牌蓝（左条/链接） */
 }
 
-/* 左侧主侧边栏容器（Furo 的 class 名通常如下；如你的版本略有差异，可用 DevTools 看到真实 class，然后微调选择器） */
-.sidebar, .sidebar-container, .sidebar-drawer {
-    background: var(--my-left-bg);
+/* ======= 深色模式 ======= */
+:root[data-theme="dark"] {
+    --nb-left-bg: #0f172a;
+    --nb-left-border: #1f2a44;
+    --nb-current-bg: #1b2a44;
+    --nb-hover-bg: #16233b;
+    --nb-brand: #93c5fd;
 }
 
-/* 左侧与正文之间的分割线（细一点更清爽） */
-.sidebar {
-    border-right: 1px solid var(--my-left-border);
+/* 左侧整栏背景与分隔线（pydata 的侧栏类名） */
+.bd-sidebar-primary {
+    background: var(--nb-left-bg) !important;
+    border-right: 1px solid var(--nb-left-border) !important;
 }
 
-/* 左侧搜索区域底色保持一致（Furo 的搜索块在侧边栏顶端） */
-.sidebar .sidebar-search {
-    background: var(--my-left-bg);
+/* 左侧树导航 hover / current */
+.bd-sidebar-primary .nav .nav {
+    /* 缩进层级时的竖线更柔和（可选） */
+    border-left: 0;
+}
+.bd-sidebar-primary .nav-link:hover {
+    background: var(--nb-hover-bg) !important;
+}
+.bd-sidebar-primary .nav-link.active,
+.bd-sidebar-primary .current > .nav-link {
+    background: var(--nb-current-bg) !important;
+    border-left: 4px solid var(--nb-brand) !important;
+    font-weight: 600;
+    color: inherit;
 }
 
-/* 左侧目录当前项的微调（可选） */
-.toc-tree li.current > a {
-    background: #eaf3ff;
-    border-left: 3px solid #73b3ff;
+/* 右侧页内目录固定样式优化（可选） */
+.bd-sidebar-secondary {
+    border-left: 1px solid var(--nb-left-border);
+    background: transparent;   /* 保持正文区视觉 */
 }
 
-/* 页面内高亮（配合 inpage-search.js） */
-mark.__inpage_hit {
-    background: #ffeb99;           /* 高亮背景 */
-    padding: 0 .1em;
-    border-radius: 2px;
-}
-
-/* 右上浮动的“页面内搜索”输入框样式（也可挪到右侧 toc 栏） */
-#inpage-search-box {
-    position: sticky;              /* 在右侧栏顶部固定 */
-    top: 0.5rem;
-    z-index: 2;
-    background: var(--my-left-bg);
-    padding: .5rem .5rem .6rem .5rem;
-    border: 1px solid var(--my-left-border);
+/* 表格与代码块边框（贴近企业文档风） */
+article .highlight, article pre {
+    border: 1px solid var(--nb-left-border);
     border-radius: 8px;
-    margin-bottom: .8rem;
+}
+article table.docutils {
+    border: 1px solid var(--nb-left-border);
+    border-radius: 8px;
+}
+article table.docutils th, article table.docutils td {
+    border-color: var(--nb-left-border);
 }
 
-/* 输入框本体 */
-#inpage-search-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: .45rem .6rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: .95rem;
-}
-
-/* 右侧 toc 容器的内边距略微拉开，给搜索框让位 */
-.toc-sticky {
-    padding-top: .25rem;
-}
+/* 链接主色统一 */
+a, a:visited { color: var(--nb-brand); }
