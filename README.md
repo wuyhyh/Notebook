@@ -8,6 +8,12 @@
 pip install sphinx myst-parser pydata-sphinx-theme
 ```
 
+如果速度慢使用国内镜像源：
+
+```shell
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ sphinx myst-parser pydata-sphinx-theme 
+```
+
 > 在 macOS 上的 CLion 需要先激活虚拟环境
 > 编辑器打开一个 .py 文件的时候会提示安装一个虚拟解释器环境，安装之后会创建一个 `.venv`目录，然后激活环境并安装包
 >
@@ -15,13 +21,7 @@ pip install sphinx myst-parser pydata-sphinx-theme
 >
 > `pip install sphinx myst-parser pydata-sphinx-theme`
 
-如果速度慢使用国内镜像源：
-
-```shell
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ sphinx myst-parser pydata-sphinx-theme 
-```
-
-构建网页
+构建之前要先激活 python 环境
 
 Python环境的激活与退出：
 
@@ -45,3 +45,5 @@ sphinx-build -b html docs/source site
 文件浏览器上双击 [site/index.html](./site/index.html) 即可离线阅读
 
 ## 项目维护
+
+增加目录和 md 文档，然后新增和修改 `index.rst` 配置文件 
