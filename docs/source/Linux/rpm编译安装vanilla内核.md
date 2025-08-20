@@ -1,7 +1,5 @@
 # 使用 make rpm-pkg 构建并安装内核 RPM 包
 
----
-
 ## 一、准备环境
 
 ### 安装构建依赖
@@ -144,5 +142,3 @@ dnf remove kernel-headers-0:6.16.0+-3.x86_64 \
 ```bash
 dnf remove "kernel*-6.16.0+-3*"
 ```
-
----

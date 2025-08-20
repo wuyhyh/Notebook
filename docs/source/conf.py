@@ -1,10 +1,24 @@
 # -- 基本项 -----------------------------------------------------------------
+from importlib.util import source_hash
+
 project = "蓝焰的notebook"
+
 extensions = [
     "myst_parser",  # 允许使用 Markdown（MyST）
 ]
+
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
+
 myst_enable_extensions = [
-    "linkify", "attrs", "deflist", "tasklist", "colon_fence", "dollarmath"
+    "linkify",  # 自动把 URL 变链接
+    "deflist",
+    "tasklist",
+    "substitution",
+    "colon_fence",  # ::: 提示框/指令围栏
+    "dollarmath",  # $ 数学公式
+    # 需要“属性”功能时，改用下面两个二选一（或都开）
+    # "attrs_block",
+    # "attrs_inline",
 ]
 
 html_theme = "pydata_sphinx_theme"
@@ -15,11 +29,8 @@ html_theme_options = {
     # 右侧“本页目录”
     "secondary_sidebar_items": ["page-toc"],
     # 左侧导航展开层级
-    "show_nav_level": 2,       # 初始展开到2级
-    "show_toc_level": 2,       # 右侧目录显示到2级
-    # 颜色（接近 openEuler 风格）
-    "primary_color": "blue",
-    "accent_color": "blue",
+    "show_nav_level": 2,  # 初始展开到2级
+    "show_toc_level": 2,  # 右侧目录显示到2级
 }
 
 # 站点信息（可选）
