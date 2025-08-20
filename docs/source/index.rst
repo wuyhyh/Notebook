@@ -1,5 +1,4 @@
 蓝焰的notebook
-
 ================
 
 欢迎！这是一个使用 **MyST** 渲染的 Markdown 页面。你可以继续写 Markdown，

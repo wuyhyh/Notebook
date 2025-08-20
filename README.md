@@ -17,7 +17,7 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 ```
 
 > 在 macOS 上构建之前需要先激活虚拟环境
-> 使用 CLion 的编辑器打开一个 .py 文件的时候会提示安装一个虚拟解释器环境，安装之后会创建一个 `.venv`目录
+> 使用 CLion 的编辑器打开一个 [conf.py](./docs/source/conf.py) 文件的时候会提示安装一个虚拟解释器环境，安装之后会创建一个 `.venv`目录
 >
 > 激活环境并安装包:
 >
@@ -34,12 +34,22 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 [build.sh](./build.sh) 会基于当前的 `doc/source` 目录下的文件进行构建
 
 ```shell
-sh build.sh
+./build.sh
 ```
 
 ## 离线阅读文档
 
-文件浏览器上双击 [site/index.html](./site/index.html) 即可离线阅读
+> 一键预览脚本
+> ```text
+> ./preview.sh               # 默认 8000 端口
+> PORT=9000 ./preview.sh     # 自定义端口
+> SITE_DIR=_build/html ./preview.sh   # 如果你把产物放在 _build/html
+> ```
+
+```bash
+./preview.sh
+```
+或者在文件浏览器上双击 [site/index.html](./site/index.html) 即可离线阅读
 
 ## 项目维护
 
