@@ -1,0 +1,13 @@
+# 核心
+sphinx==8.2.3                    # 和你日志一致，稳定
+myst-parser~=4.0                 # MyST 4.x（支持你用到的扩展）
+pydata-sphinx-theme~=0.15        # 与 Sphinx 8 兼容的主题
+
+# MyST 可选依赖（你开启了 linkify）
+linkify-it-py~=2.0               # 让纯文本 URL 自动变链接
+mdit-py-plugins~=0.4             # MyST 用到的一组 Markdown 插件
+
+# Sphinx 基础依赖（加上范围，避免将来大版本突变）
+docutils>=0.21,<0.22
+jinja2>=3.1,<3.2
+pygments>=2.17,<3.0
