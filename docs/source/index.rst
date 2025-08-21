@@ -17,3 +17,9 @@
     :maxdepth: 2
 
     Linux/index
+
+.. toctree::
+    :caption: Bootloader 相关知识
+    :maxdepth: 2
+
+    Bootloader/index
