@@ -1,18 +1,10 @@
 #!/usr/bin/env bash
 # 通用本地备份脚本（Git Bash / Linux / macOS 皆可用）
 
-#./build.sh
-#
-#scp -r site/* root@192.168.79.128:/srv/www/notebook/
-
-
-#!/usr/bin/env bash
-# 通用本地备份 + 部署脚本 (Git Bash / Linux / macOS 均可用)
-
 # === 配置部分 ===
 # 远程服务器配置
 REMOTE_USER="root"                  # 用户名
-REMOTE_HOST="192.168.79.128"        # IP 或域名
+REMOTE_HOST="192.168.1.6"        # IP 或域名
 REMOTE_DIR="/srv/www/notebook/"     # 部署路径
 
 # 本地配置
