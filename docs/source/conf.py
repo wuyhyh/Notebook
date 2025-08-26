@@ -5,7 +5,20 @@ project = "蓝焰的notebook"
 
 extensions = [
     "myst_parser",  # 允许使用 Markdown（MyST）
+    "sphinx_copybutton",
 ]
+
+# 复制按钮应用到哪些代码块（默认就能覆盖大多数情况）
+# 加了 :not(.no-copybutton) 方便你对个别块禁用按钮
+copybutton_selector = "div.highlight pre:not(.no-copybutton)"
+
+# 复制时去掉“提示符”（正则表达式）
+# 覆盖常见的：$、#、>>>、...、PowerShell 的 PS>、以及带虚拟环境/箭头的 zsh 提示
+copybutton_prompt_text = r'^(\s*(\$\s|#\s|>>> |\.\.\. |PS> |\(.+\)\s*➜ |\(.+\)\s*[\w@.-]+[:][^$#>]+[$#] ))'
+copybutton_prompt_is_regexp = True
+
+# 可选：如果你示例里用到反斜杠续行，复制时自动合并成一行
+# copybutton_line_continuation_character = "\\"
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
