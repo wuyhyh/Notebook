@@ -152,3 +152,33 @@ else
    echo "OK: nproc reports $(nproc) logical cores are available"
 fi
 ```
+
+## 使用中科大镜像源
+
+1. 下载列表/校验文件
+
+先手动下载 wget-list-systemd
+
+```text
+wget -c https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/md5sums -O md5sums
+```
+
+2. 把每行 URL 替换为 “USTC 基址 + 文件名”
+
+```text
+sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' \
+wget-list-systemd > wget-list-ustc
+```
+
+3. 下载（可断点续传）
+
+```text
+wget --input-file=wget-list-ustc --continue --directory-prefix="$LFS/sources"
+```
+
+4. 校验
+
+```text
+cp md5sums "$LFS/sources/"
+pushd "$LFS/sources"; md5sum -c md5sums; popd
+```
