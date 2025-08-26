@@ -4,7 +4,7 @@
 
 ---
 
-## 前置条件
+## 0. 前置条件
 
 * 已创建并挂载 **LFS 分区** 到 `/mnt/lfs`，并设置环境变量：
 
@@ -14,7 +14,7 @@
 
 ---
 
-### 1. 准备 `$LFS/sources` 目录
+## 1. 准备 `$LFS/sources` 目录
 
 ```bash
 sudo mkdir -pv $LFS/sources
@@ -25,7 +25,7 @@ sudo chmod -v a+wt $LFS/sources  # sticky + 可写，便于后续下载
 
 ---
 
-### 2. 按官方 *wget-list* 精确下载 + 校验
+## 2. 按官方 *wget-list* 精确下载 + 校验
 
 > **优点**：只下需要的文件；可断点续传；严格对齐书本。这里把列表统一改写为 USTC 镜像直链。
 
@@ -48,7 +48,7 @@ md5sum -c md5sums
 popd
 ```
 
-### 3. 快速判断是否“有缺/有损坏”
+## 3. 快速判断是否“有缺/有损坏”
 
 ```bash
 cd "$LFS/sources"
