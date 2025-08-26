@@ -2,6 +2,62 @@
 
 在 fedora server 42上编译 [LFS](https://lfs.xry111.site/zh_CN/12.3-systemd/)
 
+## yacc is not Bison 的问题
+
+1. 构建包装器
+
+放一个 wrapper 到 /usr/local/bin（推荐）
+
+作为 root 执行：
+
+- 确保 bison 已安装（你已装好，可跳过）
+
+```text
+dnf install -y bison
+```
+
+- 写一个兼容的 yacc 包装脚本
+
+```text
+install -d /usr/local/bin
+cat > /usr/local/bin/yacc <<'EOF'
+#!/bin/sh
+exec bison -y "$@"
+EOF
+chmod +x /usr/local/bin/yacc
+```
+
+- 验证 PATH 与版本
+
+```text
+command -v yacc
+yacc --version   # 应显示 bison 的版本
+```
+
+说明：大多数系统 /usr/local/bin 默认在 /usr/bin 之前，这样 yacc 会先命中你新建的 wrapper。
+
+2. 增加工具搜索路径
+
+问题不在于 wrapper，而是在这行：
+
+```text
+PATH=/usr/bin:/bin
+```
+
+脚本把 PATH 限制成只含 /usr/bin:/bin，把你放在 /usr/local/bin 的 yacc 包装器“屏蔽”掉了，所以检测到的不是 bison（甚至压根找不到
+yacc）。
+
+处理办法：改脚本的 PATH
+
+把脚本前面的 PATH 改成：
+
+```text
+LC_ALL=C
+PATH=/usr/local/bin:/usr/bin:/bin
+```
+
+## 工具版本检测脚本
+
 [version-check.sh](./version-check.sh)
 
 ```bash
