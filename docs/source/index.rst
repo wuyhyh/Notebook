@@ -23,3 +23,9 @@
     :maxdepth: 2
 
     Bootloader/index
+
+.. toctree::
+    :caption: LFS 构建自己的操作系统
+    :maxdepth: 2
+
+    LFS/index
