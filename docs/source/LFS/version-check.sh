@@ -1,10 +1,3 @@
-# 环境检测脚本
-
-在 fedora server 42上编译 [LFS](https://lfs.xry111.site/zh_CN/12.3-systemd/)
-
-[version-check.sh](./version-check.sh)
-
-```bash
 #!/bin/bash
 # A script to list version numbers of critical development tools
 
@@ -95,4 +88,3 @@ if [ "$(nproc)" = "" ]; then
 else
    echo "OK: nproc reports $(nproc) logical cores are available"
 fi
-```
