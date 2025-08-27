@@ -1,6 +1,4 @@
 # -- 基本项 -----------------------------------------------------------------
-from importlib.util import source_hash
-
 project = "蓝焰的notebook"
 
 extensions = [
