@@ -6,6 +6,8 @@
 
 离线用法：直接双击 **site/index.html** 即可在浏览器中阅读和搜索，无需网络。
 
+About :doc:`蓝夜 <lanye>` 是谁？
+
 .. toctree::
     :caption: 安装指南
     :maxdepth: 2
