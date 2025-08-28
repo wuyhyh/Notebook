@@ -1,5 +1,5 @@
 # -- 基本项 -----------------------------------------------------------------
-project = "蓝焰的notebook"
+project = "蓝夜的notebook"
 
 extensions = [
     "myst_parser",  # 允许使用 Markdown（MyST）
