@@ -2,6 +2,33 @@
 
 当 U-Boot 没有实现网络功能时，我们可以通过串口传输新版的 U-Boot对其进行更新。
 
+<a href="../_static/files/fip-all.bin" download="fip-all.bin" class="btn btn-primary">下载 fip-all.bin</a>
+<button class="btn sha-btn" onclick="copySha(this)"> 
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+  </svg>
+  <span>SHA256</span>
+</button>
+
+<script>
+async function copySha(el) {
+  const old = el.innerHTML;
+  const txt = await fetch('../_static/files/fip-all.bin.sha256').then(r=>r.text());
+  const sha = (txt.match(/[0-9a-fA-F]{64}/)||[''])[0];
+  if (!sha) return;
+  try {
+    await navigator.clipboard.writeText(sha);
+  } catch {
+    const ta=document.createElement('textarea');
+    ta.value=sha;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+  }
+  el.innerHTML='✅ 已复制'; setTimeout(()=>{el.innerHTML=old;},1200);
+}
+</script>
+
 串口传 fip-all.bin → 写入 Flash → 校验 → 重启的流程：
 Tera Term 发送 YMODEM；MobaXterm（串口终端）；U-Boot 端用 `loady`（YMODEM）；写 Flash 用板子里已有的 `flashw` 命令
 

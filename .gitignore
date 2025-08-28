@@ -8,4 +8,5 @@ __pycache__/
 
 # Sphinx 默认构建目录（我们用 site/）
 site/
+docs/source/_static/files/
 
