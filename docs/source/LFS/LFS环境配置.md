@@ -157,17 +157,12 @@ fi
 
 1. 下载列表/校验文件
 
-先手动下载 wget-list-systemd
-
-```text
-wget -c https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/md5sums -O md5sums
-```
+先手动下载 wget-list-systemd 和 md5sums
 
 2. 把每行 URL 替换为 “USTC 基址 + 文件名”
 
 ```text
-sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' \
-wget-list-systemd > wget-list-ustc
+sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' wget-list-systemd > wget-list-ustc
 ```
 
 3. 下载（可断点续传）

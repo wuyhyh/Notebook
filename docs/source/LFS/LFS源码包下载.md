@@ -34,18 +34,14 @@ sudo chmod -v a+wt $LFS/sources  # sticky + 可写，便于后续下载
 wget -c -O md5sums https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/md5sums
 
 # 2.2 将列表中的每个 URL 改写为 USTC 的直链： https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/<文件名>
-sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' \
-  wget-list-systemd > wget-list-ustc
+sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' wget-list-systemd > wget-list-ustc
 
 # 2.3 下载（可多次执行，支持断点续传）
-wget --input-file=wget-list-ustc --continue --show-progress \
-     --directory-prefix="$LFS/sources"
+wget --input-file=wget-list-ustc --continue --show-progress --directory-prefix="$LFS/sources"
 
 # 2.4 校验完整性
 cp -v md5sums "$LFS/sources/"
-pushd "$LFS/sources"
-md5sum -c md5sums
-popd
+pushd "$LFS/sources";md5sum -c md5sums;popd
 ```
 
 ## 3. 快速判断是否“有缺/有损坏”
