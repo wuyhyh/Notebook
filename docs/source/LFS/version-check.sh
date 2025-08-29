@@ -5,7 +5,7 @@
 # in ~lfs/.bashrc (section 4.4) as well.
 
 LC_ALL=C 
-PATH=/usr/local/bin:/usr/bin:/bin
+PATH=/usr/bin:/bin
 
 bail() { echo "FATAL: $1"; exit 1; }
 grep --version > /dev/null 2> /dev/null || bail "grep does not work"
