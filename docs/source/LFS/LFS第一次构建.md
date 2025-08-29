@@ -1,6 +1,6 @@
-# 第一次构建
+# LFS 第一次构建
 
-## 1. 构建 Binutils
+## 1. 构建 Binutils-2.44
 
 ```text
 tar -xf binutils-2.44.tar.xz
@@ -29,7 +29,7 @@ time make
 time make install
 ```
 
-## 2. 构建 GCC
+## 2. 构建 GCC-14.2.0 - 第一遍
 
 ```text
 tar -xf gcc-14.2.0.tar.xz
@@ -99,7 +99,7 @@ cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
   $(dirname $($LFS_TGT-gcc -print-libgcc-file-name))/include/limits.h
 ```
 
-## 3. 安装 linux kernel API
+## 3. 安装 Linux-6.13.4 API 头文件
 
 ```text
 tar -xf linux-6.13.4.tar.xz
@@ -114,4 +114,109 @@ make mrproper
 make headers
 find usr/include -type f ! -name '*.h' -delete
 cp -rv usr/include $LFS/usr
+```
+
+## 4. 构建 Glibc-2.41
+
+创建一个 LSB 兼容性符号链接
+
+```text
+case $(uname -m) in
+    i?86)   ln -sfv ld-linux.so.2 $LFS/lib/ld-lsb.so.3
+    ;;
+    x86_64) ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
+            ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
+    ;;
+esac
+```
+
+```text
+cd $LFS/sources
+tar -xf glibc-2.41.tar.xz
+cd glibc-2.41
+```
+
+打补丁
+
+```text
+patch -Np1 -i ../glibc-2.41-fhs-1.patch
+```
+
+```text
+echo "rootsbindir=/usr/sbin" > configparms
+```
+
+```text
+../configure                             \
+      --prefix=/usr                      \
+      --host=$LFS_TGT                    \
+      --build=$(../scripts/config.guess) \
+      --enable-kernel=5.4                \
+      --with-headers=$LFS/usr/include    \
+      --disable-nscd                     \
+      libc_cv_slibdir=/usr/lib
+```
+
+```text
+time make
+```
+
+```text
+time make DESTDIR=$LFS install
+```
+
+改正 ldd 脚本中硬编码的可执行文件加载器路径：
+
+```text
+sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
+```
+
+执行以下命令进行完整性检查：
+
+```text
+echo 'int main(){}' | $LFS_TGT-gcc -xc -
+readelf -l a.out | grep ld-linux
+```
+
+如果一切正常，那么应该没有错误消息，而且最后一行命令应该输出下列格式的内容：
+
+```text
+[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+```
+
+检验步骤顺利完成后，清理测试文件：
+
+```text
+rm -v a.out
+```
+
+## 5. 构建 GCC-14.2.0 中的 Libstdc++
+
+```text
+mkdir -v cpp-build ;cd cpp-build
+```
+
+```text
+../libstdc++-v3/configure           \
+    --host=$LFS_TGT                 \
+    --build=$(../config.guess)      \
+    --prefix=/usr                   \
+    --disable-multilib              \
+    --disable-nls                   \
+    --disable-libstdcxx-pch         \
+    --with-gxx-include-dir=/tools/$LFS_TGT/include/c++/14.2.0
+```
+
+```text
+time make
+```
+
+```text
+time make DESTDIR=$LFS install
+```
+
+移除对交叉编译有害的 libtool 档案文件：
+
+```text
+rm -v $LFS/usr/lib/lib{stdc++{,exp,fs},supc++}.la
 ```
