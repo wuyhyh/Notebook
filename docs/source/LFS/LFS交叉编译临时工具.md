@@ -408,3 +408,46 @@ time make DESTDIR=$LFS install
 rm -v $LFS/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes,sframe}.{a,la}
 ```
 
+## 17. GCC-14.2.0 - 第二遍
+
+在开始构建 GCC 前，记得清除所有覆盖默认优化有关的环境变量
+
+```text
+unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+```
+
+```text
+../configure                                       \
+    --build=$(../config.guess)                     \
+    --host=$LFS_TGT                                \
+    --target=$LFS_TGT                              \
+    LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc      \
+    --prefix=/usr                                  \
+    --with-build-sysroot=$LFS                      \
+    --enable-default-pie                           \
+    --enable-default-ssp                           \
+    --disable-nls                                  \
+    --disable-multilib                             \
+    --disable-libatomic                            \
+    --disable-libgomp                              \
+    --disable-libquadmath                          \
+    --disable-libsanitizer                         \
+    --disable-libssp                               \
+    --disable-libvtv                               \
+    --enable-languages=c,c++
+```
+
+```text
+time make
+```
+
+```text
+time make DESTDIR=$LFS install
+```
+
+运行 cc 可以将选择 C 编译器的权力留给系统管理员：
+
+```text
+ln -sv gcc $LFS/usr/bin/cc
+```
+
