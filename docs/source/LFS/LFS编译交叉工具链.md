@@ -1,13 +1,30 @@
-# LFS 第一次构建
+# LFS 编译交叉工具链
+
+## 0. 软件包构建过程的概要:
+
+> 对于每个软件包：
+>
+> 使用 tar 程序，解压需要构建的软件包。解压软件包时，确认您以用户 lfs 的身份登录。
+>
+> 除了使用 tar 命令解压源码包外，不要使用其他任何将源代码目录树置入工作目录的方法。特别需要注意的是，使用 cp -R
+> 从其他位置复制源代码目录树会破坏其中的时间戳，从而导致构建失败。
+
+> a. 切换到解压源码包时产生的目录。
+>
+> b. 根据指示构建软件包。
+>
+> c. 构建完成后，切换回包含所有源码包的目录。
+>
+> d. 除非另有说明，删除解压出来的目录。
 
 ## 1. 构建 Binutils-2.44
 
 ```text
-tar -xf binutils-2.44.tar.xz
+cd $LFS/sources;tar -xf binutils-2.44.tar.xz;cd binutils-2.44
 ```
 
 ```text
-cd binutils-2.44;mkdir -v build;cd build
+mkdir -v build;cd build
 ```
 
 ```text
@@ -32,11 +49,10 @@ time make install
 ## 2. 构建 GCC-14.2.0 - 第一遍
 
 ```text
-tar -xf gcc-14.2.0.tar.xz
+cd $LFS/sources;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
 ```
 
 ```text
-cd gcc-14.2.0
 tar -xf ../mpfr-4.2.1.tar.xz
 mv -v mpfr-4.2.1 mpfr
 tar -xf ../gmp-6.3.0.tar.xz
@@ -102,8 +118,7 @@ cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
 ## 3. 安装 Linux-6.13.4 API 头文件
 
 ```text
-tar -xf linux-6.13.4.tar.xz
-cd linux-6.13.4
+cd $LFS/sources;tar -xf linux-6.13.4.tar.xz;cd linux-6.13.4
 ```
 
 ```text
@@ -118,6 +133,10 @@ cp -rv usr/include $LFS/usr
 
 ## 4. 构建 Glibc-2.41
 
+```text
+cd $LFS/sources;tar -xf glibc-2.41.tar.xz;cd glibc-2.41
+```
+
 创建一个 LSB 兼容性符号链接
 
 ```text
@@ -130,16 +149,14 @@ case $(uname -m) in
 esac
 ```
 
-```text
-cd $LFS/sources
-tar -xf glibc-2.41.tar.xz
-cd glibc-2.41
-```
-
 打补丁
 
 ```text
 patch -Np1 -i ../glibc-2.41-fhs-1.patch
+```
+
+```text
+mkdir -v build;cd build
 ```
 
 ```text
@@ -192,7 +209,10 @@ rm -v a.out
 
 ## 5. 构建 GCC-14.2.0 中的 Libstdc++
 
+Libstdc++ 是 GCC 源代码的一部分。您应该先解压 GCC 源码包并切换到解压出来的 gcc-14.2.0 目录
+
 ```text
+cd $LFS/sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
 mkdir -v cpp-build ;cd cpp-build
 ```
 
