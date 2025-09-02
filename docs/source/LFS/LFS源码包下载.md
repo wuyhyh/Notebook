@@ -11,8 +11,44 @@
   ```bash
   export LFS=/mnt/lfs
   ```
+## 7.（可选）为后续章节准备基础目录
+
+虽不在本节硬性要求，但建议现在创建：
+
+```bash
+sudo mkdir -pv $LFS/{sources,tools}
+sudo chmod -v a+wt $LFS/sources
+# 按 LFS 习惯在根目录放一个 /tools 链接
+if [ ! -e /tools ]; then sudo ln -sv $LFS/tools /; fi
+```
+
 
 ---
+
+## 4. 使用中科大镜像源
+
+1. 下载列表/校验文件
+
+先手动下载 wget-list-systemd 和 md5sums
+
+2. 把每行 URL 替换为 “USTC 基址 + 文件名”
+
+```text
+sed -E 's|.*/([^/]+)$|https://mirrors.ustc.edu.cn/lfs/lfs-packages/12.3/\1|' wget-list-systemd > wget-list-ustc
+```
+
+3. 下载（可断点续传）
+
+```text
+wget --input-file=wget-list-ustc --continue --directory-prefix="$LFS/sources"
+```
+
+4. 校验
+
+```text
+cp md5sums "$LFS/sources/"
+pushd "$LFS/sources"; md5sum -c md5sums; popd
+```
 
 ## 1. 准备 `$LFS/sources` 目录
 
