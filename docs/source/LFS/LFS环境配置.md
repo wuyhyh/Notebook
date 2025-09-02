@@ -2,6 +2,13 @@
 
 在 fedora server 42上编译 [LFS](https://lfs.xry111.site/zh_CN/12.3-systemd/)
 
+## 安装编译工具
+
+```text
+sudo dnf install ncurses-devel bison flex elfutils-libelf-devel openssl-devel \
+  dwarves perl git gcc make bc zstd xz wget patch texinfo -y
+```
+
 ## yacc is not Bison 的问题
 
 1. 构建包装器
