@@ -11,3 +11,9 @@
     心理建设
     crc32校验程序
     技术地图
+
+.. toctree::
+    :caption: 内核
+    :maxdepth: 2
+
+    kernel/index
