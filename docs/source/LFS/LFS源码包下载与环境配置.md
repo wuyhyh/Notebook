@@ -1,4 +1,4 @@
-# LFS 源码包下载与校验（USTC 镜像）
+# LFS 源码包下载与校验与环境配置
 
 > 目标：将 **Linux From Scratch 12.3** 所需的所有源码包与补丁，下载到 `$LFS/sources`，并完成 `md5sum` 校验，确认无缺漏。
 
@@ -77,3 +77,98 @@ echo "Expect: $req  |  Have: $have"
   ```
 * **断点续传**：`wget -c` 可以反复执行，已下载文件会跳过未再下载；损坏文件会在校验时暴露，重新下载即可。
 * **磁盘空间**：源码+构建缓存建议预留 ≥30–60 GB，更舒适的范围是 80–100 GB。
+
+## 5. 第一次编译前的环境配置
+
+### 5.1 创建有限目录布局
+
+以 root 身份，执行以下命令创建所需的目录布局：
+
+```text
+mkdir -pv $LFS/{etc,var} $LFS/usr/{bin,lib,sbin}
+
+for i in bin lib sbin; do
+ln -sv usr/$i $LFS/$i
+done
+
+case $(uname -m) in
+x86_64) mkdir -pv $LFS/lib64 ;;
+esac
+```
+
+### 5.2 添加 LFS 用户
+
+为了创建新用户，以 root 身份执行以下命令：
+
+```text
+groupadd lfs
+useradd -s /bin/bash -g lfs -m -k /dev/null lfs
+```
+
+### 5.3 $LFS 中所有目录的所有者
+
+将 lfs 设为 $LFS 中所有目录的所有者，使 lfs 对它们拥有完全访问权：
+
+```text
+chown -v lfs $LFS/{usr{,/*},var,etc,tools}
+case $(uname -m) in
+x86_64) chown -v lfs $LFS/lib64 ;;
+esac
+```
+
+### 5.4 配置 bash
+
+为了保证 lfs 用户环境的纯净，检查 /etc/bash.bashrc 是否存在，如果它存在就将它移走
+
+- 以 root 用户身份，运行：
+
+```text
+[ ! -e /etc/bash.bashrc ] || mv -v /etc/bash.bashrc /etc/bash.bashrc.NOUSE
+```
+
+- 使用下面的命令切换用户：
+
+```text
+su - lfs
+```
+
+为了配置一个良好的工作环境，我们为 bash 创建两个新的启动脚本。
+
+- 以 lfs 的身份，执行以下命令，创建一个新的 .bash_profile：
+
+```text
+cat > ~/.bash_profile << "EOF"
+exec env -i HOME=$HOME TERM=$TERM PS1='\u:\w\$ ' /bin/bash
+EOF
+```
+
+- 现在我们创建一个 .bashrc 文件：
+
+```text
+cat > ~/.bashrc << "EOF"
+set +h
+umask 022
+LFS=/mnt/lfs
+LC_ALL=POSIX
+LFS_TGT=$(uname -m)-lfs-linux-gnu
+PATH=/usr/bin
+if [ ! -L /bin ]; then PATH=/bin:$PATH; fi
+PATH=$LFS/tools/bin:$PATH
+CONFIG_SITE=$LFS/usr/share/config.site
+export LFS LC_ALL LFS_TGT PATH CONFIG_SITE
+EOF
+```
+
+- 为了并行编译加快速度，将 MAKEFLAGS 的设置写入 .bashrc 中：
+
+```text
+cat >> ~/.bashrc << "EOF"
+export MAKEFLAGS=-j$(nproc)
+EOF
+```
+
+- 强制 bash shell 读取刚才创建的配置文件：
+
+```text
+source ~/.bash_profile
+```
