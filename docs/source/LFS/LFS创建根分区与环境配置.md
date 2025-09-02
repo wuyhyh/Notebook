@@ -166,18 +166,15 @@ echo 'UUID=<UUID>  /mnt/lfs  ext4  defaults  0  1' | sudo tee -a /etc/fstab
 LFS 全书要求使用变量 `LFS` 指向挂载点。为当前用户持久化：
 
 ```bash
-# 一次性生效（当前 shell）
 export LFS=/mnt/lfs
-
-# 写入登录 shell 配置，持久化
 if ! grep -q '^export LFS=' ~/.bashrc; then
   echo 'export LFS=/mnt/lfs' >> ~/.bashrc
 fi
-# 让其立即生效
 source ~/.bashrc
 ```
 
 - 验证: 应输出 /mnt/lfs
+
 ```text
-echo $LFS        # 
+echo $LFS
 ```
