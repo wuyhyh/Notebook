@@ -1,4 +1,4 @@
-# LFS 环境创建根分区与环境配置
+# LFS 创建根分区与环境配置
 
 在 Fedora Server 42（VMware 虚拟机）环境下上编译 [LFS](https://lfs.xry111.site/zh_CN/12.3-systemd/)
 
