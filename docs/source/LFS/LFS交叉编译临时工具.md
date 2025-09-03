@@ -105,21 +105,7 @@ ln -sv bash $LFS/bin/sh
 解压源码
 
 ```text
-cd $LFS/sources
-tar -xf coreutils-9.6.tar.xz
-cd coreutils-9.6
-```
-
-打补丁（必须在源码目录执行）
-
-```text
-patch -Np1 -i ../coreutils-9.6-i18n-1.patch
-```
-
-打补丁之后会影响文件的时间戳导致 make 错误，因此我们需要用 `touch` 命令修改以下文件的时间戳
-
-```text
-touch aclocal.m4 Makefile.in configure
+cd $LFS/sources;tar -xf coreutils-9.6.tar.xz;cd coreutils-9.6
 ```
 
 ```text
@@ -131,13 +117,7 @@ touch aclocal.m4 Makefile.in configure
 ```
 
 ```text
-time make
-```
-
-这里编译发现补丁不兼容，所以先编译9.6版本，等后面进入系统之后再进行更新
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 将程序移动到它们最终安装时的正确位置。在临时环境中这看似不必要，但一些程序会硬编码它们的位置，因此必须进行这步操作：
@@ -152,7 +132,7 @@ sed -i 's/"1"/"8"/'                    $LFS/usr/share/man/man8/chroot.8
 ## 5. Diffutils-3.11
 
 ```text
-tar -xf diffutils-3.11.tar.xz; cd diffutils-3.11
+cd $LFS/sources;tar -xf diffutils-3.11.tar.xz; cd diffutils-3.11
 ```
 
 ```text
@@ -162,17 +142,13 @@ tar -xf diffutils-3.11.tar.xz; cd diffutils-3.11
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 6. File-5.46
 
 ```text
-tar xf file-5.46.tar.gz;cd file-5.46
+cd $LFS/sources;tar xf file-5.46.tar.gz;cd file-5.46
 ```
 
 宿主系统 file 命令的版本必须和正在构建的软件包相同，才能在构建过程中创建必要的特征数据文件。运行以下命令，构建 file
@@ -210,7 +186,7 @@ rm -v $LFS/usr/lib/libmagic.la
 ## 7. Findutils-4.10.0
 
 ```text
-tar -xf findutils-4.10.0.tar.xz;cd findutils-4.10.0
+cd $LFS/sources;tar -xf findutils-4.10.0.tar.xz;cd findutils-4.10.0
 ```
 
 ```text
@@ -221,17 +197,13 @@ tar -xf findutils-4.10.0.tar.xz;cd findutils-4.10.0
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 8. Gawk-5.3.1
 
 ```text
-tar -xf gawk-5.3.1.tar.xz;cd gawk-5.3.1
+cd $LFS/sources;tar -xf gawk-5.3.1.tar.xz;cd gawk-5.3.1
 ```
 
 首先，确保不安装某些不需要的文件：
@@ -257,7 +229,7 @@ time make DESTDIR=$LFS install
 ## 9. Grep-3.11
 
 ```text
-tar -xf grep-3.11.tar.xz;cd grep-3.11
+cd $LFS/sources;tar -xf grep-3.11.tar.xz;cd grep-3.11
 ```
 
 ```text
@@ -267,17 +239,13 @@ tar -xf grep-3.11.tar.xz;cd grep-3.11
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 10. Gzip-1.13
 
 ```text
-tar -xf gzip-1.13.tar.xz;cd gzip-1.13
+cd $LFS/sources;tar -xf gzip-1.13.tar.xz;cd gzip-1.13
 ```
 
 ```text
@@ -285,17 +253,13 @@ tar -xf gzip-1.13.tar.xz;cd gzip-1.13
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 11. Make-4.4.1
 
 ```text
-tar -xf make-4.4.1.tar.gz;cd make-4.4.1
+cd $LFS/sources;tar -xf make-4.4.1.tar.gz;cd make-4.4.1
 ```
 
 ```text
@@ -306,17 +270,13 @@ tar -xf make-4.4.1.tar.gz;cd make-4.4.1
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 12. Patch-2.7.6
 
 ```text
-tar -xf patch-2.7.6.tar.xz;cd patch-2.7.6
+cd $LFS/sources;tar -xf patch-2.7.6.tar.xz;cd patch-2.7.6
 ```
 
 ```text
@@ -326,14 +286,14 @@ tar -xf patch-2.7.6.tar.xz;cd patch-2.7.6
 ```
 
 ```text
-time make
-```
-
-```text
-time make DESTDIR=$LFS install
+time make;time make DESTDIR=$LFS install
 ```
 
 ## 13. Sed-4.9
+
+```text
+cd $LFS/sources;tar -xf sed-4.9.tar.xz;cd sed-4.9
+```
 
 ```text
 ./configure --prefix=/usr   \
@@ -341,7 +301,15 @@ time make DESTDIR=$LFS install
             --build=$(./build-aux/config.guess)
 ```
 
+```text
+time make;time make DESTDIR=$LFS install
+```
+
 ## 14. Tar-1.35
+
+```text
+cd $LFS/sources;tar -xf tar-1.35.tar.xz;cd tar-1.35
+```
 
 ```text
 ./configure --prefix=/usr                     \
@@ -349,7 +317,15 @@ time make DESTDIR=$LFS install
             --build=$(build-aux/config.guess)
 ```
 
+```text
+time make;time make DESTDIR=$LFS install
+```
+
 ## 15. Xz-5.6.4
+
+```text
+cd $LFS/sources;tar -xf xz-5.6.4.tar.xz;cd xz-5.6.4
+```
 
 ```text
 ./configure --prefix=/usr                     \
@@ -357,6 +333,10 @@ time make DESTDIR=$LFS install
             --build=$(build-aux/config.guess) \
             --disable-static                  \
             --docdir=/usr/share/doc/xz-5.6.4
+```
+
+```text
+time make;time make DESTDIR=$LFS install
 ```
 
 移除对交叉编译有害的 libtool 档案文件：
@@ -368,9 +348,7 @@ rm -v $LFS/usr/lib/liblzma.la
 ## 16. Binutils-2.44 - 第二遍
 
 ```text
-rm -rf binutils-2.44
-tar -xf binutils-2.44.tar.xz
-cd binutils-2.44
+cd $LFS/sources;rm -rf binutils-2.44;tar -xf binutils-2.44.tar.xz;cd binutils-2.44
 ```
 
 绕过这个链接到错误库的问题：
@@ -420,6 +398,10 @@ unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
 ```
 
 ```text
+cd $LFS/sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
+```
+
+```text
 ../configure                                       \
     --build=$(../config.guess)                     \
     --host=$LFS_TGT                                \
@@ -453,4 +435,3 @@ time make DESTDIR=$LFS install
 ```text
 ln -sv gcc $LFS/usr/bin/cc
 ```
-
