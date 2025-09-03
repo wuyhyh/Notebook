@@ -1,14 +1,20 @@
-# LFS第一次编译
+# LFS交叉编译临时工具
 
-使用刚刚编译的**交叉编译工具**，编译工具并安装到最终位置，虽然暂时还不能使用。
+使用刚刚构建的交叉工具链对基本工具进行交叉编译。
+这些工具会被安装到它们的最终位置，但现在还无法使用。
+
+> 本章应该以用户 lfs 身份完成
+
+```text
+su - lfs
+```
 
 ## 1. M4-1.4.19
 
 M4 软件包包含一个宏处理器
 
 ```text
-tar -xf m4-1.4.19.tar.xz
-cd m4-1.4.19
+cd $LFS/sources;tar -xf m4-1.4.19.tar.xz;cd m4-1.4.19
 ```
 
 ```text
@@ -30,7 +36,7 @@ time make DESTDIR=$LFS install
 Ncurses 软件包包含使用时不需考虑终端特性的字符屏幕处理函数库
 
 ```text
-tar -xf ncurses-6.5.tar.gz;cd ncurses-6.5
+cd $LFS/sources;tar -xf ncurses-6.5.tar.gz;cd ncurses-6.5
 ```
 
 首先，运行以下命令，在宿主系统构建“tic”程序：
@@ -73,14 +79,11 @@ sed -e 's/^#if.*XOPEN.*$/#if 1/' \
 ## 3. Bash-5.2.37
 
 ```text
-tar -xf bash-5.2.37.tar.gz;cd bash-5.2.37
+cd $LFS/sources;tar -xf bash-5.2.37.tar.gz;cd bash-5.2.37
 ```
 
 ```text
-./configure --prefix=/usr                      \
-            --build=$(sh support/config.guess) \
-            --host=$LFS_TGT                    \
-            --without-bash-malloc
+./configure --prefix=/usr --build=$(sh support/config.guess) --host=$LFS_TGT --without-bash-malloc
 ```
 
 ```text

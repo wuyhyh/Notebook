@@ -27,6 +27,10 @@ if [ ! -e /tools ]; then sudo ln -sv $LFS/tools /; fi
 
 先手动下载 wget-list-systemd 和 md5sums
 
+<a href="../_static/files/wget-list-systemd" download="wget-list-systemd" class="btn btn-primary">下载 wget-list-systemd</a>
+<a href="../_static/files/md5sums" download="md5sums" class="btn btn-primary">下载 md5sums</a>
+
+
 ### 2.2 把每行 URL 替换为 “USTC 基址 + 文件名”
 
 ```text
