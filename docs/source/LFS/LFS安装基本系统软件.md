@@ -318,11 +318,331 @@ Bzip2 软件包包含用于压缩和解压缩文件的程序。
 cd /sources;tar -xf bzip2-1.0.8.tar.gz;cd bzip2-1.0.8
 ```
 
+安装 Bzip2
+应用一个补丁，以安装该软件包的文档：
 
+```text
+patch -Np1 -i ../bzip2-1.0.8-install_docs-1.patch
+```
 
+以下命令保证安装的符号链接是相对的：
 
+```text
+sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+```
 
+确保手册页被安装到正确位置：
 
+```text
+sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+```
+
+执行以下命令，准备编译 Bzip2：
+
+```text
+make -f Makefile-libbz2_so
+make clean
+```
+
+编译并测试该软件包：
+
+```text
+time make
+```
+
+安装软件包中的程序：
+
+```text
+make PREFIX=/usr install
+```
+
+安装共享库：
+
+```text
+cp -av libbz2.so.* /usr/lib
+ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
+```
+
+安装链接到共享库的 bzip2 二进制程序到 /bin 目录，并将两个和 bzip2 完全相同的文件替换成符号链接：
+
+```text
+cp -v bzip2-shared /usr/bin/bzip2
+for i in /usr/bin/{bzcat,bunzip2}; do
+ln -sfv bzip2 $i
+done
+```
+
+删除无用的静态库：
+
+```text
+rm -fv /usr/lib/libbz2.a
+```
+
+## 6. Xz-5.6.4
+
+Xz 软件包包含文件压缩和解压缩工具，它能够处理 lzma 和新的 xz 压缩文件格式。
+使用 xz 压缩文本文件，可以得到比传统的 gzip 或 bzip2 更好的压缩比。
+
+```text
+cd /sources;rm -rf xz-5.6.4;tar -xf xz-5.6.4.tar.xz;cd xz-5.6.4
+```
+
+准备编译 Xz：
+
+```text
+./configure --prefix=/usr    \
+--disable-static \
+--docdir=/usr/share/doc/xz-5.6.4
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 7. Lz4-1.10.0
+
+Lz4 是一种无损压缩算法，其压缩速率可达每 CPU 核心 500 MB/s。
+
+它的优势是解压缩非常快，速率高达每 CPU 核心若干 GB/s。
+Lz4 可以和 Zstandard 共同使用以达到更高的压缩速率。
+
+安装 Lz4
+
+```text
+cd /sources;tar -xf lz4-1.10.0.tar.gz;cd lz4-1.10.0
+```
+
+编译该软件包：
+
+```text
+time make BUILD_STATIC=no PREFIX=/usr
+```
+
+运行命令以测试编译结果：
+
+```text
+make -j1 check
+```
+
+安装该软件包：
+
+```text
+make BUILD_STATIC=no PREFIX=/usr install
+```
+
+## 8. Zstd-1.5.7
+
+Zstandard 是一种实时压缩算法，提供了较高的压缩比。
+
+它具有很宽的压缩比/速度权衡范围，同时支持具有非常快速的解压缩。
+
+安装 Zstd
+
+```text
+cd /sources;tar -xf zstd-1.5.7.tar.gz;cd zstd-1.5.7
+```
+
+编译该软件包：
+
+```text
+time make prefix=/usr
+```
+
+> 注意
+> 在输出的测试结果中，可能会出现 'failed'。
+>
+> 这是正常的，只有 'FAIL' 才表示测试失败。该软件包的测试应该能够全部通过。
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make prefix=/usr install
+```
+
+删除静态库：
+
+```text
+rm -v /usr/lib/libzstd.a
+```
+
+## 9. File-5.46
+
+File 软件包包含用于确定给定文件类型的工具。
+
+安装 File
+
+```text
+cd /sources;rm -rf file-5.46;tar -xf file-5.46.tar.gz;cd file-5.46
+```
+
+准备编译 File：
+
+```text
+./configure --prefix=/usr
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 10. Readline-8.2.13
+
+Readline 软件包包含一些提供命令行编辑和历史记录功能的库。
+
+安装 Readline
+
+```text
+cd /sources;tar -xf readline-8.2.13.tar.gz;cd readline-8.2.13
+```
+
+重新安装 Readline 会导致旧版本的库被重命名为 <库名称>.old。这一般不是问题，但某些情况下会触发 ldconfig 的一个链接
+bug。运行下面的两条 sed 命令防止这种情况：
+
+```text
+sed -i '/MV.*old/d' Makefile.in
+sed -i '/{OLDSUFF}/c:' support/shlib-install
+```
+
+下面防止在共享库中硬编码库文件搜索路径 (rpath)。
+该软件包在安装到标准位置时并不需要 rpath，而且 rpath
+在一些情况下会产生我们不希望的副作用，甚至导致安全问题：
+
+```text
+sed -i 's/-Wl,-rpath,[^ ]*//' support/shobj-conf
+```
+
+准备编译 Readline：
+
+```text
+./configure --prefix=/usr    \
+--disable-static \
+--with-curses    \
+--docdir=/usr/share/doc/readline-8.2.13
+```
+
+编译该软件包：
+
+```text
+time make SHLIB_LIBS="-lncursesw"
+```
+
+该软件包不包含测试套件。
+
+安装该软件包：
+
+```text
+make install
+```
+
+安装该软件包的文档：
+
+```text
+install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.2.13
+```
+
+## 11. M4-1.4.19
+
+M4 软件包包含一个宏处理器。
+
+安装 M4
+
+```text
+cd /sources;rm -rf m4-1.4.19;tar -xf m4-1.4.19.tar.xz;cd m4-1.4.19
+```
+
+准备编译 M4：
+
+```text
+./configure --prefix=/usr
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 12. Bc-7.0.3
+
+Bc 软件包包含一个任意精度数值处理语言。
+
+安装 Bc
+
+```text
+cd /sources;tar -xf bc-7.0.3.tar.xz;cd bc-7.0.3
+```
+
+准备编译 Bc：
+
+```text
+CC=gcc ./configure --prefix=/usr -G -O3 -r
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+为了测试 bc，运行：
+
+```text
+make test
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 13. 
 
 
 
