@@ -208,7 +208,7 @@ Libstdc++ 是 GCC 源代码的一部分。您应该先解压 GCC 源码包并切
 
 ```text
 cd $LFS/sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
-mkdir -v cpp-build ;cd cpp-build
+mkdir -v cpp-build;cd cpp-build
 ```
 
 ```text

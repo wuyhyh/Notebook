@@ -9,4 +9,10 @@ LFS 构建自己的操作系统
     LFS编译交叉工具链
     LFS交叉编译临时工具
     LFS进入chroot环境
-    LFS虚拟内核文件系统
+
+.. toctree::
+    :caption: LFS 理论知识
+    :maxdepth: 2
+
+    LFS_Background/index
+
