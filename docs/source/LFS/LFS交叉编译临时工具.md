@@ -391,14 +391,47 @@ rm -v $LFS/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes,sframe}.{a,la}
 
 ## 17. GCC-14.2.0 - 第二遍
 
-在开始构建 GCC 前，记得清除所有覆盖默认优化有关的环境变量
-
 ```text
-unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+cd $LFS/sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
 ```
 
 ```text
-cd $LFS/sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
+tar -xf ../mpfr-4.2.1.tar.xz
+mv -v mpfr-4.2.1 mpfr
+tar -xf ../gmp-6.3.0.tar.xz
+mv -v gmp-6.3.0 gmp
+tar -xf ../mpc-1.3.1.tar.gz
+mv -v mpc-1.3.1 mpc
+```
+
+在 x86_64 上构建时，修改存放 64 位库的默认路径为 “lib”:
+
+```text
+case $(uname -m) in
+x86_64)
+sed -e '/m64=/s/lib64/lib/' \
+-i.orig gcc/config/i386/t-linux64
+;;
+esac
+```
+
+覆盖 libgcc 和 libstdc++ 头文件的构建规则，以允许在构建它们时启用 POSIX 线程支持：
+
+```text
+sed '/thread_header =/s/@.*@/gthr-posix.h/' \
+-i libgcc/Makefile.in libstdc++-v3/include/Makefile.in
+```
+
+再次创建一个独立的构建目录：
+
+```text
+mkdir -v build;cd build
+```
+
+在开始构建 GCC 前，记得清除所有覆盖默认优化开关的环境变量
+
+```text
+unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
 ```
 
 ```text
