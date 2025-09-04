@@ -1,4 +1,4 @@
-# LFS交叉编译临时工具
+# LFS 交叉编译临时工具
 
 使用刚刚构建的交叉工具链对基本工具进行交叉编译。
 这些工具会被安装到它们的最终位置，但现在还无法使用。
@@ -7,6 +7,25 @@
 
 ```text
 su - lfs
+```
+
+> 检查环境
+> ```text
+> echo "$LFS"            # 应为 /mnt/lfs
+> echo "$LFS_TGT"        # 形如 x86_64-lfs-linux-gnu
+> echo "$PATH"           # 必须以 /mnt/lfs/tools/bin 开头
+> command -v "$LFS_TGT-gcc"   # 应指向 /mnt/lfs/tools/bin/…-gcc
+> "$LFS_TGT-gcc" --version    # 前缀里能看到 /mnt/lfs/tools
+> type -a gcc                 # 正常是 /usr/bin/gcc（宿主用来编 mkbuiltins 之类）
+>```
+
+```text
+echo "$LFS"            
+echo "$LFS_TGT"        
+echo "$PATH"           
+command -v "$LFS_TGT-gcc"   
+"$LFS_TGT-gcc" --version    
+type -a gcc                 
 ```
 
 ## 1. M4-1.4.19
@@ -78,17 +97,52 @@ sed -e 's/^#if.*XOPEN.*$/#if 1/' \
 
 ## 3. Bash-5.2.37
 
+### 3.1 解压代码并配置
+
 ```text
 cd $LFS/sources;tar -xf bash-5.2.37.tar.gz;cd bash-5.2.37
 ```
 
 ```text
-./configure --prefix=/usr --build=$(sh support/config.guess) --host=$LFS_TGT --without-bash-malloc
+./configure --prefix=/usr                      \
+            --build=$(sh support/config.guess) \
+            --host=$LFS_TGT                    \
+            --without-bash-malloc
 ```
 
+### 3.2 覆盖构建期变量
+
+这里因为 GCC 15 兼容 C23 版本会导致 builtins编译失败，因为 builtins 中存在一些 K&R 风格的旧代码。
+
+在 已 configure 完 的目录里直接覆盖 构建期变量，先单独把 mkbuiltins 编出来，再编其余目标：
+
+#### 3.2.1 先编译 builtins
+
+修改 builtins 的 Makefile:
+去掉 -DCROSS_COMPILING，补上构建期需要的宏和标准
+
 ```text
-time make
+sed -i 's/^CFLAGS_FOR_BUILD = .*/CFLAGS_FOR_BUILD = -g -std=gnu17/' builtins/Makefile
+sed -i 's/^CPPFLAGS_FOR_BUILD = .*/CPPFLAGS_FOR_BUILD = -DPROTOTYPES=1 -D__PROTOTYPES=1 -DHAVE_STDARG_H=1/' builtins/Makefile
+make -C builtins clean
+make -C builtins V=1 mkbuiltins
 ```
+
+> **说明**
+>
+> 我们**只改“构建期”**变量（*_FOR_BUILD），不影响目标端（仍由 $LFS_TGT-gcc 构建）。
+>
+> -std=gnu17 能避开 GCC 14/15 的 C23 严格原型语义引发的冲突。
+>
+> -DPROTOTYPES=1 -DHAVE_STDARG_H=1 让兼容宏走“有原型”分支，和调用保持一致。
+
+#### 3.2.2 编译整个 bash
+
+```text
+time make V=1
+```
+
+### 3.3 安装
 
 ```text
 time make DESTDIR=$LFS install
