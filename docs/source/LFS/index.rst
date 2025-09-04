@@ -9,6 +9,7 @@ LFS 构建自己的操作系统
     LFS编译交叉工具链
     LFS交叉编译临时工具
     LFS进入chroot并构建其他临时工具
+    LFS安装基本系统软件
 
 .. toctree::
     :caption: LFS 理论知识
