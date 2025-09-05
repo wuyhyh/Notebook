@@ -792,4 +792,162 @@ mv -v /usr/share/doc/openssl /usr/share/doc/openssl-3.4.1
 cp -vfr doc/* /usr/share/doc/openssl-3.4.1
 ```
 
-## 47. 
+## 47. Elfutils-0.192 中的 Libelf
+
+Libelf 是一个处理 ELF (可执行和可链接格式) 文件的库。
+
+Libelf 是 elfutils-0.192 软件包的一部分。请使用 elfutils-0.192.tar.bz2 作为源代码包。
+
+```text
+cd /sources;tar -xf elfutils-0.192.tar.bz2;cd elfutils-0.192
+```
+
+准备编译 Libelf：
+
+```text
+./configure --prefix=/usr                \
+            --disable-debuginfod         \
+            --enable-libdebuginfod=dummy
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+只安装 Libelf：
+
+```text
+make -C libelf install
+install -vm644 config/libelf.pc /usr/lib/pkgconfig
+rm /usr/lib/libelf.a
+```
+
+## 48. Libffi-3.4.7
+
+Libffi 库提供一个可移植的高级编程接口，用于处理不同调用惯例。这允许程序在运行时调用任何给定了调用接口的函数。
+
+FFI 是 Foreign Function Interface (跨语言函数接口) 的缩写。
+FFI 允许使用某种编程语言编写的程序调用其他语言编写的程序。
+
+特别地，Libffi 为 Perl 或 Python 等解释器提供使用 C 或 C++ 编写的共享库中子程序的能力。
+
+```text
+cd /sources;tar -xf libffi-3.4.7.tar.gz;cd libffi-3.4.7
+```
+
+准备编译 Libffi：
+
+```text
+./configure --prefix=/usr          \
+            --disable-static       \
+            --with-gcc-arch=native
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 49. Python-3.13.2
+
+Python 3 软件包包含 Python 开发环境。
+
+它被用于面向对象编程，编写脚本，为大型程序建立原型，或者开发完整的应用。
+
+Python 是一种解释性的计算机语言。
+
+```text
+cd /sources;rm -rf Python-3.13.2;tar -xf Python-3.13.2.tar.xz;cd Python-3.13.2
+```
+
+准备编译 Python：
+
+```text
+./configure --prefix=/usr        \
+            --enable-shared      \
+            --with-system-expat  \
+            --enable-optimizations
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行测试套件，但是将每个单项测试的最长运行时间限制为 2 分钟：
+
+```text
+make test TESTOPTS="--timeout 120"
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+应该忽略关于 pip3 新版本的警告。如果您不想看到这些警告，可以执行以下命令，创建配置文件，以禁止这些警告：
+
+```text
+cat > /etc/pip.conf << EOF
+[global]
+root-user-action = ignore
+disable-pip-version-check = true
+EOF
+```
+
+如果需要的话，安装预先格式化的文档：
+
+```text
+install -v -dm755 /usr/share/doc/python-3.13.2/html
+
+tar --strip-components=1  \
+    --no-same-owner       \
+    --no-same-permissions \
+    -C /usr/share/doc/python-3.13.2/html \
+    -xvf ../python-3.13.2-docs-html.tar.bz2
+```
+
+## 50. Flit-Core-3.11.0
+
+Flit-core 是 Flit (一个用于简单的 Python 模块的打包工具) 中用于为发行版进行构建的组件。
+
+```text
+cd /sources;tar -xf flit_core-3.11.0.tar.gz;cd flit_core-3.11.0
+```
+
+构建该软件包：
+
+```text
+pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
+```
+
+安装该软件包：
+
+```text
+pip3 install --no-index --find-links dist flit_core
+```
+
+
