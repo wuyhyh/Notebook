@@ -12,8 +12,18 @@ copybutton_selector = "div.highlight pre:not(.no-copybutton)"
 
 # 复制时去掉“提示符”（正则表达式）
 # 覆盖常见的：$、#、>>>、...、PowerShell 的 PS>、以及带虚拟环境/箭头的 zsh 提示
-copybutton_prompt_text = r'^(\s*(\$\s|#\s|>>> |\.\.\. |PS> |\(.+\)\s*➜ |\(.+\)\s*[\w@.-]+[:][^$#>]+[$#] ))'
+# 复制时去掉“提示符”（不再把 # 当提示符）
 copybutton_prompt_is_regexp = True
+copybutton_prompt_text = (
+    r'^\s*('
+    r'\$\s'                # 普通用户的 $ 提示符
+    r'|>>> '               # Python 交互式
+    r'|\.\.\. '            # Python 续行
+    r'|PS> '               # PowerShell
+    r'|\(.+\)\s*➜ '        # 某些 zsh/oh-my-zsh 主题
+    r'|\(.+\)\s*[\w@.-]+:[^$>]+[$] '  # 仅去掉以 $ 结尾的路径提示符（不再匹配 #）
+    r')'
+)
 
 # 可选：如果你示例里用到反斜杠续行，复制时自动合并成一行
 # copybutton_line_continuation_character = "\\"
