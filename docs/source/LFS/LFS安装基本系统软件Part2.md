@@ -1,5 +1,298 @@
 # LFS 安装基本系统软件 Part2
 
+## 26. Shadow-4.17.3
+
+Shadow 软件包包含安全地处理密码的程序。
+
+### 26.1 安装 Shadow
+
+```text
+cd /sources;tar -xf shadow-4.17.3.tar.xz;cd shadow-4.17.3
+```
+
+禁止该软件包安装 groups 程序和它的手册页，因为 Coreutils 会提供更好的版本。
+
+```text
+sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+```
+
+不使用默认的 crypt 加密方法，使用安全程度高很多的 YESCRYPT 算法加密密码
+
+```text
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
+    -e 's:/var/spool/mail:/var/mail:'                   \
+    -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                  \
+    -i etc/login.defs
+```
+
+准备编译 Shadow：
+
+```text
+touch /usr/bin/passwd
+./configure --sysconfdir=/etc   \
+            --disable-static    \
+            --with-{b,yes}crypt \
+            --without-libbsd    \
+            --with-group-name-max-length=32
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+该软件包不包含测试套件。
+
+安装该软件包：
+
+```text
+make exec_prefix=/usr install
+make -C man install-man
+```
+
+### 26.2 配置 Shadow
+
+该软件包包含用于添加、修改、删除用户和组，设定和修改它们的密码，以及进行其他管理任务的工具。
+
+如果要对用户密码启用 Shadow 加密，执行以下命令：
+
+```text
+pwconv
+```
+
+如果要对组密码启用 Shadow 加密，执行：
+
+```text
+grpconv
+```
+
+其次，为了修改默认参数，必须创建 /etc/default/useradd 文件，并定制其内容，以满足您的特定需要。使用以下命令创建它：
+
+```text
+mkdir -p /etc/default
+useradd -D --gid 999
+```
+
+如果您不希望 useradd 创建邮箱文件，执行以下命令：
+
+```text
+sed -i '/MAIL/s/yes/no/' /etc/default/useradd
+```
+
+### 26.3 设定根用户密码
+
+为用户 root 选择一个密码，并执行以下命令设定它：
+
+```text
+passwd root
+```
+
+## 27. GCC-14.2.0
+
+GCC 软件包包含 GNU 编译器集合，其中有 C 和 C++ 编译器。
+安装 GCC
+
+```text
+cd /sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
+```
+
+在 x86_64 上构建时，修改存放 64 位库的默认路径为 “lib”:
+
+```text
+case $(uname -m) in
+x86_64)
+sed -e '/m64=/s/lib64/lib/' \
+-i.orig gcc/config/i386/t-linux64
+;;
+esac
+```
+
+GCC 文档建议在一个新建的目录中构建 GCC：
+
+```text
+mkdir -v build;cd build
+```
+
+准备编译 GCC：
+
+```text
+../configure --prefix=/usr            \
+             LD=ld                    \
+             --enable-languages=c,c++ \
+             --enable-default-pie     \
+             --enable-default-ssp     \
+             --enable-host-pie        \
+             --disable-multilib       \
+             --disable-bootstrap      \
+             --disable-fixincludes    \
+             --with-system-zlib
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+> 在本节中，GCC 的测试套件十分重要，但需要消耗较长的时间。
+
+万一宿主系统的栈空间限制较为严格，我们需要手工将栈空间的硬上限设为无限大
+
+```text
+ulimit -s -H unlimited
+```
+
+现在移除或修复若干已知会失败的测试：
+
+```text
+sed -e '/cpython/d'               -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
+sed -e 's/no-pic /&-no-pie /'     -i ../gcc/testsuite/gcc.target/i386/pr113689-1.c
+sed -e 's/300000/(1|300000)/'     -i ../libgomp/testsuite/libgomp.c-c++-common/pr109062.c
+sed -e 's/{ target nonpic } //' \
+    -e '/GOTPCREL/d'              -i ../gcc/testsuite/gcc.target/i386/fentryname3.c
+```
+
+以非特权用户身份测试编译结果，但出错时继续执行其他测试：
+
+```text
+chown -R tester .
+su tester -c "PATH=$PATH make -k check"
+```
+
+输入以下命令提取测试结果的摘要：
+
+```text
+../contrib/test_summary
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+GCC 构建目录目前属于用户 tester，导致安装的头文件目录 (及其内容) 具有不正确的所有权。将所有者修改为 root 用户和组：
+
+```text
+chown -v -R root:root \
+/usr/lib/gcc/$(gcc -dumpmachine)/14.2.0/include{,-fixed}
+```
+
+创建一个 FHS 因 “历史原因” 要求的符号链接。
+
+```text
+ln -svr /usr/bin/cpp /usr/lib
+```
+
+许多软件包使用 cc 这一名称调用 C 编译器。
+在第二遍的 GCC 中我们已经将 cc 创建为符号链接，这里将其手册页也创建为符号链接：
+
+```text
+ln -sv gcc.1 /usr/share/man/man1/cc.1
+```
+
+创建一个兼容性符号链接，以支持在构建程序时使用链接时优化 (LTO)：
+
+```text
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/14.2.0/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+```
+
+现在最终的工具链已经就位，重要的是再次确认编译和链接像我们期望的一样正常工作。为此，进行下列完整性检查：
+
+```text
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+```
+
+> 上述命令不应该出现错误，最后一行命令输出的结果应该 (不同平台的动态链接器名称可能不同) 是：
+>
+>    `[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]`
+
+下面确认我们在使用正确的启动文件：
+
+```text
+grep -E -o '/usr/lib.*/S?crt[1in].*succeeded' dummy.log
+```
+
+> 以上命令应该输出：
+>```text
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/Scrt1.o succeeded
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crti.o succeeded
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crtn.o succeeded
+>```
+
+确认编译器能正确查找头文件：
+
+```text
+grep -B4 '^ /usr/include' dummy.log
+```
+
+> 该命令应当输出：
+>```text
+>    #include <...> search starts here:
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include
+>    /usr/local/include
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include-fixed
+>    /usr/include
+>```
+
+下一步确认新的链接器使用了正确的搜索路径：
+
+```text
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+```
+
+> 那些包含 '-linux-gnu' 的路径应该忽略，除此之外，以上命令应该输出：
+>```text
+>    SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+>    SEARCH_DIR("/usr/local/lib64")
+>    SEARCH_DIR("/lib64")
+>    SEARCH_DIR("/usr/lib64")
+>    SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib")
+>    SEARCH_DIR("/usr/local/lib")
+>    SEARCH_DIR("/lib")
+>    SEARCH_DIR("/usr/lib");
+>```
+
+之后确认我们使用了正确的 libc：
+
+```text
+grep "/lib.*/libc.so.6 " dummy.log
+```
+
+> 以上命令应该输出：
+>
+>    attempt to open /usr/lib/libc.so.6 succeeded
+
+确认 GCC 使用了正确的动态链接器：
+
+```text
+grep found dummy.log
+```
+
+> 以上命令应该输出 (不同平台的动态链接器名称可能不同):
+>
+>    found ld-linux-x86-64.so.2 at /usr/lib/ld-linux-x86-64.so.2
+
+在确认一切工作良好后，删除测试文件：
+
+```text
+rm -v dummy.c a.out dummy.log
+```
+
+最后移动一个位置不正确的文件：
+
+```text
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+```
+
 ## 28. Ncurses-6.5
 
 Ncurses 软件包包含使用时不需考虑终端特性的字符屏幕处理函数库。
@@ -949,5 +1242,3 @@ pip3 wheel -w dist --no-cache-dir --no-build-isolation --no-deps $PWD
 ```text
 pip3 install --no-index --find-links dist flit_core
 ```
-
-
