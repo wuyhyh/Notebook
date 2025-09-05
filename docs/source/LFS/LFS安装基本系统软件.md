@@ -21,12 +21,12 @@ else
 mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 chroot "$LFS" /usr/bin/env -i   \
-HOME=/root                  \
-TERM="$TERM"                \
-PS1='(lfs chroot) \u:\w\$ ' \
-PATH=/usr/bin:/usr/sbin     \
-MAKEFLAGS="-j$(nproc)"      \
-TESTSUITEFLAGS="-j$(nproc)" \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='(lfs chroot) \u:\w\$ ' \
+    PATH=/usr/bin:/usr/sbin     \
+    MAKEFLAGS="-j$(nproc)"      \
+    TESTSUITEFLAGS="-j$(nproc)" \
 /bin/bash --login
 ```
 
@@ -94,12 +94,12 @@ echo "rootsbindir=/usr/sbin" > configparms
 准备编译 Glibc：
 
 ```text
-../configure --prefix=/usr               \
---disable-werror                         \
---enable-kernel=5.4                      \
---enable-stack-protector=strong          \
---disable-nscd                           \
-libc_cv_slibdir=/usr/lib
+../configure --prefix=/usr                            \
+             --disable-werror                         \
+             --enable-kernel=5.4                      \
+             --enable-stack-protector=strong          \
+             --disable-nscd                           \
+             libc_cv_slibdir=/usr/lib
 ```
 
 编译
@@ -115,6 +115,12 @@ Glibc 的测试套件十分关键。在任何情况下都不要跳过它。
 
 ```text
 time make check
+```
+
+修改 Makefile，跳过一个过时的，对于现代的 Glibc 构型会失败的完整性检查：
+
+```text
+sed '/test-installation/s@$(PERL)@echo not running@' -i ../Makefile
 ```
 
 安装该软件包：
@@ -397,8 +403,8 @@ cd /sources;rm -rf xz-5.6.4;tar -xf xz-5.6.4.tar.xz;cd xz-5.6.4
 
 ```text
 ./configure --prefix=/usr    \
---disable-static \
---docdir=/usr/share/doc/xz-5.6.4
+            --disable-static \
+            --docdir=/usr/share/doc/xz-5.6.4
 ```
 
 编译该软件包：
@@ -555,9 +561,9 @@ sed -i 's/-Wl,-rpath,[^ ]*//' support/shobj-conf
 
 ```text
 ./configure --prefix=/usr    \
---disable-static \
---with-curses    \
---docdir=/usr/share/doc/readline-8.2.13
+            --disable-static \
+            --with-curses    \
+            --docdir=/usr/share/doc/readline-8.2.13
 ```
 
 编译该软件包：
@@ -648,7 +654,345 @@ make test
 make install
 ```
 
-## 13. 
+## 13. Flex-2.6.4
+
+Flex 软件包包含一个工具，用于生成在文本中识别模式的程序。
+
+安装 Flex
+
+```text
+cd /sources;tar -xf flex-2.6.4.tar.gz;cd flex-2.6.4
+```
+
+准备编译 Flex：
+
+```text
+./configure --prefix=/usr                      \
+            --docdir=/usr/share/doc/flex-2.6.4 \
+            --disable-static
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+个别程序还不知道 flex，并试图去运行它的前身 lex。
+为了支持这些程序，创建一个名为 lex 的符号链接，它运行 flex 并启动其模拟 lex 的模式，
+同时将 lex 的手册页也创建为符号链接：
+
+```text
+ln -sv flex   /usr/bin/lex
+ln -sv flex.1 /usr/share/man/man1/lex.1
+```
+
+## 14. Tcl-8.6.16
+
+Tcl 软件包包含工具命令语言，它是一个可靠的通用脚本语言。Expect 软件包是用 Tcl (读作“tickle”) 编写的。
+
+安装 Tcl
+
+```text
+cd /sources;tar -xf tcl8.6.16-src.tar.gz;cd tcl8.6.16-src
+```
+
+为了支持 Binutils，GCC，以及其他一些软件包测试套件的运行，需要安装这个软件包和接下来的两个 (Expect 与 DejaGNU)。
+
+为了测试目的安装三个软件包看似浪费，但是只有运行了测试，才能放心地确定多数重要工具可以正常工作，即使测试不是必要的。
+
+我们必须安装这些软件包，才能执行本章中的测试套件。
+
+准备编译 Tcl：
+
+```text
+SRCDIR=$(pwd)
+cd unix
+./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --disable-rpath
+```
+
+构建该软件包：
+
+```text
+make
+
+sed -e "s|$SRCDIR/unix|/usr/lib|" \
+    -e "s|$SRCDIR|/usr/include|"  \
+    -i tclConfig.sh
+
+sed -e "s|$SRCDIR/unix/pkgs/tdbc1.1.10|/usr/lib/tdbc1.1.10|" \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10/generic|/usr/include|"    \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10/library|/usr/lib/tcl8.6|" \
+    -e "s|$SRCDIR/pkgs/tdbc1.1.10|/usr/include|"            \
+    -i pkgs/tdbc1.1.10/tdbcConfig.sh
+
+sed -e "s|$SRCDIR/unix/pkgs/itcl4.3.2|/usr/lib/itcl4.3.2|" \
+    -e "s|$SRCDIR/pkgs/itcl4.3.2/generic|/usr/include|"    \
+    -e "s|$SRCDIR/pkgs/itcl4.3.2|/usr/include|"            \
+    -i pkgs/itcl4.3.2/itclConfig.sh
+
+unset SRCDIR
+```
+
+`make`命令之后的若干“sed”命令从配置文件中删除构建目录，并用安装目录替换它们
+
+运行命令以测试编译结果：
+
+```text
+make test
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+将安装好的库加上写入权限，以便将来移除调试符号：
+
+```text
+chmod -v u+w /usr/lib/libtcl8.6.so
+```
+
+安装 Tcl 的头文件。下一个软件包 Expect 需要它们才能构建。
+
+```text
+make install-private-headers
+```
+
+创建一个必要的符号链接：
+
+```text
+ln -sfv tclsh8.6 /usr/bin/tclsh
+```
+
+重命名一个与 Perl 手册页文件名冲突的手册页：
+
+```text
+mv /usr/share/man/man3/{Thread,Tcl_Thread}.3
+```
+
+如果需要，可以运行以下命令安装文档：
+
+```text
+cd ..
+tar -xf ../tcl8.6.16-html.tar.gz --strip-components=1
+mkdir -v -p /usr/share/doc/tcl-8.6.16
+cp -v -r  ./html/* /usr/share/doc/tcl-8.6.16
+```
+
+## 15 Expect-5.45.4
+
+Expect 软件包包含通过脚本控制的对话，自动化 telnet，ftp，passwd，fsck，rlogin，以及 tip 等交互应用的工具。Expect
+对于测试这类程序也很有用，它简化了这类通过其他方式很难完成的工作。DejaGnu 框架是使用 Expect 编写的。
+
+安装 Expect
+
+```text
+cd /sources;tar -xf expect5.45.4.tar.gz;cd expect5.45.4
+```
+
+Expect 需要伪终端 (PTY) 才能正常工作。进行简单测试以验证 PTY 是否在 chroot 环境中正常工作：
+
+```text
+python3 -c 'from pty import spawn; spawn(["echo", "ok"])'
+```
+
+该命令应该输出 ok。如果该命令反而输出 OSError: out of pty devices，说明 PTY 在当前环境无法正常工作。
+
+此时需要退出 chroot 环境，再次阅读第 7.3 节 “准备虚拟内核文件系统”，并确认 devpts 文件系统 (以及其他虚拟内核文件系统)
+已被正确挂载。
+之后按照第 7.4 节 “进入 Chroot 环境”重新进入 chroot 环境。
+在继续构建之前，必须解决这一问题，否则需要使用 Expect 的测试套件
+(例如 Bash，Binutils，GCC，GDBM 等的测试套件，当然还有 Expect 本身的测试套件)
+都会出现大规模的测试失败，而且也可能产生其他隐蔽的问题。
+
+对该软件包进行一些修改，以允许使用 gcc-14.1 或更新版本构建它：
+
+```text
+patch -Np1 -i ../expect-5.45.4-gcc14-1.patch
+```
+
+准备编译 Expect：
+
+```text
+./configure --prefix=/usr           \
+            --with-tcl=/usr/lib     \
+            --enable-shared         \
+            --disable-rpath         \
+            --mandir=/usr/share/man \
+            --with-tclinclude=/usr/include
+```
+
+构建该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make test
+```
+
+安装该软件包：
+
+```text
+make install
+ln -svf expect5.45.4/libexpect5.45.4.so /usr/lib
+```
+
+## 16. DejaGNU-1.6.3
+
+DejaGnu 包含使用 GNU 工具运行测试套件的框架。它是用 expect 编写的，后者又使用 Tcl (工具命令语言)。
+
+安装 DejaGNU
+
+```text
+cd /sources;tar -xf dejagnu-1.6.3.tar.gz;cd dejagnu-1.6.3
+```
+
+DejaGNU 开发者建议在专用的目录中进行构建：
+
+```text
+mkdir -v build;cd build
+```
+
+准备编译 DejaGNU：
+
+```text
+../configure --prefix=/usr
+makeinfo --html --no-split -o doc/dejagnu.html ../doc/dejagnu.texi
+makeinfo --plaintext       -o doc/dejagnu.txt  ../doc/dejagnu.texi
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+install -v -dm755  /usr/share/doc/dejagnu-1.6.3
+install -v -m644   doc/dejagnu.{html,txt} /usr/share/doc/dejagnu-1.6.3
+```
+
+## 17. Pkgconf-2.3.0
+
+pkgconf 软件包是 pkg-config 的接替者，它包含用于在软件包安装的配置和生成阶段向构建工具传递头文件或库文件搜索路径的工具。
+
+安装 Pkgconf
+
+```text
+cd /sources;tar -xf pkgconf-2.3.0.tar.xz;cd pkgconf-2.3.0
+```
+
+准备编译 Pkgconf：
+
+```text
+./configure --prefix=/usr              \
+            --disable-static           \
+            --docdir=/usr/share/doc/pkgconf-2.3.0
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+为了维持与原始的 Pkg-config 软件包的兼容性，创建两个符号链接：
+
+```text
+ln -sv pkgconf   /usr/bin/pkg-config
+ln -sv pkgconf.1 /usr/share/man/man1/pkg-config.1
+```
+
+## 18. Binutils-2.44
+
+Binutils 包含汇编器、链接器以及其他用于处理目标文件的工具。
+
+安装 Binutils
+
+```text
+cd /sources;tar -xf
+```
+
+Binutils 文档推荐创建一个新的目录，以在其中构建 Binutils：
+
+```text
+mkdir -v build;cd build
+```
+
+准备编译 Binutils：
+
+```text
+../configure --prefix=/usr       \
+             --sysconfdir=/etc   \
+             --enable-ld=default \
+             --enable-plugins    \
+             --enable-shared     \
+             --disable-werror    \
+             --enable-64-bit-bfd \
+             --enable-new-dtags  \
+             --with-system-zlib  \
+             --enable-default-hash-style=gnu
+```
+
+编译该软件包：
+
+```text
+time make tooldir=/usr
+```
+
+测试编译结果：
+
+```text
+make -k check
+```
+
+如果需要列出所有失败的测试，执行：
+
+```text
+grep '^FAIL:' $(find -name '*.log')
+```
+
+安装该软件包：
+
+```text
+make tooldir=/usr install
+```
+
+删除无用的静态库等文件：
+
+```text
+rm -rfv /usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a \
+        /usr/share/doc/gprofng/
+```
 
 
 
