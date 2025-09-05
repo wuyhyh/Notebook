@@ -11,6 +11,7 @@ LFS 构建自己的操作系统
     LFS进入chroot并构建其他临时工具
     LFS安装基本系统软件Part1
     LFS安装基本系统软件Part2
+    LFS安装基本系统软件Part3
 
 .. toctree::
     :caption: LFS 理论知识
