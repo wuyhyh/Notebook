@@ -706,7 +706,7 @@ Tcl 软件包包含工具命令语言，它是一个可靠的通用脚本语言�
 安装 Tcl
 
 ```text
-cd /sources;tar -xf tcl8.6.16-src.tar.gz;cd tcl8.6.16-src
+cd /sources;tar -xf tcl8.6.16-src.tar.gz;cd tcl8.6.16
 ```
 
 为了支持 Binutils，GCC，以及其他一些软件包测试套件的运行，需要安装这个软件包和接下来的两个 (Expect 与 DejaGNU)。
@@ -814,12 +814,7 @@ python3 -c 'from pty import spawn; spawn(["echo", "ok"])'
 
 该命令应该输出 ok。如果该命令反而输出 OSError: out of pty devices，说明 PTY 在当前环境无法正常工作。
 
-此时需要退出 chroot 环境，再次阅读第 7.3 节 “准备虚拟内核文件系统”，并确认 devpts 文件系统 (以及其他虚拟内核文件系统)
-已被正确挂载。
-之后按照第 7.4 节 “进入 Chroot 环境”重新进入 chroot 环境。
-在继续构建之前，必须解决这一问题，否则需要使用 Expect 的测试套件
-(例如 Bash，Binutils，GCC，GDBM 等的测试套件，当然还有 Expect 本身的测试套件)
-都会出现大规模的测试失败，而且也可能产生其他隐蔽的问题。
+在继续构建之前，必须解决这一问题，否则需要使用 Expect 的测试套件出现大规模的测试失败，而且也可能产生其他隐蔽的问题。
 
 对该软件包进行一些修改，以允许使用 gcc-14.1 或更新版本构建它：
 
@@ -939,7 +934,7 @@ Binutils 包含汇编器、链接器以及其他用于处理目标文件的工�
 安装 Binutils
 
 ```text
-cd /sources;tar -xf
+cd /sources;rm -rf binutils-2.44;tar -xf binutils-2.44.tar.xz;cd binutils-2.44
 ```
 
 Binutils 文档推荐创建一个新的目录，以在其中构建 Binutils：
@@ -994,5 +989,579 @@ rm -rfv /usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a \
         /usr/share/doc/gprofng/
 ```
 
+## 19. GMP-6.3.0
 
+GMP 软件包包含提供任意精度算术函数的数学库。
 
+```text
+cd /sources;tar -xf gmp-6.3.0.tar.xz;cd gmp-6.3.0
+```
+
+准备编译 GMP：
+
+```text
+./configure --prefix=/usr    \
+            --enable-cxx     \
+            --disable-static \
+            --docdir=/usr/share/doc/gmp-6.3.0
+```
+
+编译该软件包，并生成 HTML 文档：
+
+```text
+make
+make html
+```
+
+本节中 GMP 的测试套件是关键的。无论如何都不要跳过测试过程。
+
+测试编译结果：
+
+```text
+make check 2>&1 | tee gmp-check-log
+```
+
+务必确认测试套件中至少 199 项测试通过。运行以下命令检验结果：
+
+```text
+awk '/# PASS:/{total+=$3} ; END{print total}' gmp-check-log
+```
+
+安装该软件包及其文档：
+
+```text
+make install
+make install-html
+```
+
+## 20. MPFR-4.2.1
+
+MPFR 软件包包含多精度数学函数。
+
+安装 MPFR
+
+```text
+cd /sources;tar -xf mpfr-4.2.1.tar.xz;cd mpfr-4.2.1
+```
+
+准备编译 MPFR：
+
+```text
+./configure --prefix=/usr        \
+            --disable-static     \
+            --enable-thread-safe \
+            --docdir=/usr/share/doc/mpfr-4.2.1
+```
+
+编译该软件包，并生成 HTML 文档：
+
+```text
+make
+make html
+```
+
+本节中 MPFR 的测试套件被认为是非常关键的，无论如何不能跳过。
+
+测试编译结果，并确认所有 198 项测试都能通过：
+
+```text
+make check
+```
+
+安装该软件包及其文档：
+
+```text
+make install
+make install-html
+```
+
+## 21. MPC-1.3.1
+
+MPC 软件包包含一个任意高精度，且舍入正确的复数算术库。
+
+安装 MPC
+
+```text
+cd /sources;tar -xf mpc-1.3.1.tar.gz;cd mpc-1.3.1
+```
+
+准备编译 MPC：
+
+```text
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/mpc-1.3.1
+```
+
+编译该软件包，并生成 HTML 文档：
+
+```text
+make
+make html
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包及其文档：
+
+```text
+make install
+make install-html
+```
+
+## 22. Attr-2.5.2
+
+Attr 软件包包含管理文件系统对象扩展属性的工具。
+
+安装 Attr
+
+```text
+cd /sources;tar -xf attr-2.5.2.tar.gz;cd attr-2.5.2
+```
+
+准备编译 Attr：
+
+```text
+./configure --prefix=/usr     \
+            --disable-static  \
+            --sysconfdir=/etc \
+            --docdir=/usr/share/doc/attr-2.5.2
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+测试套件必须在支持扩展属性的文件系统，如 ext2、ext3 或 ext4 上运行。运行下列命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 23. Acl-2.3.2
+
+Acl 软件包包含管理访问控制列表的工具，访问控制列表能够细致地自由定义文件和目录的访问权限。
+
+安装 Acl
+
+```text
+cd /sources;tar -xf acl-2.3.2.tar.xz;cd acl-2.3.2
+```
+
+准备编译 Acl：
+
+```text
+./configure --prefix=/usr         \
+            --disable-static      \
+            --docdir=/usr/share/doc/acl-2.3.2
+```
+
+编译该软件包：
+
+```text
+make
+```
+
+测试套件必须在支持访问控制的文件系统上运行。运行下列命令以测试编译结果：
+
+```text
+make check
+```
+
+已知名为 test/cp.test 的一项测试会由于 Coreutils 的 Acl 支持尚未构建而失败。
+
+安装该软件包：
+
+```text
+make install
+```
+
+## 24. Libcap-2.73
+
+Libcap 软件包为 Linux 内核提供的 POSIX 1003.1e 权能字实现用户接口。这些权能字是 root 用户的最高特权分割成的一组不同权限。
+
+安装 Libcap
+
+```text
+cd /sources;tar -xf libcap-2.73.tar.xz;cd libcap-2.73
+```
+
+防止静态库的安装：
+
+```text
+sed -i '/install -m.*STA/d' libcap/Makefile
+```
+
+编译该软件包：
+
+```text
+time make prefix=/usr lib=lib
+```
+
+运行命令以测试编译结果：
+
+```text
+make test
+```
+
+安装该软件包：
+
+```text
+make prefix=/usr lib=lib install
+```
+
+## 25. Libxcrypt-4.4.38
+
+Libxcrypt 软件包包含用于对密码进行单向散列操作的，现代化的库。
+
+安装 Libxcrypt
+
+```text
+cd /sources;tar -xf libxcrypt-4.4.38.tar.xz;cd libxcrypt-4.4.38
+```
+
+准备编译 Libxcrypt：
+
+```text
+./configure --prefix=/usr                \
+            --enable-hashes=strong,glibc \
+            --enable-obsolete-api=no     \
+            --disable-static             \
+            --disable-failure-tokens
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+> 注意满足 LSB 兼容性，必须使用这些函数，执行以下命令再次构建该软件包：
+
+```text
+make distclean
+./configure --prefix=/usr                \
+            --enable-hashes=strong,glibc \
+            --enable-obsolete-api=glibc  \
+            --disable-static             \
+            --disable-failure-tokens
+make
+cp -av --remove-destination .libs/libcrypt.so.1* /usr/lib
+```
+
+## 26. Shadow-4.17.3
+
+Shadow 软件包包含安全地处理密码的程序。
+
+### 26.1 安装 Shadow
+
+```text
+cd /sources;tar -xf shadow-4.17.3.tar.xz;cd shadow-4.17.3
+```
+
+禁止该软件包安装 groups 程序和它的手册页，因为 Coreutils 会提供更好的版本。
+
+```text
+sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+```
+
+不使用默认的 crypt 加密方法，使用安全程度高很多的 YESCRYPT 算法加密密码
+
+```text
+sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD YESCRYPT:' \
+    -e 's:/var/spool/mail:/var/mail:'                   \
+    -e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                  \
+    -i etc/login.defs
+```
+
+准备编译 Shadow：
+
+```text
+touch /usr/bin/passwd
+./configure --sysconfdir=/etc   \
+            --disable-static    \
+            --with-{b,yes}crypt \
+            --without-libbsd    \
+            --with-group-name-max-length=32
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+该软件包不包含测试套件。
+
+安装该软件包：
+
+```text
+make exec_prefix=/usr install
+make -C man install-man
+```
+
+### 26.2 配置 Shadow
+
+该软件包包含用于添加、修改、删除用户和组，设定和修改它们的密码，以及进行其他管理任务的工具。
+
+如果要对用户密码启用 Shadow 加密，执行以下命令：
+
+```text
+pwconv
+```
+
+如果要对组密码启用 Shadow 加密，执行：
+
+```text
+grpconv
+```
+
+其次，为了修改默认参数，必须创建 /etc/default/useradd 文件，并定制其内容，以满足您的特定需要。使用以下命令创建它：
+
+```text
+mkdir -p /etc/default
+useradd -D --gid 999
+```
+
+如果您不希望 useradd 创建邮箱文件，执行以下命令：
+
+```text
+sed -i '/MAIL/s/yes/no/' /etc/default/useradd
+```
+
+### 26.3 设定根用户密码
+
+为用户 root 选择一个密码，并执行以下命令设定它：
+
+```text
+passwd root
+```
+
+## 27. GCC-14.2.0
+
+GCC 软件包包含 GNU 编译器集合，其中有 C 和 C++ 编译器。
+安装 GCC
+
+```text
+cd /sources;rm -rf gcc-14.2.0;tar -xf gcc-14.2.0.tar.xz;cd gcc-14.2.0
+```
+
+在 x86_64 上构建时，修改存放 64 位库的默认路径为 “lib”:
+
+```text
+case $(uname -m) in
+x86_64)
+sed -e '/m64=/s/lib64/lib/' \
+-i.orig gcc/config/i386/t-linux64
+;;
+esac
+```
+
+GCC 文档建议在一个新建的目录中构建 GCC：
+
+```text
+mkdir -v build;cd build
+```
+
+准备编译 GCC：
+
+```text
+../configure --prefix=/usr            \
+             LD=ld                    \
+             --enable-languages=c,c++ \
+             --enable-default-pie     \
+             --enable-default-ssp     \
+             --enable-host-pie        \
+             --disable-multilib       \
+             --disable-bootstrap      \
+             --disable-fixincludes    \
+             --with-system-zlib
+```
+
+编译该软件包：
+
+```text
+time make
+```
+
+> 在本节中，GCC 的测试套件十分重要，但需要消耗较长的时间。
+
+万一宿主系统的栈空间限制较为严格，我们需要手工将栈空间的硬上限设为无限大
+
+```text
+ulimit -s -H unlimited
+```
+
+现在移除或修复若干已知会失败的测试：
+
+```text
+sed -e '/cpython/d'               -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
+sed -e 's/no-pic /&-no-pie /'     -i ../gcc/testsuite/gcc.target/i386/pr113689-1.c
+sed -e 's/300000/(1|300000)/'     -i ../libgomp/testsuite/libgomp.c-c++-common/pr109062.c
+sed -e 's/{ target nonpic } //' \
+    -e '/GOTPCREL/d'              -i ../gcc/testsuite/gcc.target/i386/fentryname3.c
+```
+
+以非特权用户身份测试编译结果，但出错时继续执行其他测试：
+
+```text
+chown -R tester .
+su tester -c "PATH=$PATH make -k check"
+```
+
+输入以下命令提取测试结果的摘要：
+
+```text
+../contrib/test_summary
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
+GCC 构建目录目前属于用户 tester，导致安装的头文件目录 (及其内容) 具有不正确的所有权。将所有者修改为 root 用户和组：
+
+```text
+chown -v -R root:root \
+/usr/lib/gcc/$(gcc -dumpmachine)/14.2.0/include{,-fixed}
+```
+
+创建一个 FHS 因 “历史原因” 要求的符号链接。
+
+```text
+ln -svr /usr/bin/cpp /usr/lib
+```
+
+许多软件包使用 cc 这一名称调用 C 编译器。
+在第二遍的 GCC 中我们已经将 cc 创建为符号链接，这里将其手册页也创建为符号链接：
+
+```text
+ln -sv gcc.1 /usr/share/man/man1/cc.1
+```
+
+创建一个兼容性符号链接，以支持在构建程序时使用链接时优化 (LTO)：
+
+```text
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/14.2.0/liblto_plugin.so \
+        /usr/lib/bfd-plugins/
+```
+
+现在最终的工具链已经就位，重要的是再次确认编译和链接像我们期望的一样正常工作。为此，进行下列完整性检查：
+
+```text
+echo 'int main(){}' > dummy.c
+cc dummy.c -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib'
+```
+
+> 上述命令不应该出现错误，最后一行命令输出的结果应该 (不同平台的动态链接器名称可能不同) 是：
+>
+>    `[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]`
+
+下面确认我们在使用正确的启动文件：
+
+```text
+grep -E -o '/usr/lib.*/S?crt[1in].*succeeded' dummy.log
+```
+
+> 以上命令应该输出：
+>```text
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/Scrt1.o succeeded
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crti.o succeeded
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/../../../../lib/crtn.o succeeded
+>```
+
+确认编译器能正确查找头文件：
+
+```text
+grep -B4 '^ /usr/include' dummy.log
+```
+
+> 该命令应当输出：
+>```text
+>    #include <...> search starts here:
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include
+>    /usr/local/include
+>    /usr/lib/gcc/x86_64-pc-linux-gnu/14.2.0/include-fixed
+>    /usr/include
+>```
+
+下一步确认新的链接器使用了正确的搜索路径：
+
+```text
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+```
+
+> 那些包含 '-linux-gnu' 的路径应该忽略，除此之外，以上命令应该输出：
+>```text
+>    SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib64")
+>    SEARCH_DIR("/usr/local/lib64")
+>    SEARCH_DIR("/lib64")
+>    SEARCH_DIR("/usr/lib64")
+>    SEARCH_DIR("/usr/x86_64-pc-linux-gnu/lib")
+>    SEARCH_DIR("/usr/local/lib")
+>    SEARCH_DIR("/lib")
+>    SEARCH_DIR("/usr/lib");
+>```
+
+之后确认我们使用了正确的 libc：
+
+```text
+grep "/lib.*/libc.so.6 " dummy.log
+```
+
+> 以上命令应该输出：
+>
+>    attempt to open /usr/lib/libc.so.6 succeeded
+
+确认 GCC 使用了正确的动态链接器：
+
+```text
+grep found dummy.log
+```
+
+> 以上命令应该输出 (不同平台的动态链接器名称可能不同):
+>
+>    found ld-linux-x86-64.so.2 at /usr/lib/ld-linux-x86-64.so.2
+
+在确认一切工作良好后，删除测试文件：
+
+```text
+rm -v dummy.c a.out dummy.log
+```
+
+最后移动一个位置不正确的文件：
+
+```text
+mkdir -pv /usr/share/gdb/auto-load/usr/lib
+mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+```
