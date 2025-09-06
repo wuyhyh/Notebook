@@ -13,6 +13,7 @@ LFS 构建自己的操作系统
     LFS安装基本系统软件Part2
     LFS安装基本系统软件Part3
     LFS安装基本系统软件Part4
+    LFS系统配置
 
 .. toctree::
     :caption: LFS 理论知识
