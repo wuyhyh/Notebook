@@ -586,6 +586,24 @@ cd /sources;tar -xf libpipeline-1.5.8.tar.gz;cd libpipeline-1.5.8
 ./configure --prefix=/usr
 ```
 
+编译该软件包：
+
+```text
+time make
+```
+
+运行命令以测试编译结果：
+
+```text
+make check
+```
+
+安装该软件包：
+
+```text
+make install
+```
+
 ## 67. Make-4.4.1
 
 Make 软件包包含一个程序，用于控制从软件包源代码生成可执行文件和其他非源代码文件的过程。
@@ -698,10 +716,10 @@ Texinfo 软件包包含阅读、编写和转换 info 页面的程序。
 cd /sources;rm -rf texinfo-7.2;tar -xf texinfo-7.2.tar.xz;cd texinfo-7.2
 ```
 
-可选地，安装属于 TeX 环境的组件：
+准备编译 Texinfo：
 
 ```text
-make TEXMF=/usr/share/texmf install-tex
+./configure --prefix=/usr
 ```
 
 编译该软件包：
@@ -720,6 +738,12 @@ make check
 
 ```text
 make install
+```
+
+可选地，安装属于 TeX 环境的组件：
+
+```text
+make TEXMF=/usr/share/texmf install-tex
 ```
 
 需要重新创建 /usr/share/info/dir 文件，可以运行以下命令完成这一工作：
@@ -995,7 +1019,7 @@ ln -sfv /etc/machine-id /var/lib/dbus
 Man-DB 软件包包含查找和阅读手册页的程序。
 
 ```text
-cd /sources;rm -rf man-pages-6.12;tar -xf man-pages-6.12.tar.xz;cd man-pages-6.12
+cd /sources;rm -rf man-db-2.13.0;tar -xf man-db-2.13.0.tar.xz;cd man-db-2.13.0
 ```
 
 准备编译 Man-DB：

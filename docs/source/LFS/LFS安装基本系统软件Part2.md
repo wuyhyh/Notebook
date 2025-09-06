@@ -922,7 +922,7 @@ time make
 运行命令以测试编译结果：
 
 ```text
-make check
+make test
 ```
 
 安装该软件包：
