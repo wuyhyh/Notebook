@@ -62,12 +62,12 @@ fi
 
 ```text
 chroot "$LFS" /usr/bin/env -i   \
-HOME=/root                  \
-TERM="$TERM"                \
-PS1='(lfs chroot) \u:\w\$ ' \
-PATH=/usr/bin:/usr/sbin     \
-MAKEFLAGS="-j$(nproc)"      \
-TESTSUITEFLAGS="-j$(nproc)" \
+    HOME=/root                  \
+    TERM="$TERM"                \
+    PS1='(lfs chroot) \u:\w\$ ' \
+    PATH=/usr/bin:/usr/sbin     \
+    MAKEFLAGS="-j$(nproc)"      \
+    TESTSUITEFLAGS="-j$(nproc)" \
 /bin/bash --login
 ```
 
@@ -262,7 +262,7 @@ cd $LFS/sources;tar -xf bison-3.8.2.tar.xz;cd bison-3.8.2
 
 ```text
 ./configure --prefix=/usr \
---docdir=/usr/share/doc/bison-3.8.2
+            --docdir=/usr/share/doc/bison-3.8.2
 ```
 
 编译该软件包
@@ -316,8 +316,8 @@ cd $LFS/sources;tar -xf Python-3.13.2.tar.xz;cd Python-3.13.2
 
 ```text
 ./configure --prefix=/usr   \
---enable-shared \
---without-ensurepip
+            --enable-shared \
+            --without-ensurepip
 ```
 
 编译该软件包
@@ -368,19 +368,19 @@ mkdir -pv /var/lib/hwclock
 
 ```text
 ./configure --libdir=/usr/lib     \
---runstatedir=/run    \
---disable-chfn-chsh   \
---disable-login       \
---disable-nologin     \
---disable-su          \
---disable-setpriv     \
---disable-runuser     \
---disable-pylibmount  \
---disable-static      \
---disable-liblastlog2 \
---without-python      \
-ADJTIME_PATH=/var/lib/hwclock/adjtime \
---docdir=/usr/share/doc/util-linux-2.40.4
+            --runstatedir=/run    \
+            --disable-chfn-chsh   \
+            --disable-login       \
+            --disable-nologin     \
+            --disable-su          \
+            --disable-setpriv     \
+            --disable-runuser     \
+            --disable-pylibmount  \
+            --disable-static      \
+            --disable-liblastlog2 \
+            --without-python      \
+            ADJTIME_PATH=/var/lib/hwclock/adjtime \
+            --docdir=/usr/share/doc/util-linux-2.40.4
 ```
 
 编译该软件包
