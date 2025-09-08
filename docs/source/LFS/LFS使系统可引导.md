@@ -60,7 +60,7 @@ blkid
 
 即使只有一个根分区，仍然要在 fstab 中配置内核需要的虚拟文件系统：
 
-```fstab
+```text
 UUID=0fe88e43-bb07-4b30-9211-4b4f34828f16   /        ext4    defaults        1 1
 
 proc         /proc    proc    nosuid,noexec,nodev    0 0
@@ -76,12 +76,12 @@ devtmpfs     /dev     devtmpfs mode=0755,nosuid      0 0
 
 * **EFI 分区（UEFI 启动时必须）**
 
-  ```fstab
+  ```text
   UUID=xxxx-xxxx   /boot   vfat   defaults,umask=0077   0 2
   ```
 * **Swap 分区**
 
-  ```fstab
+  ```text
   UUID=xxxx-xxxx   swap    swap   pri=1   0 0
   ```
 
@@ -115,7 +115,7 @@ findmnt -a
 
 因此，你的 `/etc/fstab` 应写成：
 
-```fstab
+```text
 # Begin /etc/fstab
 
 # LFS root partion
