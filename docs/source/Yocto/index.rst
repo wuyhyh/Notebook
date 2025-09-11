@@ -5,3 +5,4 @@ Yocto 相关知识
     :maxdepth: 2
 
     Yocto编译框架
+    Yocto-QEMU模拟环境

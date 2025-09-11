@@ -31,12 +31,9 @@ python3 -c "import jinja2,pexpect; print('ok')"  # 正常则无报错
   git config --global core.autocrlf false
   ```
 
-
-
-
-
-
-下面给你一套**可直接照做**的流程：用 Yocto 在 QEMU 上搭建一台“ARMv8 嵌入式平台”，具备串口、以太网、PCIe（挂 NVMe SSD 128G）、“NOR 存放 bootloader 的味道”（用 pflash 近似）、32 GB DRAM。目标是产出：U-Boot、内核、设备树与根文件系统镜像，并在 QEMU 上从 NVMe 启动系统。
+下面给你一套**可直接照做**的流程：用 Yocto 在 QEMU 上搭建一台“ARMv8 嵌入式平台”，具备串口、以太网、PCIe（挂 NVMe SSD
+128G）、“NOR 存放 bootloader 的味道”（用 pflash 近似）、32 GB DRAM。目标是产出：U-Boot、内核、设备树与根文件系统镜像，并在 QEMU 上从
+NVMe 启动系统。
 
 > 说明
 >
@@ -49,8 +46,7 @@ python3 -c "import jinja2,pexpect; print('ok')"  # 正常则无报错
 
 ---
 
-
-# 2. 获取 Yocto 代码并初始化
+## 2. 获取 Yocto 代码并初始化
 
 ```bash
 # 获取 poky（Yocto 参考发行版），示例使用 LTS 分支
@@ -66,7 +62,7 @@ source oe-init-build-env
 
 编辑 `build/conf/bblayers.conf`，加入 meta-openembedded（若 clone 了）：
 
-```conf
+```text
 BBLAYERS ?= " \
   ${TOPDIR}/../poky/meta \
   ${TOPDIR}/../poky/meta-poky \
@@ -77,7 +73,7 @@ BBLAYERS ?= " \
 
 编辑 `build/conf/local.conf`（要点如下）：
 
-```conf
+```text
 MACHINE ??= "qemuarm64"                 # 目标 QEMU aarch64
 BB_NUMBER_THREADS ?= "8"
 PARALLEL_MAKE ?= "-j8"
@@ -98,11 +94,49 @@ SSTATE_DIR ?= "${TOPDIR}/sstate-cache"
 
 ---
 
-# 3. 创建自定义层，放内核/U-Boot 配置与镜像定义
+## 3. 创建自定义层，放内核/U-Boot 配置与镜像定义
 
-```bash
+BitBake 服务器因系统 locale 不是 UTF-8（或缺少 en_US.UTF-8）而起不来
+
+```text
+# 1) 安装并生成 UTF-8 本地化
+sudo apt update
+sudo apt install -y locales
+sudo locale-gen en_US.UTF-8 zh_CN.UTF-8
+
+# 2) 设为默认（写入 /etc/default/locale）
+sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US:en
+
+# 3) 在当前 shell 生效
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export LANGUAGE=en_US:en
+
+# 4) 验证
+locale -a | grep -i en_US     # 应看到 en_US.utf8
+locale                         # 各项应为 en_US.UTF-8
+```
+
+清理并重试
+
+```text
+# 重新进入 Yocto 环境
+cd ~/Yocto/poky
+source oe-init-build-env
+
+# 可清一下上次残留的 cooker 进程/日志（可选）
+rm -rf build/bitbake-cookerdaemon.*
+
+# 再次创建并加入 layer
 bitbake-layers create-layer ../meta-virtarm64
 bitbake-layers add-layer ../meta-virtarm64
+bitbake-layers show-layers
+```
+
+### 查看结果
+
+```text
+bitbake-layers show-layers
 ```
 
 目录结构（建议）：
@@ -225,7 +259,8 @@ part /     --source rootfs           --ondisk sda --fstype=ext4 --label root --s
 bootloader --ptable gpt
 ```
 
-> 这里的 `ondisk sda` 只是生成镜像时的占位符，最终作为整盘 .wic 供 QEMU 以 NVMe 呈现即可。`--grow` 允许后续在线扩容（用 `growpart`/`resize2fs`）。
+> 这里的 `ondisk sda` 只是生成镜像时的占位符，最终作为整盘 .wic 供 QEMU 以 NVMe 呈现即可。`--grow` 允许后续在线扩容（用
+`growpart`/`resize2fs`）。
 
 ---
 
@@ -270,7 +305,8 @@ dd if=u-boot.bin of=flash0.img conv=notrunc
 sync
 ```
 
-> 备注：QEMU 的 pflash 是内存映射 NOR 的近似，主要模拟“固件区”。在 `-M virt` 上，这更符合“板上 NOR 放 bootloader/固件”的使用场景。Linux 里不一定把它当 MTD 暴露出来，**这不影响从 NVMe 启动操作系统**。
+> 备注：QEMU 的 pflash 是内存映射 NOR 的近似，主要模拟“固件区”。在 `-M virt` 上，这更符合“板上 NOR 放
+> bootloader/固件”的使用场景。Linux 里不一定把它当 MTD 暴露出来，**这不影响从 NVMe 启动操作系统**。
 
 ---
 
@@ -347,7 +383,8 @@ chmod +x run-qemu.sh
 => boot
 ```
 
-> 小技巧：若想无交互，给 QEMU 加 `-device virtio-serial-pci` 并设置 `U-BOOT` 环境为 `bootcmd=...` 也行。最简做法是每次 `sysboot`。
+> 小技巧：若想无交互，给 QEMU 加 `-device virtio-serial-pci` 并设置 `U-BOOT` 环境为 `bootcmd=...` 也行。最简做法是每次
+`sysboot`。
 
 ---
 
@@ -382,30 +419,30 @@ uname -a
 
 1. **U-Boot 找不到 extlinux.conf**
 
-  * 确认 `my-image` 产出的 `/boot/extlinux/extlinux.conf` 存在（Yocto 对 qemuarm64 通常会生成）。
-  * 若没有，可自己打包一个很小的 bootfiles 包把 `extlinux.conf` 安装到 `/boot/extlinux/`，或改用手写 `boot.cmd/boot.scr`。
+* 确认 `my-image` 产出的 `/boot/extlinux/extlinux.conf` 存在（Yocto 对 qemuarm64 通常会生成）。
+* 若没有，可自己打包一个很小的 bootfiles 包把 `extlinux.conf` 安装到 `/boot/extlinux/`，或改用手写 `boot.cmd/boot.scr`。
 
 2. **NVMe 未出现**
 
-  * 确认内核已启用 `CONFIG_BLK_DEV_NVME`（见 fragment）。
-  * QEMU 命令行里 `-device nvme,...` 是否正确；`pci enum`、`nvme scan` 在 U-Boot 是否能看到设备。
+* 确认内核已启用 `CONFIG_BLK_DEV_NVME`（见 fragment）。
+* QEMU 命令行里 `-device nvme,...` 是否正确；`pci enum`、`nvme scan` 在 U-Boot 是否能看到设备。
 
 3. **网络不通/SSH 不通**
 
-  * `-netdev user,id=net0,hostfwd=tcp::2222-:22` 要求镜像内有 SSH server（`dropbear` 已包含）。
-  * 来宾里 `ip addr` 看是否获取到 10.0.2.x 之类地址；`systemctl status dropbear`。
+* `-netdev user,id=net0,hostfwd=tcp::2222-:22` 要求镜像内有 SSH server（`dropbear` 已包含）。
+* 来宾里 `ip addr` 看是否获取到 10.0.2.x 之类地址；`systemctl status dropbear`。
 
 4. **想用 `-bios u-boot.bin` 代替 pflash**
 
-  * 可以，把脚本里的 pflash 两行删掉，改为 `-bios u-boot.bin`，其他不变。
+* 可以，把脚本里的 pflash 两行删掉，改为 `-bios u-boot.bin`，其他不变。
 
 5. **设备树定制**
 
-  * 默认用 QEMU 的“virt”DT。若你要显式指定 Linux dtb：
+* 默认用 QEMU 的“virt”DT。若你要显式指定 Linux dtb：
 
     * 在 extlinux 条目里设置 `FDT` 或 `FDTDIR` 指向 Yocto 生成的 `virt.dtb`；
     * 或者在 U-Boot 里 `load` dtb 后 `booti`/`bootm`。
-  * 真要在 Linux 中映射并访问“板上 NOR”，需要在 DT 里加相应 `flash@...` 节点（QEMU virt 默认不做），这属于进阶话题。
+* 真要在 Linux 中映射并访问“板上 NOR”，需要在 DT 里加相应 `flash@...` 节点（QEMU virt 默认不做），这属于进阶话题。
 
 ---
 
@@ -417,7 +454,8 @@ uname -a
 
 ---
 
-如果你愿意，我可以把上述**自定义层（meta-virtarm64）完整骨架**、`extlinux.conf`（显式指定 Image 与 dtb 的版本无关写法）、以及一键 `run-qemu.sh` 打包成可下载的压缩包，直接放进你的工程里就能编译运行。
+如果你愿意，我可以把上述**自定义层（meta-virtarm64）完整骨架**、`extlinux.conf`（显式指定 Image 与 dtb 的版本无关写法）、以及一键
+`run-qemu.sh` 打包成可下载的压缩包，直接放进你的工程里就能编译运行。
 
  
 
