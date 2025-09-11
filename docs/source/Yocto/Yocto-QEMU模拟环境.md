@@ -8,7 +8,7 @@
 # 基础包
 sudo apt update
 sudo apt install -y \
-  gawk wget git diffstat unzip texinfo gcc-multilib build-essential chrpath socat \
+  rpcgen gawk wget git diffstat unzip texinfo gcc-multilib build-essential chrpath socat \
   cpio python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping \
   python3-git python3-jinja2 zstd liblz4-tool file locales \
   qemu-system-arm qemu-system-misc qemu-utils bmap-tools parted dosfstools e2fsprogs
