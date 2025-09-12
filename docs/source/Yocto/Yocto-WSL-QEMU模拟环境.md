@@ -1,6 +1,6 @@
 # Yocto WSL QEMU 模拟环境
 
-在 WSL 中使用 Ubuntu 24.04，编译一个 yocto 功能，从 qemu 启动进行模拟
+在 WSL 中使用 Ubuntu 24.04，编译一个 yocto 工程，从 qemu 启动进行模拟
 
 ## 0. 准备环境（WSL2 / Ubuntu 24.04）
 
@@ -215,6 +215,9 @@ bitbake my-image
 
 产物位置：`build/tmp/deploy/images/qemuarm64/`（`Image`、`*.dtb`、`u-boot.bin`、`*.wic` 等）。
 
+```
+~/Yocto/poky/build/tmp/deploy/images/qemuarm64
+```
 ---
 
 # 6）准备 NVMe “硬盘”与 pflash “NOR”
