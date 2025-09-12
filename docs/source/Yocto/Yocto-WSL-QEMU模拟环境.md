@@ -1,19 +1,23 @@
-# Yocto QEMU 模拟环境
+# Yocto WSL QEMU 模拟环境
 
-好的，把从零到能跑的**文件与步骤**给你理一遍；照抄即可。
+在 WSL 中使用 Ubuntu 24.04，编译一个 yocto 功能，从 qemu 启动进行模拟
 
-# 0）准备环境（WSL2 / Ubuntu 24.04）
+## 0. 准备环境（WSL2 / Ubuntu 24.04）
+
+- 基础包
 
 ```bash
-# 基础包
 sudo apt update
 sudo apt install -y \
   rpcgen gawk wget git diffstat unzip texinfo gcc-multilib build-essential chrpath socat \
   cpio python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping \
   python3-git python3-jinja2 zstd liblz4-tool file locales \
   qemu-system-arm qemu-system-misc qemu-utils bmap-tools parted dosfstools e2fsprogs
+```
 
-# 修复 locale（BitBake 必须是 UTF-8）
+- 修复 locale（BitBake 必须是 UTF-8）
+
+```text
 sudo locale-gen en_US.UTF-8 zh_CN.UTF-8
 sudo update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US:en
 export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US:en
@@ -23,21 +27,24 @@ export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 LANGUAGE=en_US:en
 
 ---
 
-# 1）获取 Yocto 源码并初始化
+## 1. 获取 Yocto 源码并初始化
 
 ```bash
 mkdir -p ~/Yocto && cd ~/Yocto
 git clone git://git.yoctoproject.org/poky -b kirkstone
 cd poky
 git clone https://github.com/openembedded/meta-openembedded -b kirkstone
+```
 
-# 初始化构建目录（生成并进入 build/）
+- 初始化构建目录（生成并进入 build/）
+
+```text
 source oe-init-build-env
 ```
 
 ---
 
-# 2）配置 `build/conf/local.conf`
+## 2.配置 `build/conf/local.conf`
 
 用下面的内容覆盖或追加关键项（保持其他行不动）：
 
@@ -67,23 +74,25 @@ EOF
 
 ---
 
-# 3）创建并加入自定义层 `meta-virtarm64`
+## 3. 创建并加入自定义层 meta-virtarm64
 
 **不要手改 `bblayers.conf`，用命令追加最安全。**
 
+- 仍然在 poky/build 下
+
 ```bash
-# 仍然在 poky/build 下
 bitbake-layers create-layer ../meta-virtarm64
 bitbake-layers add-layer ../meta-openembedded/meta-oe
 bitbake-layers add-layer ../meta-virtarm64
-bitbake-layers show-layers  # 看到 meta-virtarm64 和 meta-oe 即成功
+bitbake-layers show-layers
 ```
 
+看到 meta-virtarm64 和 meta-oe 即成功
 ---
 
-# 4）在 `meta-virtarm64` 放好必须文件
+## 4. 在 meta-virtarm64 放好必须文件
 
-## 4.1 layer 搜索路径与目录骨架
+### 4.1 layer 搜索路径与目录骨架
 
 ```bash
 cd ../meta-virtarm64
@@ -91,47 +100,57 @@ mkdir -p recipes-core/images \
          recipes-kernel/linux/files \
          recipes-bsp/u-boot/files \
          wic
+```
 
-# 让 wic 能在本层找到自定义 .wks
+- 让 wic 能在本层找到自定义 .wks
+
+```text
 echo 'WKS_SEARCH_PATH:prepend = "${LAYERDIR}/wic:"' >> conf/layer.conf
 ```
 
-## 4.2 自定义镜像（也可先用 core-image-minimal）
+### 4.2 自定义镜像（也可先用 core-image-minimal）
 
 `recipes-core/images/my-image.bb`：
 
-```bitbake
+```bash
+cat >> recipes-core/images/my-image.bb <<'EOF'
 SUMMARY = "Minimal image for QEMU ARM64 with NVMe + SSH"
 LICENSE = "MIT"
 require recipes-core/images/core-image-minimal.bb
 
 IMAGE_INSTALL:append = " kernel-modules iproute2 ethtool pciutils nvme-cli bash "
+EOF
 ```
 
-## 4.3 自定义 WIC（与 `local.conf` 里的 `WKS_FILE` 对应）
+### 4.3 自定义 WIC（与 `local.conf` 里的 `WKS_FILE` 对应）
 
 `wic/nvme-gpt.wks`：
 
-```wks
+```text
+cat >> wic/nvme-gpt.wks <<'EOF'
 part /boot --source bootimg-partition --ondisk sda --fstype=ext4 --label boot --size 200
-part /     --source rootfs           --ondisk sda --fstype=ext4 --label root --size 2048 --grow
+part /     --source rootfs           --ondisk sda --fstype=ext4 --label root --size 2048
 bootloader --ptable gpt
+EOF
 ```
 
-## 4.4（可选，推荐）内核与 U-Boot 配置片段
+### 4.4（可选，推荐）内核与 U-Boot 配置片段
 
 让内核与 U-Boot 自带 NVMe/PCI/网络等支持。没有也能启动，遇到功能缺再补。
 
 `recipes-kernel/linux/linux-yocto_%.bbappend`：
 
-```bitbake
+```text
+cat >> recipes-kernel/linux/linux-yocto_%.bbappend <<'EOF'
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://my-kernel.cfg"
+EOF
 ```
 
 `recipes-kernel/linux/files/my-kernel.cfg`：
 
-```cfg
+```text
+cat >> recipes-kernel/linux/files/my-kernel.cfg <<'EOF'
 CONFIG_PCI=y
 CONFIG_PCI_HOST_GENERIC=y
 CONFIG_PCIEPORTBUS=y
@@ -143,18 +162,22 @@ CONFIG_VIRTIO_BLK=y
 CONFIG_VIRTIO_MMIO=y
 CONFIG_DEVTMPFS=y
 CONFIG_DEVTMPFS_MOUNT=y
+EOF
 ```
 
 `recipes-bsp/u-boot/u-boot_%.bbappend`：
 
-```bitbake
+```text
+cat >> recipes-bsp/u-boot/u-boot_%.bbappend <<'EOF'
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://u-boot.cfg"
+EOF
 ```
 
 `recipes-bsp/u-boot/files/u-boot.cfg`：
 
-```cfg
+```text
+cat >> recipes-bsp/u-boot/files/u-boot.cfg <<'EOF'
 CONFIG_PCI=y
 CONFIG_DM_PCI=y
 CONFIG_NVME=y
@@ -166,22 +189,29 @@ CONFIG_CMD_FAT=y
 CONFIG_DISTRO_DEFAULTS=y
 CONFIG_CMD_DHCP=y
 CONFIG_CMD_PING=y
+EOF
 ```
 
 ---
 
-# 5）开始构建
+## 5. 开始构建
 
 ```bash
 cd ~/Yocto/poky
 source oe-init-build-env           # 每次新开终端都要执行
 bitbake-layers show-layers         # 再确认一遍层
-
-# 构建镜像（二选一）
-bitbake my-image
-# 或
-# bitbake core-image-minimal
 ```
+
+- 构建镜像（二选一）
+
+```text
+bitbake my-image
+```
+
+> 或
+> ```text
+> bitbake core-image-minimal
+> ```
 
 产物位置：`build/tmp/deploy/images/qemuarm64/`（`Image`、`*.dtb`、`u-boot.bin`、`*.wic` 等）。
 
