@@ -135,8 +135,114 @@ devtmpfs     /dev     devtmpfs mode=0755,nosuid      0 0
 
 ## 2. 编译 Linux-6.13.4 内核
 
+```text
+cd /sources;tar -xf linux-6.13.4.tar.xz;cd linux-6.13.4
+```
 
+### 2.1 编译配置
 
+运行以下命令，准备编译内核：
 
+```text
+make mrproper
+```
 
+该命令确保内核源代码树绝对干净，内核开发组建议在每次编译内核前运行该命令。
 
+```text
+make menuconfig
+```
+
+这会启动 ncurses 目录驱动的界面
+
+一定要按照[列表](https://lfs.xry111.site/zh_CN/12.3-systemd/chapter10/kernel.html)
+启用/禁用/设定其中列出的内核特性，否则系统可能不能正常工作，甚至根本无法引导：
+
+### 2.2 编译内核
+
+```text
+make
+```
+
+如果内核配置使用了模块，安装它们：
+
+```text
+make modules_install
+```
+
+### 2.3 设置启动项
+
+指向内核映像的路径可能随机器平台的不同而变化。下面使用的文件名可以依照您的需要改变，但文件名的开头应该保持为
+vmlinuz，以保证和下一节描述的引导过程自动设定相兼容。下面的命令假定机器是 x86 体系结构：
+
+```text
+cp -iv arch/x86/boot/bzImage /boot/vmlinuz-6.13.4-lfs-12.3-systemd
+```
+
+System.map 是内核符号文件，它将内核 API 的每个函数入口点和运行时数据结构映射到它们的地址。它被用于调查分析内核可能出现的问题。执行以下命令安装该文件：
+
+```text
+cp -iv System.map /boot/System.map-6.13.4
+```
+
+内核配置文件 .config 由上述的 make menuconfig 步骤生成，包含编译好的内核的所有配置选项。最好能将它保留下来以供日后参考：
+
+```text
+cp -iv .config /boot/config-6.13.4
+```
+
+安装 Linux 内核文档：
+
+```text
+cp -r Documentation -T /usr/share/doc/linux-6.13.4
+```
+
+### 2.4 配置 Linux 内核模块加载顺序
+
+执行以下命令创建文件 /etc/modprobe.d/usb.conf：
+
+```text
+install -v -m755 -d /etc/modprobe.d
+cat > /etc/modprobe.d/usb.conf << "EOF"
+# Begin /etc/modprobe.d/usb.conf
+
+install ohci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i ohci_hcd ; true
+install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
+
+# End /etc/modprobe.d/usb.conf
+EOF
+```
+
+## 3. 使用 GRUB 设定引导过程
+
+### 3.1 设定 GRUB 配置
+
+GRUB 的工作方式是，将数据写入硬盘的第一个物理磁道。这里不属于任何文件系统，在启动时，第一个物理磁道中的程序从引导分区加载
+GRUB 模块，默认在 /boot/grub 中查找模块。
+
+将 GRUB 文件安装到 /boot/grub 并设定引导磁道：
+
+```text
+grub-install /dev/nvme0n1
+```
+
+### 3.2 创建 GRUB 配置文件
+
+生成 /boot/grub/grub.cfg：
+
+```text
+cat > /boot/grub/grub.cfg << "EOF"
+# Begin /boot/grub/grub.cfg
+set default=0
+set timeout=5
+
+insmod part_gpt
+insmod ext2
+set root=(hd0,4)
+set gfxpayload=1024x768x32
+
+menuentry "GNU/Linux, Linux 6.13.4-lfs-12.3-systemd" {
+linux   /boot/vmlinuz-6.13.4-lfs-12.3-systemd root=/dev/nvme0n1p4 ro
+}
+EOF
+```
