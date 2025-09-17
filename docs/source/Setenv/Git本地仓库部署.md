@@ -38,6 +38,32 @@ git push backup --tags
 git clone /c/Users/wuyuhang/git-backups/my_project.git /c/Users/wuyuhang/CLionProjects/my_project
 ```
 
+### 4. 远程仓库变更
+
+当远程仓库的 IP 地址发生变化之后，需要修改 URL
+
+```text
+git remote set-url <remote-name> <new-url>
+```
+
+完全不再跟踪远程仓库（删除 remote）
+
+```text
+git remote remove <remote-name>
+```
+
+添加一个新的远程仓库
+
+```text
+git remote add <remote-name> <url>
+```
+
+为已存在的本地分支设置要跟踪的远程仓库
+
+```text
+git branch --set-upstream-to origin/<remote-branch-name> <local-branch-name>
+```
+
 ---
 
 ## 二、远程仓库（Fedora Server 物理机）
