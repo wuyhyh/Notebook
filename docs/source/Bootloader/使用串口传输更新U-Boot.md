@@ -79,7 +79,7 @@ MobaXterm 比 Tera Term 对视觉友好多了，传输完文件我们可以换�
    >
    > 记下 CRC 以便之后比对。
 
-## 3. 用 `flashw` 写入
+## 3. 用 flashw 写入
 
 先看语法：
 
@@ -90,8 +90,8 @@ help flashw
 write 之前先进行 erase
 
 ```text
-flashe start_addr end_addr
-flashw loadaddr start_addr $filesize
+flashe <start_addr> <end_addr>
+flashw <loadaddr> <start_addr> $filesize
 ```
 
 ## 4. 重启验证
