@@ -9,6 +9,12 @@
 About :doc:`蓝夜 <lanye>` 是谁？
 
 .. toctree::
+    :caption: 项目管理
+    :maxdepth: 2
+
+    Timeline/index
+
+.. toctree::
     :caption: 安装指南
     :maxdepth: 2
 
