@@ -160,14 +160,14 @@ meta-virtarm64/
 
 `recipes-kernel/linux/linux-yocto_%.bbappend`：
 
-```bitbake
+```text
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://my-kernel.cfg"
 ```
 
 `recipes-kernel/linux/files/my-kernel.cfg`（关键开关，尽量内建/模块均可）：
 
-```cfg
+```text
 CONFIG_PCI=y
 CONFIG_PCI_HOST_GENERIC=y
 CONFIG_PCIEPORTBUS=y
@@ -206,7 +206,7 @@ CONFIG_FHANDLE=y
 
 `recipes-bsp/u-boot/u-boot_%.bbappend`：
 
-```bitbake
+```text
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " file://u-boot.cfg"
 UBOOT_CONFIG_FRAGMENT:append = " file://u-boot.cfg"
@@ -214,7 +214,7 @@ UBOOT_CONFIG_FRAGMENT:append = " file://u-boot.cfg"
 
 `recipes-bsp/u-boot/files/u-boot.cfg`：
 
-```cfg
+```text
 CONFIG_PCI=y
 CONFIG_DM_PCI=y
 CONFIG_NVME=y
@@ -236,7 +236,7 @@ CONFIG_CMD_PING=y
 
 `recipes-core/images/my-image.bb`：
 
-```bitbake
+```text
 SUMMARY = "Minimal image for QEMU ARM64 with NVMe + SSH"
 LICENSE = "MIT"
 require recipes-core/images/core-image-minimal.bb
@@ -252,7 +252,7 @@ IMAGE_INSTALL:append = " \
 
 `wic/nvme-gpt.wks`：
 
-```wks
+```text
 # GPT 分区表，/boot + / 根分区；根分区 --grow 以便后续扩容
 part /boot --source bootimg-partition --ondisk sda --fstype=ext4 --label boot --size 200
 part /     --source rootfs           --ondisk sda --fstype=ext4 --label root --size 2048 --grow
