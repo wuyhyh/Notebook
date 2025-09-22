@@ -49,14 +49,6 @@
 
 https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp
 
-使用飞腾的 firely 开发版提供的 bsp，移植 openEuler embedded 操作系统，使用 oe-build yocto 工程编译出
-kernel dtb rootfs bootloader
-
 ## 5. oe-build
 
 https://pages.openeuler.openatom.cn/embedded/docs/build/html/openEuler-22.03-LTS-SP4/yocto/index.html
-
-## 6. 调试开发板
-
-1. 调试 DPU RDMA 功能
-2. PCIe 交换
