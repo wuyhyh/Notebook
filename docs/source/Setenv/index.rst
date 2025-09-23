@@ -13,6 +13,7 @@
     SMP混合部署OS的软硬件形态
     心理建设
     技术地图
+    WSL-CLion底层软件开发环境搭建
 
 .. toctree::
     :caption: 内核
