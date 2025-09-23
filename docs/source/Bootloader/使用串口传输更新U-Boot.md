@@ -36,56 +36,49 @@ Tera Term 发送 YMODEM；MobaXterm（串口终端）；U-Boot 端用 `loady`（
 
 **MobaXterm 的串口会话没有内置 X/Y/ZMODEM 的“Transfer/传输”菜单**，所以先使用 Tera Term传输文件。
 
-1. 安装并打开 Tera Term → 选 **Serial**，选择你的 COM 口，波特率和 U-Boot 一致（如 115200 8N1）。
+### 1.1 设置波特率
 
-2. 确定 RAM 地址可用：你打算放到 `0x90000000`，一般在 DDR 的安全范围内。可快速探测：
+安装并打开 Tera Term → 选 **Serial**，选择你的 COM 口，波特率和 U-Boot 一致 （如 **115200** 8N1）。
 
-   ```
-   md.b 0x90000000 10
-   mw.b 0x90000000 00 100
-   ```
-3. 在 U-Boot：
+### 1.2 等待开始传输
 
-   ```
-   setenv loadaddr 0x90000000
-   loady $loadaddr
-   ```
+在 U-Boot 命令行
 
-   出现 “Ready for binary (ymodem)” 提示后停住等待。
-4. 在 Tera Term：**File → Transfer → YMODEM → Send...**，选中 `fip-all.bin`，等进度条走完。
+```
+setenv loadaddr 0x90000000
+loady $loadaddr
+```
 
-> • `filesize` 是十六进制；擦写 Flash 前要把擦除大小按扇区（常见 64KB）对齐。
+出现 “Ready for binary (ymodem)” 提示后停住等待。
+
+### 1.3 选择文件开始传输
+
+> 传输之前要设置 Tera Term 的波特率为 115200，关闭 VPN
+
+在 Tera Term：**File → Transfer → YMODEM → Send...**，选中 `fip-all.bin`，等进度条走完。
+
+> `filesize` 是十六进制；擦写 Flash 前要把擦除大小按扇区（常见 64KB）对齐。
+
+
 
 现在 `fip-all.bin` 文件已经下载到了内存地址 0x90000000 处
 
-## 2. 切换到 MobaXterm
+## 2. 切换到 MobaXterm 擦写 flash 芯片
 
 MobaXterm 比 Tera Term 对视觉友好多了，传输完文件我们可以换回这个工具继续使用。
 
-1. 串口连接：115200 8N1，流控 None。进入 U-Boot 提示符（`=>`）。
+传完后 U-Boot 会将传输字节数写入环境变量 `filesize`（16 进制）。你可查看：
 
-2. 在 MobaXterm 串口窗口：菜单栏点 `Transfer` → `YMODEM` → `Send...`，选中你的 `fip-all.bin`。
-   传完后 U-Boot 会显示传输字节数，并把大小写入环境变量 `filesize`（16 进制）。你可查看：
-
-   ```
-   echo $filesize
-   ```
-
-   > 可选校验（建议）：
-   >
-   > ```
-   > crc32 $loadaddr $filesize
-   > ```
-   >
-   > 记下 CRC 以便之后比对。
-
-## 3. 用 flashw 写入
-
-先看语法：
-
+```text
+echo $filesize
 ```
-help flashw
-```
+
+> 可选校验，记下 CRC 以便之后比对。
+>
+> ```text
+> crc32 $loadaddr $filesize
+> ```
+>
 
 write 之前先进行 erase
 
@@ -94,12 +87,6 @@ flashe <start_addr> <end_addr>
 flashw <loadaddr> <start_addr> $filesize
 ```
 
-## 4. 重启验证
+## 3. 重启验证
 
-写完并校验通过后：
-
-```
-reset
-```
-
-让前级 BootROM/BL1 按既定偏移加载 FIP 启动。
+写完并校验通过后，下电系统，然后上电重新启动
