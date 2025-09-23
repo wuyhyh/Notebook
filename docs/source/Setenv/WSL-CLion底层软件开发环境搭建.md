@@ -36,19 +36,6 @@ wsl --update                     # 更新 WSL 内核
 wsl --shutdown                   # 关闭全部 WSL 实例
 ```
 
-### 1.3 性能/资源建议（可选）
-
-在 `%UserProfile%/.wslconfig` 写入（调整为你机器所需）：
-
-```ini
-[wsl2]
-memory = 8GB        # 限制内存
-processors = 8      # 限制 vCPU 数
-localhostForwarding = true
-```
-
-写入后 `wsl --shutdown` 再重启 WSL 生效。
-
 ---
 
 ## 2. 安装基础开发工具
@@ -115,6 +102,55 @@ arm-none-eabi-gcc --version
 sudo apt -y install clang lld llvm
 # 内核可用：make LLVM=1 LLVM_IAS=1 ARCH=arm64 ...
 ```
+
+### 3.3 使用 Linaro 7.5 工具链（与发行版工具链并存）
+
+你当前使用的 `gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu` 可继续沿用，并与 Ubuntu 的最新版工具链**并存**。
+
+**部署建议**：将压缩包解到 `/opt/linaro-7.5/`，例如：
+
+```bash
+sudo mkdir -p /opt/linaro-7.5
+sudo tar -C /opt/linaro-7.5 -xvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
+# 展开后路径类似：/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
+```
+
+**一键切换脚本**（保存到 `~/.toolchains.sh` 并在 `~/.bashrc` 末尾 `source ~/.toolchains.sh`）：
+
+```bash
+# ~/.toolchains.sh
+TC_LINARO=/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
+TC_DISTRO_BIN=$(dirname "$(command -v aarch64-linux-gnu-gcc)")
+
+use_tc() {
+  case "$1" in
+    linaro)
+      export PATH="$TC_LINARO/bin:$PATH"
+      export CROSS_COMPILE=aarch64-linux-gnu-
+      ;;
+    distro)
+      export PATH="${PATH//:$TC_LINARO\/bin/}"
+      export CROSS_COMPILE=aarch64-linux-gnu-
+      ;;
+    *)
+      echo "用法: use_tc {linaro|distro}" ; return 1 ;;
+  esac
+  aarch64-linux-gnu-gcc --version | head -n1
+}
+```
+
+使用：
+
+```bash
+source ~/.toolchains.sh
+use_tc linaro   # 切到 Linaro 7.5
+use_tc distro   # 切回发行版最新版
+```
+
+**差异与建议摘要**：
+
+* Linaro 7.5（GCC 7 代）版本固定、利于复现；发行版工具链（GCC 12/13/14）更现代、补丁新。
+* 新项目建议优先发行版工具链；维护旧 BSP/闭环时可继续用 Linaro。切换仅需调整 `CROSS_COMPILE`/`PATH`。
 
 ---
 
@@ -355,7 +391,62 @@ qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 1024 -nographic -serial mon
 
 ---
 
-## 11. 进一步延伸（可按需添加）
+## 11. BSP 是什么？与 U‑Boot/内核的关系
+
+**BSP（Board Support Package，板级支持包）** 是让“通用软件栈”（TF‑A/U‑Boot/内核/发行件）在“特定 SoC+板卡”落地的一揽子材料，通常包含：
+
+* **Boot 侧**：TF‑A（ATF）、SPL、U‑Boot 的 `defconfig/board/` 目录、板级 **设备树（DTS）**、必须的二进制固件（如 DDR 训练/PMIC）、镜像打包脚本（FIP/签名/分区布局）。
+* **内核侧**：SoC/板卡 **驱动补丁**、`defconfig`、**DTS**、时钟/复位/电源域描述。
+* **发行件**：与根文件系统、模块、工具链版本相关的约束与示例。
+
+**关系**：
+
+* **U‑Boot** 借助 BSP 的板级初始化与 DTS 完成 DRAM/时钟/外设上电、存储访问与镜像装载。
+* **Linux 内核** 借助 BSP 提供的驱动与 DTS 识别硬件拓扑（网口/SPI‑NOR/NVMe/GPIO/UART/PCIe/PHY…）。
+* **耦合点**：设备树、镜像地址/内存布局、`bootargs`、镜像打包流程（如 FIP）需两端协调。
+
+> 选某颗 SoC，本质也在选其 BSP 质量与生态。BSP 越成熟，Bring‑up 越顺畅。
+
+---
+
+## 12. initramfs 详解：是否需要、何时使用、如何打包
+
+**作用**：在真正根文件系统挂载前，提供“早期用户空间”（`/init` 脚本）以装载驱动、解密/组装存储、下载固件、做自检/选择槽位，然后 `switch_root`。
+
+**是否必须**：
+
+* **非必须**。当且仅当内核 **内建（=y）** 了访问根分区所需的驱动，并且根分区是简单直连（如 virtio‑blk 上的 ext4），可直接 `root=/dev/vda1` 启动。
+
+**典型需要场景**：
+
+1. 根分区依赖 **模块（=m）**、**LVM/RAID**、**加密（LUKS）**、**固件加载** 或 **网络根（NFS/iSCSI）**。
+2. 做 **最小系统开发/调试**（BusyBox 几十百 KB 就能启动，配合 GDB 方便）。
+3. **恢复/工厂/OTA A/B** 流程（故障回滚、快速修复）。
+4. 早期诊断/日志收集/动态生成 `bootargs`。
+
+**两种打包方式**：
+
+* **外置**：QEMU 传 `-initrd rootfs.cpio.gz`，命令行加 `rdinit=/init`。改 rootfs 无需重编内核。
+* **内置**：`CONFIG_INITRAMFS_SOURCE="path/to/rootfs"` 编进内核，交付单镜像更简洁，但每次变更需重编。
+
+**决策表**：
+
+| 条件                               | 结果                  |
+| -------------------------------- | ------------------- |
+| 根分区驱动全部编成内建（=y），无加密/RAID/LVM/网络根 | 可 **不使用** initramfs |
+| 任何关键存储/根访问能力是模块（=m）              | **需要** initramfs    |
+| 根分区是 LUKS/LVM/RAID/NFS/iSCSI     | **需要** initramfs    |
+| 需要早期自检/选择启动槽位/恢复模式               | **建议** initramfs    |
+
+**常见坑**：
+
+* 忘了放 **可执行** 的 `/init` 或未 `chmod +x`；
+* 命令行缺少 `rdinit=/init`（或未提供标准 init 路径）；
+* 需要的内核模块未被打进 initramfs。
+
+---
+
+## 13. 进一步延伸（可按需添加）
 
 * 将 `initramfs` 集成进内核（`CONFIG_INITRAMFS_SOURCE`）。
 * 使用 `virtio-net` + `-net user,hostfwd=tcp::2222-:22` 做 SSH 进 initramfs 环境。
