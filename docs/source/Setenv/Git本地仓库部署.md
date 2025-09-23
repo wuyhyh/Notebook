@@ -18,12 +18,16 @@
 
 ### 1. 创建裸仓库
 
+在 git bash 中执行创建仓库的命令
+
 ```bash
 mkdir -p /c/Users/wuyuhang/git-backups
 git init --bare /c/Users/wuyuhang/git-backups/my_project.git
 ```
 
 ### 2. 在项目中添加远程并推送
+
+同样在 git bash 中执行这些命令
 
 ```bash
 cd /c/Users/wuyuhang/CLionProjects/my_project
@@ -32,7 +36,14 @@ git push backup --all
 git push backup --tags
 ```
 
+> 注意: 如果项目是在 WSL 中进行开发，你希望 C 盘中的某个目录作为项目仓库，应该增加 `/mnt` 前缀在盘符前面
+> ```text
+> git remote add backup /mnt/c/Users/wuyuhang/git-backups/my_project.git
+> ```
+
 ### 3. 从备份恢复
+
+同样在 git bash 中执行这些命令
 
 ```bash
 git clone /c/Users/wuyuhang/git-backups/my_project.git /c/Users/wuyuhang/CLionProjects/my_project
