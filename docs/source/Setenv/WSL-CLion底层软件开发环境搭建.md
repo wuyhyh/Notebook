@@ -13,6 +13,11 @@ $KSRC      # Linux 内核源码目录，例如  $WORK/linux
 $UBOOT     # U‑Boot 源码目录，例如      $WORK/u-boot
 ```
 
+```text
+export WORK=/home/wuyuhang/work/
+mkdir -pv $WORK
+```
+
 ---
 
 ## 1. 安装 WSL（Windows 11）
@@ -118,25 +123,60 @@ sudo tar -C /opt/linaro-7.5 -xvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-g
 **一键切换脚本**（保存到 `~/.toolchains.sh` 并在 `~/.bashrc` 末尾 `source ~/.toolchains.sh`）：
 
 ```bash
-# ~/.toolchains.sh
+# ~/.toolchains.sh —— WSL/Ubuntu/Fedora 通用
+# 1) 设置你的 Linaro 7.5 实际解压路径：
 TC_LINARO=/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
-TC_DISTRO_BIN=$(dirname "$(command -v aarch64-linux-gnu-gcc)")
 
+# 2) 从 PATH 中干净移除 Linaro/bin（无论出现几次）
+_tc_strip_linaro_from_path() {
+  local needle="${TC_LINARO}/bin"
+  local p=":${PATH}:"
+  p="${p//:${needle}:/:}"
+  PATH="${p#:}"; PATH="${PATH%:}"
+}
+
+# 3) 显示当前 aarch64 工具链来源
+_tc_show() {
+  echo "which aarch64-linux-gnu-gcc:"
+  which -a aarch64-linux-gnu-gcc || true
+  echo "compiler version:"
+  aarch64-linux-gnu-gcc --version 2>/dev/null | head -n1 || echo "not found"
+}
+
+# 4) 主入口：use_tc {linaro|distro}
 use_tc() {
   case "$1" in
     linaro)
-      export PATH="$TC_LINARO/bin:$PATH"
+      _tc_strip_linaro_from_path
+      export PATH="${TC_LINARO}/bin:${PATH}"
       export CROSS_COMPILE=aarch64-linux-gnu-
       ;;
     distro)
-      export PATH="${PATH//:$TC_LINARO\/bin/}"
+      _tc_strip_linaro_from_path
       export CROSS_COMPILE=aarch64-linux-gnu-
       ;;
     *)
-      echo "用法: use_tc {linaro|distro}" ; return 1 ;;
+      echo "用法: use_tc {linaro|distro}"; return 1;;
   esac
-  aarch64-linux-gnu-gcc --version | head -n1
+  hash -r
+  _tc_show
 }
+
+# 5) 你希望的命令名（alias 会把参数继续传给函数）
+alias use-tc='use_tc'
+
+# 6) Bash 补全（需要 bash-completion）
+_use_tc_complete() {
+  local cur
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  if [[ $COMP_CWORD -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "linaro distro" -- "$cur") )
+  fi
+  return 0
+}
+complete -F _use_tc_complete use-tc
+complete -F _use_tc_complete use_tc
 ```
 
 使用：
@@ -154,12 +194,136 @@ use_tc distro   # 切回发行版最新版
 
 ---
 
+## 3. 工具链一键切换脚本（最终版）与使用方法
+
+本节给出：脚本全文、安装步骤、补全启用、验证与排错。脚本支持 Linaro 7.5 与发行版 `aarch64-linux-gnu-*` 工具链一键切换，并提供
+Bash 补全。
+
+### 1) 脚本全文（保存为 `~/.toolchains.sh`）
+
+```bash
+# ~/.toolchains.sh —— WSL/Ubuntu/Fedora 通用
+# 1) 设置你的 Linaro 7.5 实际解压路径：
+TC_LINARO=/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
+
+# 2) 从 PATH 中干净移除 Linaro/bin（无论出现几次）
+_tc_strip_linaro_from_path() {
+  local needle="${TC_LINARO}/bin"
+  local p=":${PATH}:"
+  p="${p//:${needle}:/:}"
+  PATH="${p#:}"; PATH="${PATH%:}"
+}
+
+# 3) 显示当前 aarch64 工具链来源
+_tc_show() {
+  echo "which aarch64-linux-gnu-gcc:"
+  which -a aarch64-linux-gnu-gcc || true
+  echo "compiler version:"
+  aarch64-linux-gnu-gcc --version 2>/dev/null | head -n1 || echo "not found"
+}
+
+# 4) 主入口：use_tc {linaro|distro}
+use_tc() {
+  case "$1" in
+    linaro)
+      _tc_strip_linaro_from_path
+      export PATH="${TC_LINARO}/bin:${PATH}"
+      export CROSS_COMPILE=aarch64-linux-gnu-
+      ;;
+    distro)
+      _tc_strip_linaro_from_path
+      export CROSS_COMPILE=aarch64-linux-gnu-
+      ;;
+    *)
+      echo "用法: use_tc {linaro|distro}"; return 1;;
+  esac
+  hash -r
+  _tc_show
+}
+
+# 5) 你希望的命令名（alias 会把参数继续传给函数）
+alias use-tc='use_tc'
+
+# 6) Bash 补全（需要 bash-completion）
+_use_tc_complete() {
+  local cur
+  COMPREPLY=()
+  cur="${COMP_WORDS[COMP_CWORD]}"
+  if [[ $COMP_CWORD -eq 1 ]]; then
+    COMPREPLY=( $(compgen -W "linaro distro" -- "$cur") )
+  fi
+  return 0
+}
+complete -F _use_tc_complete use-tc
+complete -F _use_tc_complete use_tc
+```
+
+### 2) 安装步骤
+
+```bash
+# 安装发行版工具链（若尚未安装）
+sudo apt update
+sudo apt -y install gcc-aarch64-linux-gnu bash-completion
+
+# 将脚本保存到 ~/.toolchains.sh 后，在当前 shell 生效
+source ~/.toolchains.sh
+
+# 让其在新终端自动生效（追加到 .bashrc 尾部）
+grep -q 'toolchains.sh' ~/.bashrc || echo 'source ~/.toolchains.sh' >> ~/.bashrc
+
+# 确保启用 bash-completion（Ubuntu 通常默认已有）
+grep -q 'bash_completion' ~/.bashrc || echo '[ -f /etc/bash_completion ] && . /etc/bash_completion' >> ~/.bashrc
+```
+
+### 3) 使用方法
+
+```bash
+# 切到发行版最新工具链
+use-tc distro
+
+# 切到 Linaro 7.5 工具链
+use-tc linaro
+```
+
+每次切换会显示当前 `aarch64-linux-gnu-gcc` 的路径与版本，便于确认。
+
+### 4) 快速验证
+
+```bash
+# 期望显示发行版 gcc（非 /opt/linaro-7.5/...）
+use-tc distro
+
+# 期望显示 /opt/linaro-7.5/.../bin/aarch64-linux-gnu-gcc
+use-tc linaro
+```
+
+### 5) 常见排错
+
+* 执行了 `sh ~/.toolchains.sh`：这是在子 shell 中运行，无法影响当前环境。请使用 `source ~/.toolchains.sh`，或重新打开终端（脚本已写入
+  `.bashrc`）。
+* 切到 distro 仍显示 Linaro：检查是否在其他配置文件中又添加了 `...linaro.../bin` 到 `PATH`；请删除，只保留本脚本管理 PATH。
+* 切到 distro 后找不到编译器：先安装发行版工具链 `sudo apt install gcc-aarch64-linux-gnu`。
+* 使用 zsh：本补全为 Bash 版本。若用 zsh，可在 `~/.zshrc` 中加入：
+
+  ```zsh
+  compdef '_values "mode" linaro distro' use-tc
+  compdef '_values "mode" linaro distro' use_tc
+  ```
+
+### 6) 可选改动
+
+* 需要同时切换 `g++`/`binutils` 等无需额外操作，因它们共用同一前缀与 PATH。
+* 若你还有第二套独立工具链（例如 GCC 13 自编译版），可仿照 `linaro|distro` 再加一个分支与补全词条。
+
 ## 4. 安装 QEMU（AArch64/ARM 平台）
 
 ```bash
 sudo apt -y install qemu-system-arm qemu-system-misc qemu-utils
+```
 
-# 快速自检（不加载镜像，仅看是否能启动到 QEMU 控制台）
+快速自检（不加载镜像，仅看是否能启动到 QEMU 控制台）
+
+```text
 qemu-system-aarch64 \
   -machine virt -cpu cortex-a72 -m 1024 \
   -nographic -monitor none -serial mon:stdio -S -s & sleep 1; kill %1
@@ -170,6 +334,24 @@ qemu-system-aarch64 \
 ---
 
 ## 5. U‑Boot：获取、编译与在 QEMU 上运行
+
+安装缺少的工具
+Ubuntu：
+
+```text
+sudo apt update
+sudo apt install -y libgnutls28-dev
+# 若随后报 uuid/uuid.h 缺失，再装：
+sudo apt install -y uuid-dev
+```
+
+Fedora：
+
+```text
+sudo dnf install -y gnutls-devel
+# 若随后报 uuid/uuid.h 缺失，再装：
+sudo dnf install -y libuuid-devel
+```
 
 ### 5.1 获取源码
 
@@ -213,7 +395,7 @@ qemu-system-aarch64 \
 
 ```bash
 mkdir -p "$WORK" && cd "$WORK"
-git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --depth=1
 cd linux
 ```
 
@@ -254,6 +436,8 @@ make -j$(nproc) \
 cd "$WORK"
 wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
  tar xf busybox-1.36.1.tar.bz2 && cd busybox-1.36.1
+```
+```text
 make defconfig
 # 打开静态链接：
 sed -i 's/^# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
@@ -395,7 +579,8 @@ qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 1024 -nographic -serial mon
 
 **BSP（Board Support Package，板级支持包）** 是让“通用软件栈”（TF‑A/U‑Boot/内核/发行件）在“特定 SoC+板卡”落地的一揽子材料，通常包含：
 
-* **Boot 侧**：TF‑A（ATF）、SPL、U‑Boot 的 `defconfig/board/` 目录、板级 **设备树（DTS）**、必须的二进制固件（如 DDR 训练/PMIC）、镜像打包脚本（FIP/签名/分区布局）。
+* **Boot 侧**：TF‑A（ATF）、SPL、U‑Boot 的 `defconfig/board/` 目录、板级 **设备树（DTS）**、必须的二进制固件（如 DDR
+  训练/PMIC）、镜像打包脚本（FIP/签名/分区布局）。
 * **内核侧**：SoC/板卡 **驱动补丁**、`defconfig`、**DTS**、时钟/复位/电源域描述。
 * **发行件**：与根文件系统、模块、工具链版本相关的约束与示例。
 
@@ -411,11 +596,13 @@ qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 1024 -nographic -serial mon
 
 ## 12. initramfs 详解：是否需要、何时使用、如何打包
 
-**作用**：在真正根文件系统挂载前，提供“早期用户空间”（`/init` 脚本）以装载驱动、解密/组装存储、下载固件、做自检/选择槽位，然后 `switch_root`。
+**作用**：在真正根文件系统挂载前，提供“早期用户空间”（`/init` 脚本）以装载驱动、解密/组装存储、下载固件、做自检/选择槽位，然后
+`switch_root`。
 
 **是否必须**：
 
-* **非必须**。当且仅当内核 **内建（=y）** 了访问根分区所需的驱动，并且根分区是简单直连（如 virtio‑blk 上的 ext4），可直接 `root=/dev/vda1` 启动。
+* **非必须**。当且仅当内核 **内建（=y）** 了访问根分区所需的驱动，并且根分区是简单直连（如 virtio‑blk 上的 ext4），可直接
+  `root=/dev/vda1` 启动。
 
 **典型需要场景**：
 
@@ -432,7 +619,7 @@ qemu-system-aarch64 -machine virt -cpu cortex-a72 -m 1024 -nographic -serial mon
 **决策表**：
 
 | 条件                               | 结果                  |
-| -------------------------------- | ------------------- |
+|----------------------------------|---------------------|
 | 根分区驱动全部编成内建（=y），无加密/RAID/LVM/网络根 | 可 **不使用** initramfs |
 | 任何关键存储/根访问能力是模块（=m）              | **需要** initramfs    |
 | 根分区是 LUKS/LVM/RAID/NFS/iSCSI     | **需要** initramfs    |
