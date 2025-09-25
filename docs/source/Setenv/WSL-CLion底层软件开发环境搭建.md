@@ -87,8 +87,11 @@ sudo apt -y install \
   binutils-aarch64-linux-gnu \
   gcc-arm-none-eabi binutils-arm-none-eabi \
   gdb-multiarch
+```
 
-# 验证
+验证
+
+```text
 aarch64-linux-gnu-gcc --version
 arm-none-eabi-gcc --version
 ```
@@ -105,8 +108,9 @@ arm-none-eabi-gcc --version
 
 ```bash
 sudo apt -y install clang lld llvm
-# 内核可用：make LLVM=1 LLVM_IAS=1 ARCH=arm64 ...
 ```
+
+> 内核可用：make LLVM=1 LLVM_IAS=1 ARCH=arm64 ...
 
 ### 3.3 使用 Linaro 7.5 工具链（与发行版工具链并存）
 
@@ -117,75 +121,9 @@ sudo apt -y install clang lld llvm
 ```bash
 sudo mkdir -p /opt/linaro-7.5
 sudo tar -C /opt/linaro-7.5 -xvf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
-# 展开后路径类似：/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
 ```
 
-**一键切换脚本**（保存到 `~/.toolchains.sh` 并在 `~/.bashrc` 末尾 `source ~/.toolchains.sh`）：
-
-```bash
-# ~/.toolchains.sh —— WSL/Ubuntu/Fedora 通用
-# 1) 设置你的 Linaro 7.5 实际解压路径：
-TC_LINARO=/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
-
-# 2) 从 PATH 中干净移除 Linaro/bin（无论出现几次）
-_tc_strip_linaro_from_path() {
-  local needle="${TC_LINARO}/bin"
-  local p=":${PATH}:"
-  p="${p//:${needle}:/:}"
-  PATH="${p#:}"; PATH="${PATH%:}"
-}
-
-# 3) 显示当前 aarch64 工具链来源
-_tc_show() {
-  echo "which aarch64-linux-gnu-gcc:"
-  which -a aarch64-linux-gnu-gcc || true
-  echo "compiler version:"
-  aarch64-linux-gnu-gcc --version 2>/dev/null | head -n1 || echo "not found"
-}
-
-# 4) 主入口：use_tc {linaro|distro}
-use_tc() {
-  case "$1" in
-    linaro)
-      _tc_strip_linaro_from_path
-      export PATH="${TC_LINARO}/bin:${PATH}"
-      export CROSS_COMPILE=aarch64-linux-gnu-
-      ;;
-    distro)
-      _tc_strip_linaro_from_path
-      export CROSS_COMPILE=aarch64-linux-gnu-
-      ;;
-    *)
-      echo "用法: use_tc {linaro|distro}"; return 1;;
-  esac
-  hash -r
-  _tc_show
-}
-
-# 5) 你希望的命令名（alias 会把参数继续传给函数）
-alias use-tc='use_tc'
-
-# 6) Bash 补全（需要 bash-completion）
-_use_tc_complete() {
-  local cur
-  COMPREPLY=()
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  if [[ $COMP_CWORD -eq 1 ]]; then
-    COMPREPLY=( $(compgen -W "linaro distro" -- "$cur") )
-  fi
-  return 0
-}
-complete -F _use_tc_complete use-tc
-complete -F _use_tc_complete use_tc
-```
-
-使用：
-
-```bash
-source ~/.toolchains.sh
-use_tc linaro   # 切到 Linaro 7.5
-use_tc distro   # 切回发行版最新版
-```
+> 展开后路径类似：/opt/linaro-7.5/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu
 
 **差异与建议摘要**：
 
@@ -194,12 +132,11 @@ use_tc distro   # 切回发行版最新版
 
 ---
 
-## 3. 工具链一键切换脚本（最终版）与使用方法
+### 3.4 工具链一键切换脚本（最终版）与使用方法
 
-本节给出：脚本全文、安装步骤、补全启用、验证与排错。脚本支持 Linaro 7.5 与发行版 `aarch64-linux-gnu-*` 工具链一键切换，并提供
-Bash 补全。
+脚本支持 Linaro 7.5 与发行版 `aarch64-linux-gnu-*` 工具链一键切换，并提供 Bash 补全。
 
-### 1) 脚本全文（保存为 `~/.toolchains.sh`）
+#### 3.4.1 脚本全文（保存为 `~/.toolchains.sh`）
 
 ```bash
 # ~/.toolchains.sh —— WSL/Ubuntu/Fedora 通用
@@ -258,24 +195,35 @@ complete -F _use_tc_complete use-tc
 complete -F _use_tc_complete use_tc
 ```
 
-### 2) 安装步骤
+#### 3.4.2 安装步骤
+
+安装发行版工具链（若尚未安装）
 
 ```bash
-# 安装发行版工具链（若尚未安装）
+
 sudo apt update
 sudo apt -y install gcc-aarch64-linux-gnu bash-completion
+```
 
-# 将脚本保存到 ~/.toolchains.sh 后，在当前 shell 生效
+将脚本保存到 ~/.toolchains.sh 后，在当前 shell 生效
+
+```text
 source ~/.toolchains.sh
+```
 
-# 让其在新终端自动生效（追加到 .bashrc 尾部）
+让其在新终端自动生效（追加到 .bashrc 尾部）
+
+```text
 grep -q 'toolchains.sh' ~/.bashrc || echo 'source ~/.toolchains.sh' >> ~/.bashrc
+```
 
-# 确保启用 bash-completion（Ubuntu 通常默认已有）
+确保启用 bash-completion（Ubuntu 通常默认已有）
+
+```text
 grep -q 'bash_completion' ~/.bashrc || echo '[ -f /etc/bash_completion ] && . /etc/bash_completion' >> ~/.bashrc
 ```
 
-### 3) 使用方法
+#### 3.4.3 使用方法
 
 ```bash
 # 切到发行版最新工具链
@@ -286,34 +234,6 @@ use-tc linaro
 ```
 
 每次切换会显示当前 `aarch64-linux-gnu-gcc` 的路径与版本，便于确认。
-
-### 4) 快速验证
-
-```bash
-# 期望显示发行版 gcc（非 /opt/linaro-7.5/...）
-use-tc distro
-
-# 期望显示 /opt/linaro-7.5/.../bin/aarch64-linux-gnu-gcc
-use-tc linaro
-```
-
-### 5) 常见排错
-
-* 执行了 `sh ~/.toolchains.sh`：这是在子 shell 中运行，无法影响当前环境。请使用 `source ~/.toolchains.sh`，或重新打开终端（脚本已写入
-  `.bashrc`）。
-* 切到 distro 仍显示 Linaro：检查是否在其他配置文件中又添加了 `...linaro.../bin` 到 `PATH`；请删除，只保留本脚本管理 PATH。
-* 切到 distro 后找不到编译器：先安装发行版工具链 `sudo apt install gcc-aarch64-linux-gnu`。
-* 使用 zsh：本补全为 Bash 版本。若用 zsh，可在 `~/.zshrc` 中加入：
-
-  ```zsh
-  compdef '_values "mode" linaro distro' use-tc
-  compdef '_values "mode" linaro distro' use_tc
-  ```
-
-### 6) 可选改动
-
-* 需要同时切换 `g++`/`binutils` 等无需额外操作，因它们共用同一前缀与 PATH。
-* 若你还有第二套独立工具链（例如 GCC 13 自编译版），可仿照 `linaro|distro` 再加一个分支与补全词条。
 
 ## 4. 安装 QEMU（AArch64/ARM 平台）
 
@@ -366,8 +286,13 @@ cd u-boot
 ```bash
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
+```
 
+```text
 make qemu_arm64_defconfig
+```
+
+```text
 make -j$(nproc)
 ```
 
@@ -394,7 +319,6 @@ qemu-system-aarch64 \
 ### 6.1 获取内核源码
 
 ```bash
-mkdir -p "$WORK" && cd "$WORK"
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git --depth=1
 cd linux
 ```
@@ -404,12 +328,13 @@ cd linux
 ```bash
 export ARCH=arm64
 export CROSS_COMPILE=aarch64-linux-gnu-
+```
 
+```text
 make defconfig
-# 可选：若需要内核自带 initramfs，可开启：
-#   General setup → Initial RAM filesystem and RAM disk (initramfs/initrd) support
-#   也可用外部 BusyBox rootfs（见 §7）
+```
 
+```text
 make -j$(nproc) \
   Image vmlinux modules
 ```
@@ -437,14 +362,28 @@ cd "$WORK"
 wget https://busybox.net/downloads/busybox-1.36.1.tar.bz2
  tar xf busybox-1.36.1.tar.bz2 && cd busybox-1.36.1
 ```
+
 ```text
 make defconfig
-# 打开静态链接：
-sed -i 's/^# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
-make -j$(nproc)
-make CONFIG_PREFIX=$PWD/_rootfs install
+```
 
-# 基础目录与 init
+打开静态链接：
+
+```text
+sed -i 's/^# CONFIG_STATIC is not set/CONFIG_STATIC=y/' .config
+```
+
+```text
+make -j$(nproc)
+```
+
+```text
+make CONFIG_PREFIX=$PWD/_rootfs install
+```
+
+基础目录与 init
+
+```text
 cd _rootfs
 mkdir -p proc sys dev etc mnt tmp root
 cat > init <<'EOF'
@@ -455,15 +394,19 @@ mount -t devtmpfs none /dev || mdev -s
 exec /bin/sh
 EOF
 chmod +x init
+```
 
-# 打包 cpio.gz
+打包 cpio.gz
+
+```text
 find . -print0 | cpio --null -ov --format=newc | gzip -9 > ../rootfs.cpio.gz
 ```
 
 ### 7.2 在 QEMU 启动内核 + initramfs
 
+在你的内核目录
+
 ```bash
-cd "$KSRC"   # 你的内核目录
 qemu-system-aarch64 \
   -machine virt -cpu cortex-a72 -m 1024 \
   -nographic -serial mon:stdio \
