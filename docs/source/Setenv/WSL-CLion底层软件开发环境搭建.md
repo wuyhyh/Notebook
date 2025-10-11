@@ -492,7 +492,7 @@ AARCH64_GDB=$(command -v aarch64-linux-gnu-gdb || echo gdb-multiarch)
 
 常用操作：
 
-```gdb
+```text
 bt                 # 查看调用栈
 info registers     # 寄存器
 x/16i $pc          # 反汇编

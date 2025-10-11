@@ -70,17 +70,6 @@ saveenv
 * **`setenv serverip`**：设置 TFTP 服务器 IP（U‑Boot 的 `tftpboot` 会用到）。
 * **`saveenv`**：把当前环境变量持久化到环境介质（掉电不丢）。
 
-##### c. 配置 PHY 工作模式（定义一个复用命令）
-
-```text
-setenv enableNet "mii write 0x7 0x1e 0xa003; mii write 0x7 0x1f 0x8007;mii write 0x7 0x1e 0xa004; mii write 0x7 0x1f 0x00b0;mii write 0x7 0x1e 0xa001; mii write 0x7 0x1f 0x0164;mii read  0x7 0x11;"
-saveenv
-```
-
-```text
-run enableNet
-```
-
 #### 3.3.2 tftp
 
 > 使用 tftp 下载文件
