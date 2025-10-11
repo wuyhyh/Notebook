@@ -75,6 +75,47 @@ git remote add <remote-name> <url>
 git branch --set-upstream-to origin/<remote-branch-name> <local-branch-name>
 ```
 
+### 5. 为稳定版本打标签
+
+1. 首先确保你在正确的分支上
+
+```text
+git checkout <branch-name>  # 例如 git checkout master
+```
+
+2. 使用带注释的标签（annotated tag），因为它包含打标签者、日期和描述信息：
+
+- 在 Git 中为最后一次提交打上标签
+
+```text
+git tag -a stable1.0 -m "Stable version 1.0 release"
+```
+
+- 为特定的提交打标签，在命令最后加上提交哈希：
+
+```text
+git tag -a stable1.0 9fceb02 -m "Message"
+```
+
+3. 需要显式推送标签到远程仓库
+
+```text
+git push origin --tags      # 推送所有本地标签：
+git fetch --tags            # 拉取所有远程标签
+```
+
+```text
+git tag                     # 查看所有标签
+git show stable1.0          # 查看特定标签信息
+```
+
+4. 删除标签
+
+```text
+git tag -d stable1.0                  # 删除本地标签
+git push origin :refs/tags/stable1.0  # 删除远程标签
+```
+
 ---
 
 ## 二、远程仓库（Fedora Server 物理机）
