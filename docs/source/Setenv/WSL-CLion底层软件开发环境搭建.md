@@ -72,6 +72,38 @@ git config --global user.name  "Your Name"
 git config --global user.email "you@example.com"
 ```
 
+设置 Git 默认编辑器为 Vim：
+
+```text
+git config --global core.editor "vim"
+```
+
+生成两个 commit 之间所有 commit 的 patch
+
+```text
+# 生成从 commitA 到 commitB 之间的所有 patch（不包括 commitA）
+git format-patch <commitA>..<commitB>
+
+# 示例：生成从 abc123 到 def456 之间的所有 commit 的 patch
+git format-patch abc123..def456
+```
+
+生成最近 N 个 commit 的 patch
+
+```text
+# 生成最近 2 个 commit 的 patch
+git format-patch -2
+
+# 生成最近 5 个 commit 的 patch
+git format-patch -5
+```
+
+应用单个 patch
+
+```text
+git apply 0001-commit-message.patch
+```
+
 > 说明：`libelf-dev`、`libssl-dev`、`bc`、`flex`、`bison`、`dwarves` 是内核常见依赖；`device-tree-compiler` 用于编译 DTB；
 `ccache` 可显著加速二次构建。
 
