@@ -5,5 +5,6 @@
     :maxdepth: 2
 
     U-Boot调试
+    Linux 操作系统移植
     技术问题时间线
     ARM嵌入式系统软件移植计划

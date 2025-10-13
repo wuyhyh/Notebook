@@ -167,3 +167,24 @@ Speed: 1000, full duplex
 Using ethernet1@28210000 device
 host 192.168.11.100 is alive
 ```
+
+## 4. 引导操作系统
+
+加载内核和设备树到内存
+
+```text
+tftp <mem-addr-1> uImage
+tftp <mem-addr-2> dtb
+```
+
+从内存中的镜像启动
+
+```text
+bootm <mem-addr-1> - <mem-addr-2>
+```
+
+`bootm` 命令会将系统的控制权移交给 Linux 内核。
+
+当 Linux 内核掌握控制权之后，bootloader 就不复存在了，内核会要求收回那些之前被 bootloader 占用的内存和系统资源。
+
+将控制权交回给 bootloader 的唯一办法是重启开发板 (target board)。
