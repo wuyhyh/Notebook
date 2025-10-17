@@ -179,6 +179,78 @@ oebuild bitbake -c cleansstate binutils
 oebuild bitbake openeuler-image
 ```
 
+### 5.4 openssl
+
+好的，下面把“方案 C”的最终做法整理为一份可直接执行的清单。
+
+# 目标
+
+稳定构建 `openssl`/`openssl-native`，避免 `do_compile`/`do_install` 并行导致的竞态与 fuzz/test 目标引发的链接异常。
+
+# 一、在 `local.conf` 增加配置（最快）
+
+编辑 `build/conf/local.conf`，追加如下行：
+
+```bitbake
+# 1) 禁用并行编译与并行安装（openssl 及其 native 变体）
+PARALLEL_MAKE:pn-openssl = ""
+PARALLEL_MAKEINST:pn-openssl = ""
+PARALLEL_MAKE:pn-openssl-native = ""
+PARALLEL_MAKEINST:pn-openssl-native = ""
+
+# 2) 关闭测试与 fuzz 相关目标（生产环境不需要，减少不确定性）
+EXTRA_OECONF:append:pn-openssl = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
+EXTRA_OECONF:append:pn-openssl-native = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
+```
+
+# 二、清理并重建
+
+```bash
+# 进入你的 oebuild 工作目录
+cd <work>
+
+# 清理旧产物（避免复用到已损坏/不完整的缓存）
+bitbake -c cleansstate openssl-native openssl
+
+# 先单包验证，再继续整体构建
+bitbake openssl-native
+bitbake openssl
+
+# 通过后继续你的镜像/目标
+bitbake <your-image-or-target>
+```
+
+# 三、可选：长期化（更规范，用 bbappend）
+
+如果希望把规避策略沉淀到自定义层，创建：
+
+```
+meta-local/recipes-connectivity/openssl/openssl_%.bbappend
+```
+
+内容：
+
+```bitbake
+PARALLEL_MAKE = ""
+PARALLEL_MAKEINST = ""
+EXTRA_OECONF:append = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
+```
+
+把 `meta-local` 加入 `bblayers.conf` 后，执行同样的清理与重建步骤。
+
+# 四、验证要点
+
+* 构建日志不再出现 `mv: cannot stat ...*.d.tmp`、`libcrypto.a: malformed archive`、`OPENSSL_die` 未解析等并行/竞态类错误。
+* `tmp/work/.../openssl-*/image/` 下文件完整；镜像里 `openssl`/`libssl`/`libcrypto` 安装正常。
+
+# 五、注意
+
+* 保证构建目录在 Linux 文件系统（`/home/...`），不要放在 `/mnt/c`。
+* 空间与 inode 充足（建议预留 >30GB），否则也会诱发“文件截断/损坏”类问题。
+
+以上就是“方案 C”的完整落地版本。后续如果升级到更高版本的 OpenSSL，再视情况取消这些限制即可。
+
+
 ## 6. 产物
 
 ```text
