@@ -6,3 +6,4 @@ Yocto 相关知识
 
     Yocto编译框架
     Yocto-WSL-QEMU模拟环境
+    oebuild构建系统
