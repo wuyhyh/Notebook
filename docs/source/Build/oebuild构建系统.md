@@ -1,5 +1,11 @@
 # oebuild 构建系统
 
+社区资源下载：
+
+[飞腾 bsp](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp)
+
+[oe-build](https://pages.openeuler.openatom.cn/embedded/docs/build/html/openEuler-22.03-LTS-SP4/yocto/index.html)
+
 ## 1. 创建独立的 python 虚拟环境
 
 在 Ubuntu 24.04 中
