@@ -187,7 +187,7 @@ oebuild bitbake openeuler-image
 
 编辑 `build/conf/local.conf`，追加如下行：
 
-```bitbake
+```text
 # 1) 禁用并行编译与并行安装（openssl 及其 native 变体）
 PARALLEL_MAKE:pn-openssl = ""
 PARALLEL_MAKEINST:pn-openssl = ""
@@ -226,7 +226,7 @@ meta-local/recipes-connectivity/openssl/openssl_%.bbappend
 
 内容：
 
-```bitbake
+```text
 PARALLEL_MAKE = ""
 PARALLEL_MAKEINST = ""
 EXTRA_OECONF:append = " no-tests no-fuzz-afl no-fuzz-libfuzzer"

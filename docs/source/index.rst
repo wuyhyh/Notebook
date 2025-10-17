@@ -36,7 +36,7 @@ About :doc:`蓝夜 <lanye>` 是谁？
     :caption: Yocto 相关知识
     :maxdepth: 2
 
-    Yocto/index
+    Build/index
 
 .. toctree::
     :caption: LFS 构建自己的操作系统
