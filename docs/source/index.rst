@@ -8,38 +8,38 @@
 
 About :doc:`蓝夜 <lanye>` 是谁？
 
+.. 项目管理
 .. toctree::
-    :caption: 项目管理
     :maxdepth: 2
 
     Timeline/index
 
+.. 环境搭建
 .. toctree::
-    :caption: 安装指南
     :maxdepth: 2
 
     Setenv/index
 
+.. Linux 相关知识
 .. toctree::
-    :caption: Linux 相关知识
     :maxdepth: 2
 
     Linux/index
 
+.. Bootloader 相关知识
 .. toctree::
-    :caption: Bootloader 相关知识
     :maxdepth: 2
 
     Bootloader/index
 
+.. 构建系统
 .. toctree::
-    :caption: Yocto 相关知识
     :maxdepth: 2
 
     Build/index
 
+.. LFS 构建自己的操作系统
 .. toctree::
-    :caption: LFS 构建自己的操作系统
     :maxdepth: 2
 
     LFS/index

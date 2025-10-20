@@ -15,10 +15,3 @@ LFS 构建自己的操作系统
     LFS安装基本系统软件Part4
     LFS系统配置
     LFS新系统启动
-
-.. toctree::
-    :caption: LFS 理论知识
-    :maxdepth: 2
-
-    LFS_Background/index
-
