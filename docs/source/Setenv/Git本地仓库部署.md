@@ -8,6 +8,15 @@
 
 ---
 
+Git 安装后的编辑器需要设置为 `vim`，
+例如：
+
+```text
+git config --global user.name wuyhyh
+git config --global user.email wuyhyh@gmail.com
+git config --global core.editor vim
+```
+
 ## 一、本地裸仓库方案
 
 适用于：
