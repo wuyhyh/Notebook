@@ -1,10 +1,33 @@
 # oebuild 构建系统
 
-社区资源下载：
+openEuler Embeddedd的核心构建系统是基于Yocto，但又根据自身的需求做了很多定制化的开发。
+
+社区：
 
 [飞腾 bsp](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp)
 
 [oe-build](https://pages.openeuler.openatom.cn/embedded/docs/build/html/openEuler-22.03-LTS-SP4/yocto/index.html)
+
+## 0. 安装 WSL 虚拟机
+
+选择的发行版为 Ubuntu 24.04 LTS
+
+在以管理员身份运行的 powershell 中：
+
+```text
+wsl --list --online
+wsl --install -d Ubuntu-24.04
+```
+
+安装的时候会提示输入 `username` 和 `password`。
+
+安装之后先进行一下 Git 相关的基本配置
+
+```text
+git config --global user.name wuyhyh
+git config --global user.email wuyhyh@gmail.com
+git config --global core.editor vim
+```
 
 ## 1. 创建独立的 python 虚拟环境
 
@@ -13,7 +36,7 @@
 创建工程目录
 
 ```text
-mkdir -p ~/openEuler
+mkdir -p ~/openeuler
 ```
 
 ```text
@@ -28,7 +51,7 @@ python3 -m venv ~/venvs/oebuild
 source ~/venvs/oebuild/bin/activate
 ```
 
-升级 pip 并安装
+升级 pip 并安装 oebuild
 
 ```text
 python -m pip install --upgrade pip
@@ -92,7 +115,8 @@ newgrp docker
 sudo systemctl enable --now docker
 ```
 
-验证
+验证，看是否输出
+`Hello from Docker!`
 
 ```text
 docker run --rm hello-world
@@ -104,7 +128,7 @@ docker run --rm hello-world
 
 ```text
 oebuild init -b openEuler-24.03-LTS workdir
-cd /home/wuyuhang/openEuler/workdir
+cd ~/openeuler/workdir
 ```
 
 创建编译配置
@@ -130,7 +154,7 @@ cp -v src/yocto-meta-openeuler/bsp/meta-phytium/phytium.yaml src/yocto-meta-open
 
 ## 5. 开始 oebuild 构建
 
-### 5.1 增大 swap 区，如果 wsl 内存够大可以跳过
+### 5.1 增大 swap 区，如果 wsl 内存够大（16G+）可以跳过
 
 开始编译之前调大 wsl 的可交换内存
 
@@ -151,22 +175,27 @@ swapon --show
 ### 5.2 开始编译
 
 ```text
-cd /home/wuyuhang/openEuler/workdir
+cd ~/openeuler/workdir
+source ~/venvs/oebuild/bin/activate
 oebuild generate -p phytium
 ```
 
+使用 Intel 13400 16线程的 CPU 编译时间约为 45 分钟。
+
 ```text
-cd /home/wuyuhang/openEuler/workdir/build/phytium
+cd ~/openeuler/workdir/build/phytium
 oebuild bitbake openeuler-image
 ```
 
-### 5.3 编译 binutils 出现 gold 链接问题
+### 5.3 可能的编译问题
+
+#### 5.3.1 编译 binutils 出现 gold 链接问题
 
 这版 binutils 把 dwp 放在 gold 目录下。某些组合下它会被错误地用 ld.bfd 去链接并把 libgold.a 拉进来，但缺少 gold
 需要的其它对象/顺序/配置，导致这些 gold:: 符号解析失败。常见修法是禁用 gold（连带 dwp），或者让目标侧 libstdc++ 等在那一步可用；
 
 ```text
-cd /home/wuyuhang/openEuler/workdir/src/yocto-meta-openeuler/meta-openeuler/recipes-devtools/binutils
+cd ~/openeuler/workdir/src/yocto-meta-openeuler/meta-openeuler/recipes-devtools/binutils
 ```
 
 修改 binutils_%.bbappend 内容：
@@ -180,16 +209,16 @@ EXTRA_OECONF:append = " --disable-gold"
 因为是增量编译的，可以回到工作目录继续重新编译
 
 ```text
-cd ~/openEuler/workdir/build/phytium
+cd ~/openeuler/workdir/build/phytium
 oebuild bitbake -c cleansstate binutils
 oebuild bitbake openeuler-image
 ```
 
-### 5.4 openssl
+#### 5.3.2 openssl
 
 稳定构建 `openssl`/`openssl-native`，避免 `do_compile`/`do_install` 并行导致的竞态与 fuzz/test 目标引发的链接异常。
 
-#### 一、在 `local.conf` 增加配置（最快）
+##### 一、在 `local.conf` 增加配置（最快）
 
 编辑 `build/conf/local.conf`，追加如下行：
 
@@ -205,7 +234,7 @@ EXTRA_OECONF:append:pn-openssl = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
 EXTRA_OECONF:append:pn-openssl-native = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
 ```
 
-#### 二、清理并重建
+##### 二、清理并重建
 
 ```bash
 # 进入你的 oebuild 工作目录
@@ -222,7 +251,7 @@ bitbake openssl
 bitbake <your-image-or-target>
 ```
 
-#### 三、可选：长期化（更规范，用 bbappend）
+##### 三、可选：长期化（更规范，用 bbappend）
 
 如果希望把规避策略沉淀到自定义层，创建：
 
@@ -240,12 +269,12 @@ EXTRA_OECONF:append = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
 
 把 `meta-local` 加入 `bblayers.conf` 后，执行同样的清理与重建步骤。
 
-#### 四、验证要点
+##### 四、验证要点
 
 * 构建日志不再出现 `mv: cannot stat ...*.d.tmp`、`libcrypto.a: malformed archive`、`OPENSSL_die` 未解析等并行/竞态类错误。
 * `tmp/work/.../openssl-*/image/` 下文件完整；镜像里 `openssl`/`libssl`/`libcrypto` 安装正常。
 
-### 5.5 dtc 时间戳问题
+#### 5.3.3 dtc 时间戳问题
 
 ```text
 source ~/venvs/oebuild/bin/activate
@@ -253,9 +282,9 @@ oebuild bitbake -c cleansstate dtc-native
 oebuild bitbake dtc-native
 ```
 
-### 5.6 内核编译缺少依赖
+#### 5.3.4 内核编译缺少依赖
 
-#### 问题现象
+##### 问题现象
 
 * `linux-openeuler-5.10-r0 do_compile: oe_runmake failed`
 * 随后在尝试补依赖时又出现：
@@ -263,7 +292,7 @@ oebuild bitbake dtc-native
     * `Nothing PROVIDES 'dwarves-native'`（应为 `pahole-native`）
     * `Nothing PROVIDES 'libelf-native'`（应为 `elfutils-native`）
 
-#### 根因
+##### 根因
 
 1. Yocto 内核开启了 BTF（`CONFIG_DEBUG_INFO_BTF=y`），内核链接 `BTF` 需要 `pahole` 与 `libelf` 等原生工具。
 2. 我们在 `local.conf` 里用错了依赖名称：
@@ -272,7 +301,7 @@ oebuild bitbake dtc-native
     * `libelf-native` → 实际配方名是 `elfutils-native`
 3. 因 provider 名称不匹配，BitBake 无法解析依赖，导致目标 `linux-openeuler` “no buildable providers”。
 
-#### 解决方案
+##### 解决方案
 
 1. 在 `build/conf/local.conf` 正确补齐原生依赖：
 
@@ -293,7 +322,7 @@ oebuild bitbake linux-openeuler
 ## 6. 产物
 
 ```text
-cd /home/wuyuhang/openEuler/workdir/build/phytium/tmp/deploy/images/phytium
+cd ~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium
 ```
 
 ```text
@@ -338,4 +367,12 @@ lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:52 phytiumpi_firefly.dtb -> phy
 lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:52 phytiumpi_firefly-phytium.dtb -> phytiumpi_firefly--5.10-r0-phytium-20251017095001.dtb
 -rwxr-xr-x 2 wuyuhang docker 206689256 Oct 17 17:33 vmlinux*
 ```
+
+## 7. 定制设备树
+
+上面的构建流程使用的源码来自 oebuild 和 phytium bsp，为了支持我们的 target-board，我们需要编译自己的设备树。
+
+对设备树的编译是增量编译，时间不会太长。
+
+
 
