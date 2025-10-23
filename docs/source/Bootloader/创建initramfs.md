@@ -1,0 +1,185 @@
+# 创建 initramfs
+
+用 Buildroot 产出一个“极简但功能足够”的 initramfs
+
+## 1. 环境与目录
+
+```text
+sudo dnf install -y git rsync cpio gzip xz lz4 zstd file \
+  gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
+  ncurses-devel bc bison flex openssl-devel elfutils-libelf-devel dwarves \
+  perl-IPC-Cmd perl-FindBin perl-File-Compare perl-File-Copy \
+  dtc patch
+```
+
+创建目录 clone 代码
+
+```text
+mkdir -p ~/arm64-ramdisk/{src,overlay,output}
+cd ~/arm64-ramdisk/src
+git clone https://github.com/buildroot/buildroot.git --depth=1
+```
+
+---
+
+# 2. 选择“静态、轻量”的配置（推荐）
+
+进入 Buildroot 并创建基础配置，然后把关键项打开：
+
+```bash
+cd ~/arm64-ramdisk/src/buildroot
+make qemu_aarch64_virt_defconfig
+make menuconfig
+```
+
+在 `menuconfig` 里勾选/修改：
+
+* Target options
+
+    * `Target Architecture` → **AArch64 (little endian)**
+    * `Target ABI` → **lp64**
+
+* Toolchain
+
+    * `Toolchain type` → **Buildroot toolchain**
+    * `C library` → **musl**（更小也够用；如你坚持 glibc 也行）
+    * `[*] Enable static`（**静态链接**，最适合独立 initramfs）
+
+* System configuration
+
+    * `Init system` → **none/BusyBox init**（默认）
+    * `Root filesystem overlay` → **填你的 overlay 目录**（例如：`/home/你/arm64-ramdisk/overlay`）
+
+* Package selection
+
+    * BusyBox（默认启用；等会儿单独进 busybox-menuconfig 开 applets）
+    * util-linux：勾选子项
+
+        * `sfdisk`、`blkid`、`lsblk`、`partprobe`
+    * e2fsprogs：勾选子项
+
+        * `mke2fs`、`e2fsck`、`resize2fs`
+    * （可选）`iproute2`（不装也行，busybox 自带 ifconfig/route 足够）
+
+* Filesystem images
+
+    * `[ * ] cpio the root filesystem (for use as an initramfs)`
+    * `Compression method` → **gzip**
+
+保存退出。
+
+## 2.1 打开 BusyBox 所需 applets
+
+```bash
+make busybox-menuconfig
+```
+
+勾选（若默认未开）：
+
+* Networking Utilities：`tftp`、`wget`（建议都开）、`udhcpc`、`ifconfig`、`route`、`ping`
+* Coreutils/Archival：`tar`、`gzip`、`sha256sum`
+
+保存退出。
+
+---
+
+# 3. Overlay 放一个自启动的 `/init`
+
+把下面脚本保存为 `~/arm64-ramdisk/overlay/init` 并赋权；Buildroot 会自动把它打进 `rootfs.cpio.gz`。
+
+```text
+vim ~/arm64-ramdisk/overlay/init
+```
+
+```sh
+#!/bin/sh
+set -eux
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devtmpfs none /dev || true
+mkdir -p /run /tmp
+```
+
+赋权：
+
+```bash
+chmod +x ~/arm64-ramdisk/overlay/init
+```
+
+---
+
+# 4. 编译并收取产物
+
+```bash
+cd ~/arm64-ramdisk/src/buildroot
+make -j$(nproc)
+# 产物：
+ls -lh output/images/rootfs.cpio.gz
+cp output/images/rootfs.cpio.gz ~/arm64-ramdisk/output/
+```
+
+至此，你的 **initramfs** 就准备好了。
+
+---
+
+# 5. U-Boot 启动（外部 cpio.gz）
+
+假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`（来自同一内核源码树）。
+
+```bash
+# 建议的安全地址（按你的板子内存可适当调整，三者别重叠）
+setenv kernel_addr_r    0x80200000
+setenv fdt_addr_r       0x8F000000
+setenv ramdisk_addr_r   0x90000000
+setenv fdt_high         0xffffffffffffffff
+setenv initrd_high      0xffffffffffffffff
+
+tftpboot $kernel_addr_r   Image
+tftpboot $fdt_addr_r      pd2008.dtb
+tftpboot $ramdisk_addr_r  rootfs.cpio.gz
+
+setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/init'
+setexpr rdsize $filesize          # 注意：必须在加载 cpio.gz 之后
+booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
+```
+
+> 如果串口里没有出现 “Unpacking initramfs…/Trying to unpack rootfs image as initramfs…”，则你的内核需要打开
+> `CONFIG_BLK_DEV_INITRD=y`、`CONFIG_RD_GZIP=y`、`CONFIG_DEVTMPFS=y`、`CONFIG_DEVTMPFS_MOUNT=y`、`CONFIG_TMPFS=y`。
+> 这些只改内核，不改 Buildroot。
+
+---
+
+# 6. 服务器文件摆放建议
+
+TFTP/HTTP 根目录放：
+
+```
+Image
+pd2008.dtb
+rootfs.cpio.gz
+rootfs.ext4.img   # 或 rootfs.tar.gz（二选一或都放）
+SHA256SUMS        # 可选（/init 里可加校验）
+```
+
+---
+
+# 7. 常见问题与快速检查
+
+* **启动后卡“找不到根”**：内核没解 cpio.gz → 检查上面 5 个内核开关；或把 `rootfs.cpio.gz` 解成未压缩 `rootfs.cpio` 测一次。
+* **识别不到 NVMe**：内核里 NVMe/PCIe 驱动务必编成 `=y`；DTB 必须描述正确。
+* **地址覆盖/随机 reset**：把三者地址拉开，并设 `fdt_high/initrd_high` 为全 1。
+* **下载不稳**：BusyBox `tftp` 与 `wget` 二选一都开；建议 HTTP 更稳。
+
+---
+
+要不要我把这套 Buildroot 配置固化为一个 `defconfig`（例如 `configs/ramdisk_aarch64_static_defconfig`）+ 一个可直接用的
+BusyBox `.config`？我可以给出两段可直接保存/`make ramdisk_aarch64_static_defconfig` 的配置文本，后续你就一条命令生成
+`rootfs.cpio.gz`。
+
+
+```text
+export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+make -j$(nproc)
+# 得到：output/images/rootfs.cpio.gz
+```
