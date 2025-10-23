@@ -6,6 +6,8 @@ openEuler Embeddedd的核心构建系统是基于Yocto，但又根据自身的�
 
 [飞腾 bsp](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp)
 
+[Phytium CPU OpenEuler Embedded 用户使用手册]()
+
 [oe-build](https://pages.openeuler.openatom.cn/embedded/docs/build/html/openEuler-22.03-LTS-SP4/yocto/index.html)
 
 ## 0. 安装 WSL 虚拟机
@@ -21,7 +23,11 @@ wsl --install -d Ubuntu-24.04
 
 安装的时候会提示输入 `username` 和 `password`。
 
-安装之后先进行一下 Git 相关的基本配置
+## 1. 创建独立的 python 虚拟环境
+
+在 Ubuntu 24.04 中
+
+先进行一下 Git 相关的基本配置
 
 ```text
 git config --global user.name wuyhyh
@@ -29,22 +35,20 @@ git config --global user.email wuyhyh@gmail.com
 git config --global core.editor vim
 ```
 
-## 1. 创建独立的 python 虚拟环境
-
-在 Ubuntu 24.04 中
-
 创建工程目录
 
 ```text
 mkdir -p ~/openeuler
 ```
 
+安装 python 虚拟环境
+
 ```text
 sudo apt update
 sudo apt install -y python3-venv python3-full build-essential
 ```
 
-建立虚拟环境
+建立编译工程的虚拟环境
 
 ```text
 python3 -m venv ~/venvs/oebuild
@@ -92,7 +96,7 @@ wsl --shutdown
 重新进入项目
 
 ```text
-cd ~/openEuler
+cd ~/openeuler
 source ~/venvs/oebuild/bin/activate
 ```
 
@@ -321,6 +325,8 @@ oebuild bitbake linux-openeuler
 
 ## 6. 产物
 
+编译出 **kernel image ,rootfs ,dtb ,iso and phydisk.img**
+
 ```text
 cd ~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium
 ```
@@ -372,7 +378,119 @@ lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:52 phytiumpi_firefly-phytium.dt
 
 上面的构建流程使用的源码来自 oebuild 和 phytium bsp，为了支持我们的 target-board，我们需要编译自己的设备树。
 
-对设备树的编译是增量编译，时间不会太长。
+这是 phytium
+提供的修改设备树的[方法](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp/wikis/%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E7%BC%96%E8%AF%91%E8%AE%BE%E5%A4%87%E6%A0%91)
+
+### 7.1 先进入 Linux 内核源码目录
+
+```text
+cd ~/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source
+```
+
+设备树放在 arch 子目录下
+
+```text
+cd arch/arm64/boot/dts/phytium/
+```
+
+### 7.2 新增和修改设备树
+
+D2000 CPU 使用pd2008前缀的dtb文件。
+
+将设备树文件复制到源码的设备树目录下完成设备树的**新增**：
+
+```text
+cp -v ~/device-tree/pd2008-generic-psci-soc.dtsi ./
+cp -v ~/device-tree/pd2008-devboard-dsk.dts ./
+```
+
+如果要修改设备树的内容，
+例如添加节点, 修改文件 `arch/arm64/boot/dts/phytium/pd2008-devboard-dsk.dts`
+
+### 7.3 修改 Makefile
+
+增加的文件要编译需要修改这个目录下的 Makefile，添加新增的设备树文件名
+
+```text
+vim Makefile
+```
+
+```text
+## d2000 dev board:
+dtb-$(CONFIG_ARCH_PHYTIUM) += pd2008-devboard-dsk.dtb
+```
+
+### 7.4 修改编译配方
+
+```text
+vim ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/conf/machine/include/phy-base.inc
+```
+
+在 `KERNEL_DEVICETREE` 字段增加我们的新设备树
+
+```text
+KERNEL_DEVICETREE ??= " \
+    phytium/pe2202-demo-ddr4.dtb \
+    phytium/pe2201-demo-ddr4.dtb \
+    phytium/pe2204-demo-ddr4.dtb \
+    phytium/phytiumpi_firefly.dtb \
+    phytium/pd2008-devboard-dsk.dtb \
+    "
+```
+
+### 7.5 生成补丁
+
+回到源码目录
+
+```text
+cd ~/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source
+```
+
+生成设备树补丁
+
+```text
+git add .
+git commit -s -m "update dts"
+git format-patch -1
+```
+
+**0001-update-d2000-dtb.patch**
+
+### 7.6 修改内核构建配方
+
+将补丁放到构建系统的 src 子目录中
+
+```text
+cp -v 0001-update-d2000-dtb.patch ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/recipes-kernel/linux/files/
+```
+
+进入配方所在目录并修改配方
+
+```text
+cd ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/recipes-kernel/linux/
+```
+
+`vim linux-openeuler.bb`
+
+加入以下内容
+
+```text
+SRC_URI:append = "\
+file://0001-update-d2000-dtb.patch \
+"
+```
+
+### 7.7 重新编译内核
+
+```text
+source ~/venvs/oebuild/bin/activate
+cd ~/openeuler/workdir/build/phytium
+```
+
+```text
+oebuild bitbake linux-openeuler -c clean
+oebuild bitbake linux-openeuler
+```
 
 
 
