@@ -22,9 +22,9 @@ git clone https://github.com/buildroot/buildroot.git --depth=1
 
 ---
 
-# 2. 选择“静态、轻量”的配置（推荐）
+## 2. 编译配置
 
-进入 Buildroot 并创建基础配置，然后把关键项打开：
+### 2.1 进入 Buildroot 并创建基础配置
 
 ```bash
 cd ~/arm64-ramdisk/src/buildroot
@@ -68,7 +68,7 @@ make menuconfig
 
 保存退出。
 
-## 2.1 打开 BusyBox 所需 applets
+### 2.2 打开 BusyBox 所需 applets
 
 ```bash
 make busybox-menuconfig
@@ -83,7 +83,7 @@ make busybox-menuconfig
 
 ---
 
-# 3. Overlay 放一个自启动的 `/init`
+## 3. Overlay 放一个自启动的 `/init`
 
 把下面脚本保存为 `~/arm64-ramdisk/overlay/init` 并赋权；Buildroot 会自动把它打进 `rootfs.cpio.gz`。
 
@@ -109,12 +109,17 @@ chmod +x ~/arm64-ramdisk/overlay/init
 
 ---
 
-# 4. 编译并收取产物
+## 4. 编译并收取产物
 
 ```bash
 cd ~/arm64-ramdisk/src/buildroot
+export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 make -j$(nproc)
-# 产物：
+```
+
+产物：
+
+```text
 ls -lh output/images/rootfs.cpio.gz
 cp output/images/rootfs.cpio.gz ~/arm64-ramdisk/output/
 ```
@@ -123,9 +128,9 @@ cp output/images/rootfs.cpio.gz ~/arm64-ramdisk/output/
 
 ---
 
-# 5. U-Boot 启动（外部 cpio.gz）
+## 5. U-Boot 启动（外部 cpio.gz）
 
-假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`（来自同一内核源码树）。
+假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`
 
 ```bash
 # 建议的安全地址（按你的板子内存可适当调整，三者别重叠）
@@ -144,13 +149,9 @@ setexpr rdsize $filesize          # 注意：必须在加载 cpio.gz 之后
 booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
 ```
 
-> 如果串口里没有出现 “Unpacking initramfs…/Trying to unpack rootfs image as initramfs…”，则你的内核需要打开
-> `CONFIG_BLK_DEV_INITRD=y`、`CONFIG_RD_GZIP=y`、`CONFIG_DEVTMPFS=y`、`CONFIG_DEVTMPFS_MOUNT=y`、`CONFIG_TMPFS=y`。
-> 这些只改内核，不改 Buildroot。
-
 ---
 
-# 6. 服务器文件摆放建议
+## 6. 服务器文件摆放建议
 
 TFTP/HTTP 根目录放：
 
@@ -160,26 +161,4 @@ pd2008.dtb
 rootfs.cpio.gz
 rootfs.ext4.img   # 或 rootfs.tar.gz（二选一或都放）
 SHA256SUMS        # 可选（/init 里可加校验）
-```
-
----
-
-# 7. 常见问题与快速检查
-
-* **启动后卡“找不到根”**：内核没解 cpio.gz → 检查上面 5 个内核开关；或把 `rootfs.cpio.gz` 解成未压缩 `rootfs.cpio` 测一次。
-* **识别不到 NVMe**：内核里 NVMe/PCIe 驱动务必编成 `=y`；DTB 必须描述正确。
-* **地址覆盖/随机 reset**：把三者地址拉开，并设 `fdt_high/initrd_high` 为全 1。
-* **下载不稳**：BusyBox `tftp` 与 `wget` 二选一都开；建议 HTTP 更稳。
-
----
-
-要不要我把这套 Buildroot 配置固化为一个 `defconfig`（例如 `configs/ramdisk_aarch64_static_defconfig`）+ 一个可直接用的
-BusyBox `.config`？我可以给出两段可直接保存/`make ramdisk_aarch64_static_defconfig` 的配置文本，后续你就一条命令生成
-`rootfs.cpio.gz`。
-
-
-```text
-export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
-make -j$(nproc)
-# 得到：output/images/rootfs.cpio.gz
 ```
