@@ -10,4 +10,3 @@ Bootloader 相关知识
     使用串口传输更新U-Boot
     EM100Pro-G3使用方法
     U-Boot双网口问题复盘
-    创建initramfs
