@@ -139,11 +139,13 @@ setenv fdt_addr_r       0x8F000000
 setenv ramdisk_addr_r   0x90000000
 setenv fdt_high         0xffffffffffffffff
 setenv initrd_high      0xffffffffffffffff
+```
 
-tftpboot $kernel_addr_r   Image
-tftpboot $fdt_addr_r      pd2008.dtb
-tftpboot $ramdisk_addr_r  rootfs.cpio.gz
+```
+tftpboot $kernel_addr_r Image;tftpboot $fdt_addr_r pd2008.dtb;tftpboot $ramdisk_addr_r rootfs.cpio.gz;
+```
 
+```text
 setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/init'
 setexpr rdsize $filesize          # 注意：必须在加载 cpio.gz 之后
 booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
