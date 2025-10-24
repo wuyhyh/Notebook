@@ -6,7 +6,7 @@ openEuler Embeddedd的核心构建系统是基于Yocto，但又根据自身的�
 
 [飞腾 bsp](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp)
 
-[Phytium CPU OpenEuler Embedded 用户使用手册]()
+[Phytium CPU OpenEuler Embedded 用户使用手册](https://gitee.com/phytium_embedded/phytium-embedded-docs/tree/master/linux)
 
 [oe-build](https://pages.openeuler.openatom.cn/embedded/docs/build/html/openEuler-22.03-LTS-SP4/yocto/index.html)
 
@@ -128,14 +128,18 @@ docker run --rm hello-world
 
 ## 3. 运行 oebuild
 
-初始化工作目录
+### 3.1 初始化工作目录
+
+`oebuild init` 命令会初始化工作目录
 
 ```text
 oebuild init -b openEuler-24.03-LTS workdir
 cd ~/openeuler/workdir
 ```
 
-创建编译配置
+### 3.2 创建编译配置
+
+`oebuild update` 命令会下载目标版本的项目源码及构建容器
 
 ```text
 oebuild update
@@ -492,5 +496,54 @@ oebuild bitbake linux-openeuler -c clean
 oebuild bitbake linux-openeuler
 ```
 
+## 8. 修改定制 Linux 内核功能
+
+### 8.1 在 oebuild 中配置内核选项
+
+先进入平台目录，进入构建环境
+
+```text
+source ~/venvs/oebuild/bin/activate
+cd ~/openeuler/workdir/build/phytium
+oebuild bitbake
+```
+
+打开 menuconfig
+
+```text
+bitbake -c menuconfig linux-openeuler
+```
+
+配置完成后退出
+
+```text
+exit
+```
+
+重新编译内核
+
+```text
+oebuild bitbake linux-openeuler
+```
+
+### 8.2 包管理器和安装软件
+
+添加选项 `-f epkg`
+
+```text
+oebuild generate -p phytium -f epkg
+oebuild bitbake openeuler-image
+```
+
+开发板上安装软件包
+
+```text
+epkg install <package>  (安装软件)
+epkg remove <package>   (卸载软件)
+```
+
+### 8.3 修改内核源码
+
+与设备树修改的过程一致，注意不能直接修改源码，需要生成补丁，然后将补丁放到配方指定的位置。
 
 
