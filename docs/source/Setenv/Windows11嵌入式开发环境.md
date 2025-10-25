@@ -51,6 +51,14 @@ tar -czf file.tar.gz file/
 tar -zxf file.tar.gz
 ```
 
+### 1.8 安装 CLion
+
+CLion 用作底层软件开发是非常方便的。
+
+我们可以使用 `bear` 生成编译数据库文件，并且配置 CLion 的工具链为 `wsl`，这样就能实现代码的索引，非常方便。
+
+为了良好的 **coding style**，打开空白字符的显示选项。
+
 ## 2. 配置
 
 ### 2.1 安装 wsl
@@ -99,15 +107,7 @@ git config --global core.editor vim
 
 在 windows 的 `User/wuyuhang` 根目录下也该生成 `ssh-keygen`，这样 windows 机器才会被远端仓库认识。
 
-## 2.3 安装 CLion
-
-CLion 用作底层软件开发是非常方便的。
-
-我们可以使用 `bear` 生成编译数据库文件，并且配置 CLion 的工具链为 `wsl`，这样就能实现代码的索引，非常方便。
-
-为了良好的 **coding style**，打开空白字符的显示选项。
-
-## 2.4 大模型
+### 2.3 大模型
 
 - 免费的 **deepseek** 豆包
 
