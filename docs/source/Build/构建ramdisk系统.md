@@ -4,6 +4,8 @@
 
 ## 1. 环境与目录
 
+在 Fedora 42 上:
+
 ```text
 sudo dnf install -y git rsync cpio gzip xz lz4 zstd file \
   gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
@@ -12,12 +14,16 @@ sudo dnf install -y git rsync cpio gzip xz lz4 zstd file \
   dtc patch
 ```
 
-创建目录 clone 代码
+下载代码压缩包到 `~`
+
+[20250207 LTS](https://buildroot.org/download.html) 版本
+
+创建目录
 
 ```text
 mkdir -p ~/arm64-ramdisk/{src,overlay,output}
 cd ~/arm64-ramdisk/src
-git clone https://github.com/buildroot/buildroot.git --depth=1
+cp ~/buildroot-2025.02.7.tar.xz ./;tar -xf buildroot-2025.02.7.tar.xz
 ```
 
 ---
@@ -111,17 +117,27 @@ chmod +x ~/arm64-ramdisk/overlay/init
 
 ## 4. 编译并收取产物
 
+在根目录创建交叉编译的环境脚本
+
+```text
+echo 'unset ARCH CROSS_COMPILE' >> set-arm64.sh
+echo 'export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-' >> set-arm64.sh
+```
+
 ```bash
-cd ~/arm64-ramdisk/src/buildroot
-export ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+sh ~/set-arm64.sh;cd ~/arm64-ramdisk/src/buildroot
 make -j$(nproc)
 ```
 
 产物：
 
 ```text
-ls -lh output/images/rootfs.cpio.gz
+ls -lh ~/arm64-ramdisk/src/buildroot/output/images/*
+```
+
+```text
 cp output/images/rootfs.cpio.gz ~/arm64-ramdisk/output/
+cp output/images/Image ~/arm64-ramdisk/output/
 ```
 
 至此，你的 **initramfs** 就准备好了。
@@ -161,6 +177,4 @@ TFTP/HTTP 根目录放：
 Image
 pd2008.dtb
 rootfs.cpio.gz
-rootfs.ext4.img   # 或 rootfs.tar.gz（二选一或都放）
-SHA256SUMS        # 可选（/init 里可加校验）
 ```
