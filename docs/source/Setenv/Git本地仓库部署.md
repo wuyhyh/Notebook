@@ -17,7 +17,7 @@ git config --global user.email wuyhyh@gmail.com
 git config --global core.editor vim
 ```
 
-## 一、本地裸仓库方案
+## 1. 本地裸仓库方案
 
 适用于：
 
@@ -25,7 +25,7 @@ git config --global core.editor vim
 * 不希望项目数据托管到外部平台（如 GitHub、GitLab）；
 * 本机磁盘有额外空间可用。
 
-### 1. 创建裸仓库
+### 1.1 创建裸仓库
 
 在 git bash 中执行创建仓库的命令
 
@@ -34,7 +34,7 @@ mkdir -p /c/Users/wuyuhang/git-backups
 git init --bare /c/Users/wuyuhang/git-backups/my_project.git
 ```
 
-### 2. 在项目中添加远程并推送
+### 1.2 在项目中添加远程并推送
 
 同样在 git bash 中执行这些命令
 
@@ -50,7 +50,7 @@ git push backup --tags
 > git remote add backup /mnt/c/Users/wuyuhang/git-backups/my_project.git
 > ```
 
-### 3. 从备份恢复
+### 1.3 从备份恢复
 
 同样在 git bash 中执行这些命令
 
@@ -58,7 +58,7 @@ git push backup --tags
 git clone /c/Users/wuyuhang/git-backups/my_project.git /c/Users/wuyuhang/CLionProjects/my_project
 ```
 
-### 4. 远程仓库变更
+### 1.4 远程仓库变更
 
 当远程仓库的 IP 地址发生变化之后，需要修改 URL
 
@@ -84,15 +84,15 @@ git remote add <remote-name> <url>
 git branch --set-upstream-to origin/<remote-branch-name> <local-branch-name>
 ```
 
-### 5. 为稳定版本打标签
+### 1.5 为稳定版本打标签
 
-1. 首先确保你在正确的分支上
+#### 1.5.1 首先确保你在正确的分支上
 
 ```text
 git checkout <branch-name>  # 例如 git checkout master
 ```
 
-2. 使用带注释的标签（annotated tag），因为它包含打标签者、日期和描述信息：
+#### 1.5.2 使用带注释的标签（annotated tag），因为它包含打标签者、日期和描述信息：
 
 - 在 Git 中为最后一次提交打上标签
 
@@ -106,7 +106,7 @@ git tag -a stable1.0 -m "Stable version 1.0 release"
 git tag -a stable1.0 9fceb02 -m "Message"
 ```
 
-3. 需要显式推送标签到远程仓库
+#### 1.5.3 需要显式推送标签到远程仓库
 
 ```text
 git push origin --tags      # 推送所有本地标签：
@@ -118,7 +118,7 @@ git tag                     # 查看所有标签
 git show stable1.0          # 查看特定标签信息
 ```
 
-4. 删除标签
+#### 1.5.4 删除标签
 
 ```text
 git tag -d stable1.0                  # 删除本地标签
@@ -127,14 +127,14 @@ git push origin :refs/tags/stable1.0  # 删除远程标签
 
 ---
 
-## 二、远程仓库（Fedora Server 物理机）
+## 2. 远程仓库（Fedora Server 物理机）
 
 适用于：
 
 * 多人协作开发；
 * 局域网内多台 Windows 主机共享同一个 Linux 服务器中的远程 Git 仓库。
 
-### 1. 网络配置
+### 2.1 网络配置
 
 * Fedora Server 与开发所用的 Windows PC 有相同网段的 IP，例如：
 
@@ -142,7 +142,7 @@ git push origin :refs/tags/stable1.0  # 删除远程标签
     * PC2：`172.16.21.99`
     * Fedora Server：`172.16.21.150`
 
-### 2. Fedora 创建远程仓库
+### 2.2 Fedora 创建远程仓库
 
 ```bash
 sudo dnf install -y git
@@ -153,13 +153,13 @@ sudo chown git:git /srv/git
 sudo -u git git init --bare /srv/git/project.git
 ```
 
-### 3. 启用 SSH 服务
+### 2.3 启用 SSH 服务
 
 ```bash
 sudo systemctl enable --now sshd
 ```
 
-### 4. Windows 添加远程并推送
+### 2.4 Windows 添加远程并推送
 
 ```bash
 git clone ssh://git@172.16.21.150/srv/git/project.git
@@ -170,14 +170,14 @@ git push -u origin master
 
 ---
 
-## 三、远程仓库（Fedora Server NAT + 端口转发）
+## 3. 远程仓库（Fedora Server NAT + 端口转发）
 
 适用于：
 
 * VMware 使用 **NAT 网络**，虚拟机只有私有地址（如 `192.168.79.128`）；
 * 希望宿主机与局域网内其他主机（同事电脑）也能访问该仓库。
 
-### 1. 配置 VMware NAT 端口转发
+### 3.1 配置 VMware NAT 端口转发
 
 > 配置端口转发也可以在 VMware 虚拟网络配置中图形化配置
 > 重点是建立端口映射 22 -> 2222
@@ -195,7 +195,7 @@ git push -u origin master
   net start "VMware NAT Service"
   ```
 
-### 2. Windows 访问仓库
+### 3.2 Windows 访问仓库
 
 使用宿主机 IP（例如 `172.16.21.119`）加转发端口：
 
@@ -206,15 +206,15 @@ git remote add origin ssh://git@172.16.21.119:2222/srv/git/project.git
 git push -u origin master
 ```
 
-### 3. 同事访问
+### 3.3 同事访问
 
 同事机器使用宿主机的公网地址（`172.16.21.119:2222`）即可访问 Fedora 虚拟机仓库。
 
 ---
 
-## 四、免密登录配置
+## 4. 免密登录配置
 
-### 1. Windows 生成 SSH 密钥
+### 4.1 Windows 生成 SSH 密钥
 
 ```bash
 ssh-keygen
@@ -223,7 +223,7 @@ ssh-keygen
 * 默认生成在 `~/.ssh/id_rsa` 和 `~/.ssh/id_rsa.pub`。
 * 保留私钥 `id_rsa`，把公钥 `id_rsa.pub` 上传到服务器。
 
-### 2. 将公钥添加到 Fedora
+### 4.2 将公钥添加到 Fedora
 
 在 Windows 上查看公钥：
 
@@ -245,14 +245,14 @@ echo "公钥内容" >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-### 3. 测试免密登录
+### 4.3 测试免密登录
 
 ```bash
 ssh -p 2222 git@172.16.21.119   # NAT 模式
 ssh git@172.16.21.150           # 物理机模式
 ```
 
-### 4. 从服务器 clone 代码
+### 4.4 从服务器 clone 代码
 
 之后可直接使用：
 

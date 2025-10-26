@@ -89,7 +89,7 @@ make busybox-menuconfig
 
 ---
 
-## 3. Overlay 放一个自启动的 `/init`
+## 3. Overlay 放一个自启动的 /init
 
 把下面脚本保存为 `~/arm64-ramdisk/overlay/init` 并赋权；Buildroot 会自动把它打进 `rootfs.cpio.gz`。
 
