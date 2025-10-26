@@ -1,4 +1,4 @@
-# U-boot 到 Ubuntu 自动启动：命令说明与完整流程（d2000/arm64）
+# U-boot引导Ubuntu从磁盘启动部署流程
 
 本文覆盖：U‑Boot 环境准备 → 临时 RAMDISK 启动 → Linux 下分区与写入根文件系统 → 从 NVMe 启动 → 配置自动启动。
 

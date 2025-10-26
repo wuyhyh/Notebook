@@ -1,4 +1,4 @@
-# EM100Pro-G3使用方法
+# EM100Pro-G3闪存Emulator使用方法
 
 ## 1. 操作 flash emulator
 
@@ -81,8 +81,6 @@ saveenv
 ```text
 tftpboot 0x90000000 fip-all.bin
 ```
-
-> 如果当前的 bootloader 还没有实现网络功能，参考：[使用串口传输更新U-Boot](./使用串口传输更新U-Boot.md)
 
 ### 3.4 在串口中擦写 flash
 
