@@ -1,6 +1,6 @@
 # 创建 initramfs
 
-用 Buildroot 产出一个“极简但功能足够”的 initramfs
+用 Buildroot 和 busybox 产出一个“极简但功能足够”的 initramfs
 
 ## 1. 环境与目录
 
