@@ -99,12 +99,11 @@ vim ~/arm64-ramdisk/overlay/init
 
 ```sh
 #!/bin/sh
-set -eux
-
-mount -t proc none /proc
-mount -t sysfs none /sys
-mount -t devtmpfs none /dev || true
-mkdir -p /run /tmp
+set -ux
+mount -t proc     proc     /proc
+mount -t sysfs    sysfs    /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null || true
+exec /sbin/init
 ```
 
 赋权：
@@ -178,3 +177,9 @@ Image
 pd2008.dtb
 rootfs.cpio.gz
 ```
+
+## 7. 在 d2000 CPU 上的问题
+
+因为 d2000 CPU 的网络驱动没有合入内核主线，所以需要使用相关 BSP 构建出的内核。
+
+复制从 oebuild 中编译的**内核**到 tftp 服务器读取的目录中，并改为 `Image`
