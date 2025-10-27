@@ -63,7 +63,7 @@ CLion 用作底层软件开发是非常方便的。
 
 ### 2.1 安装 wsl
 
-#### 2.1.1 安装 指定版本的wsl
+#### 2.1.1 安装指定版本的 wsl
 
 ```text
 wsl --list --online
@@ -75,7 +75,7 @@ wsl --list --online Ubuntu-24.04
 
 ```text
 cd ~
-echo 'export wuyh=/mnt/c/User/wuyuhang/Downloads' >> .bashrc
+echo 'export wuyh=/mnt/c/Users/wuyuhang/Downloads' >> .bashrc
 source .bashrc
 ```
 
