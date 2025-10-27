@@ -63,6 +63,8 @@ CLion 用作底层软件开发是非常方便的。
 
 ### 2.1 安装 wsl
 
+#### 2.1.1 安装 指定版本的wsl
+
 ```text
 wsl --list --online
 wsl --list --online FedoraLinux-42
@@ -78,6 +80,41 @@ source .bashrc
 ```
 
 这样可以快速在两个文件系统之间切换。
+
+#### 2.1.2 文件系统权限问题
+
+由于 WSL 和 Windows 文件系统之间的权限模型不同，导致在 `/mnt/c/` 等挂载点下的文件权限显示异常。
+
+- WSL 通过 `DrvFs` 文件系统访问 Windows 文件
+- Windows 文件系统没有 Linux 风格的权限位
+- WSL 为所有文件设置了默认权限（通常是 755）
+
+**修改 WSL 配置文件**
+
+编辑 `/etc/wsl.conf`：
+
+```bash
+sudo vim /etc/wsl.conf
+```
+
+添加以下内容：
+
+```text
+[automount]
+enabled = true
+options = "metadata,umask=022"
+mountFsTab = false
+
+[interop]
+enabled = true
+appendWindowsPath = true
+```
+
+**重启 WSL** 使配置生效（关闭所有 WSL 窗口重新打开）。
+
+```text
+wsl --shutdown
+```
 
 ### 2.2 配置 Git
 
