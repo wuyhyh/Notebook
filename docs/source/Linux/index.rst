@@ -12,3 +12,9 @@ Linux 相关知识
     :maxdepth: 2
 
     compile-kernel/index
+
+.. 移植 Linux 系统到开发板
+.. toctree::
+    :maxdepth: 2
+
+    porting_os/index
