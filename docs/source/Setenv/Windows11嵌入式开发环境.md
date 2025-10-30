@@ -142,6 +142,17 @@ git config --global core.editor vim
 
 在 **windows** 下也应该安装 Git，Git bash 可以在windows上执行很多有用的命令。
 
+在 Git Bash 中，当文件名包含中文时，可能会显示为八进制转义序列。以下是解决方案：
+
+```bash
+# 设置 Git 使用 UTF-8 编码显示文件名
+git config --global core.quotepath false
+
+# 设置 Git 使用 UTF-8 编码处理文件名
+git config --global i18n.logoutputencoding utf8
+git config --global i18n.commitencoding utf8
+```
+
 在 windows 的 `User/wuyuhang` 根目录下也该生成 `ssh-keygen`，这样 windows 机器才会被远端仓库认识。
 
 ### 2.3 大模型
