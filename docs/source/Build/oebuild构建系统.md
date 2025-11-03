@@ -335,6 +335,13 @@ oebuild bitbake linux-openeuler
 cd ~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium
 ```
 
+添加镜像文件路径环境变量方便访问文件：
+
+```text
+echo 'export images_path=~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium' >> bashrc
+source ~/.bashrc
+```
+
 ```text
 wuyuhang@Tokamark-2:~/openEuler/workdir/build/phytium/tmp/deploy/images/phytium$ ll
 total 1082764

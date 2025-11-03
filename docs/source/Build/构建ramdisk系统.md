@@ -165,6 +165,12 @@ setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/i
 ```
 
 ```text
+setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,mmio32,0x28001000 \
+keep_bootcon ignore_loglevel loglevel=8 rdinit=/sbin/init'
+```
+
+
+```text
 booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
 ```
 
