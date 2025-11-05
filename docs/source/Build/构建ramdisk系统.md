@@ -147,8 +147,10 @@ cp output/images/Image ~/arm64-ramdisk/output/
 
 假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`
 
+启动initramfs
+
+建议的安全地址（按你的板子内存可适当调整，三者别重叠）
 ```bash
-# 建议的安全地址（按你的板子内存可适当调整，三者别重叠）
 setenv kernel_addr_r    0x80200000
 setenv fdt_addr_r       0x8F000000
 setenv ramdisk_addr_r   0x90000000
@@ -162,19 +164,34 @@ tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setexpr rd
 
 ```text
 setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/init'
-```
-
-```text
-setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,mmio32,0x28001000 \
-keep_bootcon ignore_loglevel loglevel=8 rdinit=/sbin/init'
-```
-
-
-```text
 booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
 ```
 
+```text
+ip a
+```
+
 启动之后需要配置 **IP**，才能使用后面的网络工具下载文件到开发板。
+
+**CPU0**
+
+```text
+ifconfig eth0 192.168.11.105 up
+ifconfig eth1 192.168.11.106 up
+```
+
+**CPU1**
+
+```text
+ifconfig eth0 192.168.11.107 up
+ifconfig eth1 192.168.11.108 up
+```
+
+验证网络，ping 3次
+
+```text
+ping -c 3 192.168.11.100
+```
 
 ---
 
