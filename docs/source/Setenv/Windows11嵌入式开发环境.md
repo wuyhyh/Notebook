@@ -175,3 +175,160 @@ pause
 
 右键以管理员身份运行
 
+### 2.5 在开发板上通过 SSH/SCP 直接访问 WSL
+
+嵌入式开发板直接用 `ssh/scp` 访问 WSL 的 Linux 路径，不再经过Windows 用户目录或盘符路径。默认目标端口使用 **2223**，避免与
+Windows 自身的 OpenSSH（22）冲突。
+
+---
+
+#### 2.5.1 前置条件
+
+* Windows 10/11 + **WSL2（推荐商店版，`wsl --version` 可见版本号）**
+* 开发板网络可达 Windows 主机的局域网 IP（示例：`192.168.11.100`）
+* 开发板端 `scp` 若是 Dropbear，**后续命令都需要 `-O`**（legacy scp）
+
+---
+
+#### 2.5.2 把 WSL 放到与局域网同一网段（mirrored）
+
+1）管理员 PowerShell：
+
+```powershell
+wsl --version              # 建议为商店版，能看到“WSL version: x.y.z”；低版本先 wsl --update
+wsl --shutdown             # 关闭所有 WSL 实例
+```
+
+2）创建/编辑 `C:\Users\<你>\.wslconfig`：
+
+```powershell
+[wsl2]
+networkingMode=mirrored
+dnsTunneling=true
+autoProxy=true
+```
+
+3）重新进入 WSL：
+
+```powershell
+wsl
+```
+
+4）在 WSL 内确认（应见到一个与主机同网段/或共享主机 IP 的接口，如 `192.168.11.100/24`）：
+
+```bash
+ip a
+```
+
+---
+
+#### 2.5.3 在 WSL 中部署并启动 `sshd`（监听 2223）
+
+1）安装与准备：
+
+```bash
+sudo apt update
+sudo apt install -y openssh-server
+sudo ssh-keygen -A                 # 生成主机密钥
+sudo mkdir -p /run/sshd && sudo chmod 0755 /run/sshd
+```
+
+2）配置 `sshd`（绑定到所有 IPv4 地址，并使用 2223 端口）：
+
+```bash
+# 修改/追加关键项
+sudo sed -i 's/^#\?Port .*/Port 2223/' /etc/ssh/sshd_config
+grep -q '^AddressFamily' /etc/ssh/sshd_config || echo 'AddressFamily inet' | sudo tee -a /etc/ssh/sshd_config
+grep -q '^ListenAddress'  /etc/ssh/sshd_config || echo 'ListenAddress 0.0.0.0' | sudo tee -a /etc/ssh/sshd_config
+
+# 如需口令登录（可选，便于临时使用）
+sudo sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+passwd    # 设定 WSL 用户密码（首次需要）
+```
+
+3）先**直接后台拉起**一个 `sshd`（不依赖 systemd，便于立即验证）：
+
+```bash
+sudo pkill -f "/usr/sbin/sshd.*2223" 2>/dev/null || true
+sudo /usr/sbin/sshd -E /var/log/sshd-2223.log -D -p 2223 -o ListenAddress=0.0.0.0 &
+sleep 1
+ss -lntp | grep 2223      # 看到 0.0.0.0:2223 处于 LISTEN 即可
+```
+
+> 日志可查看：`sudo tail -f /var/log/sshd-2223.log`
+
+---
+
+#### 2.5.4 Windows 防火墙放行 2223（仅放行，不要让 Windows 占用端口）
+
+管理员 PowerShell：
+
+```powershell
+netsh advfirewall firewall add rule name="WSL-SSH-2223" dir=in action=allow protocol=TCP localport=2223 profile=private
+# 验证：最好看不到任何进程在 2223 上监听（表示没被 Windows 抢占）
+Get-NetTCPConnection -LocalPort 2223 -State Listen
+```
+
+> 若这里显示有监听者，说明被 Windows 进程占用；请确认**未**启动 Windows 的 sshd 或其它服务在 2223 监听。
+
+---
+
+#### 2.5.5 连通性自检
+
+1）**在 Windows 本机测试**（确保链路到达 WSL，而非 Windows 自身）：
+
+```powershell
+ssh -p 2223 <wsl_user>@127.0.0.1
+# 能进 WSL shell 即通过
+```
+
+2）**从开发板测试**：
+
+```sh
+# 登录
+ssh -p 2223 <wsl_user>@192.168.11.100
+
+# 复制（Dropbear 的 scp 必须加 -O）
+scp -O -P 2223 <wsl_user>@192.168.11.100:~/file.img /mnt/p2/
+```
+
+---
+
+#### 2.5.6 启用 systemd，让 sshd 自启动(可选)
+
+如果你希望 WSL 每次启动自动运行 `sshd`：
+
+1）在 WSL：启用 systemd
+
+```bash
+sudo tee /etc/wsl.conf >/dev/null <<'EOF'
+[boot]
+systemd=true
+EOF
+```
+
+2）在 Windows 执行：
+
+```powershell
+wsl --shutdown
+```
+
+3）回到 WSL：
+
+```bash
+sudo systemctl enable --now ssh
+systemctl status ssh
+```
+
+> 启用 systemd 后，**端口仍然建议用 2223**（避免 Windows 22 端口冲突）。若要改用 22，请先停用并禁用 Windows 的 `sshd` 服务。
+
+
+
+
+
+
+
+
+
+
+
