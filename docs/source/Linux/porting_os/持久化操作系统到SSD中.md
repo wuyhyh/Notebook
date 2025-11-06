@@ -1,25 +1,36 @@
 # 持久化操作系统到 SSD 中
 
+在 wsl Ubuntu 24.04 中操作。
+
 ## 1. 复制文件
 
-```text
-cd $images_path
-tar -cJhf openeuler-image-phytium.ext4.tar.xz openeuler-image-phytium.ext4
-```
+创建软链接
 
 ```text
-cp -v Image $wuyh/openeuler_images/
-cp -v pd2008-devboard-dsk.dtb $wuyh/openeuler_images/
-cp -v openeuler-image-phytium.ext4.tar.xz $wuyh/openeuler_images/
+cd;
+ln -s /mnt/c/Users/wuyuhang/Downloads/ downloads
+ln -s /mnt/c/Users/wuyuhang/Music/ music
+ln -s /home/wuyuhang/openeuler/workdir/build/phytium/tmp/deploy/images/phytium/ images_openeuler
+```
+
+> 如果已经创建了就不用再创建
+
+复制文件到 `nvme_images`
+
+```text
+cd;mkdir -pv downloads/nvme_images;cd images_openeuler;
+cp -v openeuler-image-phytium.tar.bz2 ~/downloads/nvme_images
+cp -v pd2008-devboard-dsk.dtb ~/downloads/nvme_images
+cp -v Image ~/downloads/nvme_images
 ```
 
 ## 2. 启动 initramdisk 系统
 
-假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`
+假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008-devboard-dsk.dtb`
 
 建议的安全地址（按你的板子内存可适当调整，三者别重叠）
 
-```text
+```bash
 setenv kernel_addr_r    0x80200000
 setenv fdt_addr_r       0x8F000000
 setenv ramdisk_addr_r   0x90000000
@@ -28,41 +39,149 @@ setenv initrd_high      0xffffffffffffffff
 ```
 
 ```text
-tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setexpr rdsize $filesize;tftpboot $fdt_addr_r pd2008.dtb
+tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setexpr rdsize $filesize;tftpboot $fdt_addr_r pd2008-devboard-dsk.dtb
 ```
+
+使用自定义初始化脚本，感觉并不能正确运行，末尾还是要调用 `/sbin/init`
+
+```text
+setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/init'
+booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
+```
+
+使用系统初始化脚本
 
 ```text
 setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/init'
 booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
+```
+
+> 注意：
+> 如果启动失败进入 kernel panic，**重新启动**。
+> 如果启动后命令提示符为 `$` ，不是 `#`，**重新启动**。
+
+启动进入 bash 之后，查看块设备是否挂载成功。可能回出现找不到动态链接库 libnurse的问题，**重新启动**。
+
+```text
+lsblk
 ```
 
 启动之后需要配置 **IP**，才能使用后面的网络工具下载文件到开发板。
 
 ```text
 ip a
+```
+
+**CPU0**
+
+```text
 ifconfig eth0 192.168.11.105 up
 ifconfig eth1 192.168.11.106 up
 ```
 
-### 2.2 CPU1 的启动
+**CPU1**
 
 ```text
-setenv fdt_high
-setenv initrd_high
-setenv kernel_addr_r  0x88000000
-setenv fdt_addr_r     0xA0000000
-setenv ramdisk_addr_r 0xA8000000
+ifconfig eth0 192.168.11.107 up
+ifconfig eth1 192.168.11.108 up
+```
+
+验证网络，ping 3次。
+> 如果不指定次数或超时时间可能**无法中断 ping 命令**，失去对串口终端的操作。
+
+```text
+ping -c 3 192.168.11.100
+```
+
+扫描设备节点
+
+初始化脚本和 systemd 中没有指定自动挂载设备的服务，需要手动扫描，这样才能操作 `/dev/nvme` 设备。
+
+```text
+echo /sbin/mdev > /proc/sys/kernel/hotplug 2>/dev/null || true
+mdev -s
+```
+
+## 3. 写入 ssd
+
+- 创建挂载点并挂载分区
+
+```text
+mkdir -p /mnt/p1 /mnt/p2
+mount /dev/nvme0n1p1 /mnt/p1
+mount /dev/nvme0n1p2 /mnt/p2
+```
+
+- 复制要写入的文件到分区，这个目录是最终系统启动后的/
+
+```text
+cd /mnt/p1
 ```
 
 ```text
-tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setenv rdsize $filesize;tftpboot $fdt_addr_r pd2008.dtb;fdt addr $fdt_addr_r; fdt resize
+scp -P 2223 wuyuhang@192.168.11.100:/home/wuyuhang/downloads/nvme_images/* /mnt/p1
 ```
+
+- 写入到文件系统目录
+
+用这几个变量表示重要的文件和目录
 
 ```text
-setenv bootargs 'console=ttyAMA1,115200 earlycon=pl011,0x28001000 rdinit=/sbin/init'
-booti $kernel_addr_r $ramdisk_addr_r:$rdsize $fdt_addr_r
+ROOT_MNT=/mnt/p1
+ROOT_TAR=openeuler-image-phytium.tar.bz2
+KERNEL=Image
+DTB=pd2008-devboard-dsk.dtb
 ```
 
+- 在根目录解包
 
+解包保留权限/属主/扩展属性
 
+```text
+busybox bunzip2 -c "$ROOT_TAR" | tar -xpf - -C "$ROOT_MNT" --numeric-owner
+```
 
+- 移动设备树和内核到 `/boot`
+
+```text
+ROOT_DEV=/dev/nvme0n1p1
+ROOT_MNT=/mnt/p1
+KERNEL=Image
+DTB=pd2008-devboard-dsk.dtb
+
+mkdir -p $ROOT_MNT/boot/dtbs
+cp -f $KERNEL $ROOT_MNT/boot/Image
+cp -f $DTB    $ROOT_MNT/boot/dtbs/
+
+UUID=$(blkid -s UUID -o value $ROOT_DEV)
+printf "UUID=%s / ext4 defaults,noatime 0 1\n" "$UUID" > $ROOT_MNT/etc/fstab
+sync && umount $ROOT_MNT
+```
+
+> 最终版操作系统中，可以删除`/`下的这几个文件节省空间
+
+## 4. 使用设备名(/dev/nvme0n1p1)手动启动系统
+
+```text
+# 基本地址（确保不和其他映像重叠）
+setenv kernel_addr_r    0x80200000
+setenv fdt_addr_r       0x8F000000
+
+# 控制台与启动参数
+setenv console 'console=ttyAMA1,115200'
+setenv bootargs "${console} root=/dev/nvme0n1p1 rw rootwait earlycon ignore_loglevel loglevel=8"
+
+# NVMe 读文件并启动
+setenv bootcmd_nvme 'pci init; nvme scan; \
+ext4load nvme 0:1 ${kernel_addr_r} /boot/Image; \
+ext4load nvme 0:1 ${fdt_addr_r}    /boot/dtbs/pd2008-devboard-dsk.dtb; \
+booti ${kernel_addr_r} - ${fdt_addr_r}'
+
+saveenv
+```
+
+> 如果环境变量已经设置，直接输入启动命令
+
+```text
+run bootcmd_nvme
+```

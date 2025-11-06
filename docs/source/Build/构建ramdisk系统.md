@@ -145,11 +145,12 @@ cp output/images/Image ~/arm64-ramdisk/output/
 
 ## 5. U-Boot 启动（外部 cpio.gz）
 
-假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008.dtb`
+假设你已经有一份“能稳定起”的内核 `Image` 与配套 `pd2008-devboard-dsk.dtb`
 
 启动initramfs
 
 建议的安全地址（按你的板子内存可适当调整，三者别重叠）
+
 ```bash
 setenv kernel_addr_r    0x80200000
 setenv fdt_addr_r       0x8F000000
@@ -159,7 +160,7 @@ setenv initrd_high      0xffffffffffffffff
 ```
 
 ```text
-tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setexpr rdsize $filesize;tftpboot $fdt_addr_r pd2008.dtb
+tftpboot $kernel_addr_r Image;tftpboot $ramdisk_addr_r rootfs.cpio.gz;setexpr rdsize $filesize;tftpboot $fdt_addr_r pd2008-devboard-dsk.dtb
 ```
 
 ```text
@@ -201,7 +202,7 @@ TFTP/HTTP 根目录放：
 
 ```
 Image
-pd2008.dtb
+pd2008-devboard-dsk.dtb
 rootfs.cpio.gz
 ```
 
