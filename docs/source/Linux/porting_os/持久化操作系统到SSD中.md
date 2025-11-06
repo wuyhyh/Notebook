@@ -185,3 +185,70 @@ saveenv
 ```text
 run bootcmd_nvme
 ```
+
+## 5. 在 nvme0n1p2 中写入备份系统
+
+进入 U-Boot 命令行后，先使用 nvme0n1p1 启动：
+
+```text
+run bootcmd_nvme
+```
+
+启动之后需要配置 **IP**，才能使用后面的网络工具下载文件到开发板。
+
+```text
+ip a
+```
+
+**CPU0**
+
+```text
+ifconfig eth0 192.168.11.105 up
+ifconfig eth1 192.168.11.106 up
+```
+
+**CPU1**
+
+```text
+ifconfig eth0 192.168.11.107 up
+ifconfig eth1 192.168.11.108 up
+```
+
+```text
+mkdir -pv /mnt/p1 /mnt/p2
+mount /dev/nvme0n1p2 /mnt/p2
+cd /mnt/p2
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:/home/wuyuhang/downloads/nvme_images/* /mnt/p2
+```
+
+设置时间
+
+```text
+# 手工设置一个接近当前的时间
+date -s "2025-11-06 12:00:00"
+# 有 RTC 的话把系统时钟写回硬件
+hwclock --systohc 2>/dev/null || true
+```
+
+解包
+
+```text
+ROOT_MNT=/mnt/p2
+ROOT_TAR=openeuler-image-phytium.tar.bz2
+bzip2 -dc "$ROOT_TAR" | tar -xpf - -C "$ROOT_MNT" --numeric-owner
+sync
+mkdir -pv $ROOT_MNT/boot/dtbs
+cp Image boot/
+cp pd2008-devboard-dsk.dtb boot/dtbs/
+```
+
+下一次 U-Boot 上电后，临时使用 nvme0n1p2 启动
+
+```text
+setenv bootargs "${console} root=/dev/nvme0n1p2 rw rootwait earlycon ignore_loglevel loglevel=8"
+run bootcmd_nvme
+```
+
