@@ -106,6 +106,50 @@ mdev -s
 
 - 创建挂载点并挂载分区
 
+创建两个分区 60G 59.2G
+
+```text
+fdisk /dev/nvme0n1
+```
+
+创建完：
+
+```text
+Command (m for help): p
+
+Disk /dev/nvme0n1: 119.24 GiB, 128035676160 bytes, 250069680 sectors
+Disk model: SC6912011-SB128BGJ
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00000000
+
+Device         Boot     Start       End   Sectors  Size Id Type
+/dev/nvme0n1p1           2048 125831167 125829120   60G 83 Linux
+/dev/nvme0n1p2      125831168 250069679 124238512 59.2G 83 Linux
+
+Filesystem/RAID signature on partition 1 will be wiped.
+Filesystem/RAID signature on partition 2 will be wiped.
+```
+
+格式化为 ext4 文件系统：
+
+```text
+mkfs.ext4 /dev/nvme0n1p1
+mkfs.ext4 /dev/nvme0n1p2
+```
+
+创建完：
+
+```text
+# blkid
+/dev/nvme0n1p1: UUID="acf1fe2f-13fd-4b82-9d1b-ae6a6fec63ec" BLOCK_SIZE="4096" TYPE="ext4"
+/dev/nvme0n1p2: UUID="9c5fa5ac-4851-4031-ac19-c68b30893248" BLOCK_SIZE="4096" TYPE="ext4"
+```
+
+挂载：
+
 ```text
 mkdir -p /mnt/p1 /mnt/p2
 mount /dev/nvme0n1p1 /mnt/p1
@@ -127,10 +171,25 @@ scp -P 2223 wuyuhang@192.168.11.100:/home/wuyuhang/downloads/nvme_images/* /mnt/
 用这几个变量表示重要的文件和目录
 
 ```text
-ROOT_MNT=/mnt/p1
 ROOT_TAR=openeuler-image-phytium.tar.bz2
 KERNEL=Image
 DTB=pd2008-devboard-dsk.dtb
+```
+
+**p1**
+
+```text
+ROOT_DEV=/dev/nvme0n1p1
+ROOT_MNT=/mnt/p1
+cd $ROOT_MNT;pwd
+```
+
+**p2**
+
+```text
+ROOT_DEV=/dev/nvme0n1p2
+ROOT_MNT=/mnt/p2
+cd $ROOT_MNT;pwd
 ```
 
 - 在根目录解包
@@ -141,20 +200,16 @@ DTB=pd2008-devboard-dsk.dtb
 busybox bunzip2 -c "$ROOT_TAR" | tar -xpf - -C "$ROOT_MNT" --numeric-owner
 ```
 
-- 移动设备树和内核到 `/boot`
+- 移动设备树和内核到 `/boot`，创建分区表
 
 ```text
-ROOT_DEV=/dev/nvme0n1p1
-ROOT_MNT=/mnt/p1
-KERNEL=Image
-DTB=pd2008-devboard-dsk.dtb
-
 mkdir -p $ROOT_MNT/boot/dtbs
-cp -f $KERNEL $ROOT_MNT/boot/Image
-cp -f $DTB    $ROOT_MNT/boot/dtbs/
+cp -v $KERNEL $ROOT_MNT/boot/Image
+cp -v $DTB    $ROOT_MNT/boot/dtbs/
 
 UUID=$(blkid -s UUID -o value $ROOT_DEV)
 printf "UUID=%s / ext4 defaults,noatime 0 1\n" "$UUID" > $ROOT_MNT/etc/fstab
+cd ..
 sync && umount $ROOT_MNT
 ```
 
@@ -177,13 +232,27 @@ ext4load nvme 0:1 ${kernel_addr_r} /boot/Image; \
 ext4load nvme 0:1 ${fdt_addr_r}    /boot/dtbs/pd2008-devboard-dsk.dtb; \
 booti ${kernel_addr_r} - ${fdt_addr_r}'
 
+setenv bootnvme_p2 'pci init; nvme scan; \
+ext4load nvme 0:2 ${kernel_addr_r} /boot/Image; \
+ext4load nvme 0:2 ${fdt_addr_r}   /boot/dtbs/pd2008-devboard-dsk.dtb; \
+setenv bootargs "${console} root=/dev/nvme0n1p2 rw rootwait earlycon ignore_loglevel loglevel=8" \
+booti ${kernel_addr_r} - ${fdt_addr_r}'
+
 saveenv
 ```
 
 > 如果环境变量已经设置，直接输入启动命令
 
+默认从 nvme0n1p1 分区启动：
+
 ```text
 run bootcmd_nvme
+```
+
+从 nvme0n1p2 分区启动：
+
+```text
+run bootcmdp2
 ```
 
 ## 5. 在 nvme0n1p2 中写入备份系统
@@ -220,8 +289,18 @@ mount /dev/nvme0n1p2 /mnt/p2
 cd /mnt/p2
 ```
 
+复制最新的版本到开发板 ssd 中
+
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:/home/wuyuhang/downloads/nvme_images/* /mnt/p2
+scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/Image ./
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/pd2008-devboard-dsk.dtb ./
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/openeuler-image-phytium.tar.bz2 ./
 ```
 
 设置时间
@@ -245,10 +324,9 @@ cp Image boot/
 cp pd2008-devboard-dsk.dtb boot/dtbs/
 ```
 
-下一次 U-Boot 上电后，临时使用 nvme0n1p2 启动
+下一次 U-Boot 上电后，使用 nvme0n1p2 启动
 
 ```text
-setenv bootargs "${console} root=/dev/nvme0n1p2 rw rootwait earlycon ignore_loglevel loglevel=8"
 run bootcmd_nvme
 ```
 
