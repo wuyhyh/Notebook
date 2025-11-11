@@ -182,150 +182,34 @@ swapon --show
 
 ### 5.2 开始编译
 
+激活 python 环境
+
+```text
+source ~/venvs/oebuild/bin/activate
+```
+
+生成工程目录
+
 ```text
 cd ~/openeuler/workdir
-source ~/venvs/oebuild/bin/activate
 oebuild generate -p phytium
 ```
 
+为了后续方便，到 `~` 创建一个指向构建目录的软连接 `phytium_build`
+
+```text
+cd ~;
+ln -s ~/openeuler/workdir/build/phytium phytium_build
+```
+
+进入构建目录启动全量构建：
+
+```text
+cd ~/phytium_build
+oebuild bitbake openeuler-image
+```
+
 使用 Intel 13400 16线程的 CPU 编译时间约为 45 分钟。
-
-```text
-cd ~/openeuler/workdir/build/phytium
-oebuild bitbake openeuler-image
-```
-
-### 5.3 可能的编译问题
-
-#### 5.3.1 编译 binutils 出现 gold 链接问题
-
-这版 binutils 把 dwp 放在 gold 目录下。某些组合下它会被错误地用 ld.bfd 去链接并把 libgold.a 拉进来，但缺少 gold
-需要的其它对象/顺序/配置，导致这些 gold:: 符号解析失败。常见修法是禁用 gold（连带 dwp），或者让目标侧 libstdc++ 等在那一步可用；
-
-```text
-cd ~/openeuler/workdir/src/yocto-meta-openeuler/meta-openeuler/recipes-devtools/binutils
-```
-
-修改 binutils_%.bbappend 内容：
-
-```text
-# 关闭 gold（同时就不会去构建 gold 目录下的 dwp）
-PACKAGECONFIG:remove = " gold"
-EXTRA_OECONF:append = " --disable-gold"
-```
-
-因为是增量编译的，可以回到工作目录继续重新编译
-
-```text
-cd ~/openeuler/workdir/build/phytium
-oebuild bitbake -c cleansstate binutils
-oebuild bitbake openeuler-image
-```
-
-#### 5.3.2 openssl
-
-稳定构建 `openssl`/`openssl-native`，避免 `do_compile`/`do_install` 并行导致的竞态与 fuzz/test 目标引发的链接异常。
-
-##### 一、在 `local.conf` 增加配置（最快）
-
-编辑 `build/conf/local.conf`，追加如下行：
-
-```text
-# 1) 禁用并行编译与并行安装（openssl 及其 native 变体）
-PARALLEL_MAKE:pn-openssl = ""
-PARALLEL_MAKEINST:pn-openssl = ""
-PARALLEL_MAKE:pn-openssl-native = ""
-PARALLEL_MAKEINST:pn-openssl-native = ""
-
-# 2) 关闭测试与 fuzz 相关目标（生产环境不需要，减少不确定性）
-EXTRA_OECONF:append:pn-openssl = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
-EXTRA_OECONF:append:pn-openssl-native = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
-```
-
-##### 二、清理并重建
-
-```bash
-# 进入你的 oebuild 工作目录
-cd <work>
-
-# 清理旧产物（避免复用到已损坏/不完整的缓存）
-bitbake -c cleansstate openssl-native openssl
-
-# 先单包验证，再继续整体构建
-bitbake openssl-native
-bitbake openssl
-
-# 通过后继续你的镜像/目标
-bitbake <your-image-or-target>
-```
-
-##### 三、可选：长期化（更规范，用 bbappend）
-
-如果希望把规避策略沉淀到自定义层，创建：
-
-```
-meta-local/recipes-connectivity/openssl/openssl_%.bbappend
-```
-
-内容：
-
-```text
-PARALLEL_MAKE = ""
-PARALLEL_MAKEINST = ""
-EXTRA_OECONF:append = " no-tests no-fuzz-afl no-fuzz-libfuzzer"
-```
-
-把 `meta-local` 加入 `bblayers.conf` 后，执行同样的清理与重建步骤。
-
-##### 四、验证要点
-
-* 构建日志不再出现 `mv: cannot stat ...*.d.tmp`、`libcrypto.a: malformed archive`、`OPENSSL_die` 未解析等并行/竞态类错误。
-* `tmp/work/.../openssl-*/image/` 下文件完整；镜像里 `openssl`/`libssl`/`libcrypto` 安装正常。
-
-#### 5.3.3 dtc 时间戳问题
-
-```text
-source ~/venvs/oebuild/bin/activate
-oebuild bitbake -c cleansstate dtc-native
-oebuild bitbake dtc-native
-```
-
-#### 5.3.4 内核编译缺少依赖
-
-##### 问题现象
-
-* `linux-openeuler-5.10-r0 do_compile: oe_runmake failed`
-* 随后在尝试补依赖时又出现：
-
-    * `Nothing PROVIDES 'dwarves-native'`（应为 `pahole-native`）
-    * `Nothing PROVIDES 'libelf-native'`（应为 `elfutils-native`）
-
-##### 根因
-
-1. Yocto 内核开启了 BTF（`CONFIG_DEBUG_INFO_BTF=y`），内核链接 `BTF` 需要 `pahole` 与 `libelf` 等原生工具。
-2. 我们在 `local.conf` 里用错了依赖名称：
-
-    * `dwarves-native` → 实际配方名是 `pahole-native`
-    * `libelf-native` → 实际配方名是 `elfutils-native`
-3. 因 provider 名称不匹配，BitBake 无法解析依赖，导致目标 `linux-openeuler` “no buildable providers”。
-
-##### 解决方案
-
-1. 在 `build/conf/local.conf` 正确补齐原生依赖：
-
-```text
-# 给 linux-openeuler 补齐原生依赖
-DEPENDS:append:pn-linux-openeuler = " dtc-native bc-native openssl-native elfutils-native pahole-native flex-native bison-native"
-```
-
-2. 清理并重建：
-
-```text
-oebuild bitbake -c cleansstate linux-openeuler elfutils-native pahole-native
-oebuild bitbake linux-openeuler
-```
-
-这套配置能稳定把 `linux-openeuler` 编过去；后续若开启更多内核特性（模块签名、LTO 等）再逐项补齐依赖或加碎片即可。
 
 ## 6. 产物
 
@@ -335,6 +219,13 @@ oebuild bitbake linux-openeuler
 cd ~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium
 ```
 
+在 `phytium_build` 下创建一个软连接方便获取镜像文件
+
+```text
+cd ~/phytium_build
+ln -s ~/openeuler/workdir/build/phytium/tmp/deploy/images/phytium images
+```
+
 添加镜像文件路径环境变量方便访问文件：
 
 ```text
@@ -342,69 +233,47 @@ echo 'export images_path=~/openeuler/workdir/build/phytium/tmp/deploy/images/phy
 source ~/.bashrc
 ```
 
+- 内核 `Image`
+- 设备树 `pd2008-devboard-dsk.dtb`
+- 根文件系统 `openeuler-image-phytium.tar.bz2`
+
+> 以上流程构建出的镜像文件是默认配置，我们需要根据我们的嵌入式平台做定制化修改
+
+## 7. 修改设备树
+
+### 7.1 源码目录
+
+内核源码目录分为两个，分别为他们创建软连接。
+
 ```text
-wuyuhang@Tokamark-2:~/openEuler/workdir/build/phytium/tmp/deploy/images/phytium$ ll
-total 1082764
-drwxr-xr-x 3 wuyuhang docker      4096 Oct 17 17:53 ./
-drwxr-xr-x 3 wuyuhang docker      4096 Oct 17 17:21 ../
-drwxr-xr-x 3 wuyuhang docker      4096 Oct 17 17:21 EFI/
--rw-r--r-- 2 wuyuhang docker   2154496 Oct 17 17:21 grub-efi-bootaa64.efi
-lrwxrwxrwx 2 wuyuhang docker        41 Oct 17 17:50 Image -> Image--5.10-r0-phytium-20251017095001.bin*
--rwxr-xr-x 2 wuyuhang docker  15028736 Oct 17 17:33 Image--5.10-r0-phytium-20251017095001.bin*
-lrwxrwxrwx 2 wuyuhang docker        41 Oct 17 17:50 Image-phytium.bin -> Image--5.10-r0-phytium-20251017095001.bin*
--rw-r--r-- 2 wuyuhang docker 158070507 Oct 17 17:52 modules--5.10-r0-phytium-20251017095001.tgz
-lrwxrwxrwx 2 wuyuhang docker        43 Oct 17 17:52 modules-phytium.tgz -> modules--5.10-r0-phytium-20251017095001.tgz
--rw-r--r-- 2 wuyuhang docker  20780893 Oct 17 17:52 openeuler-image-live-phytium-20251017095001.rootfs.cpio.gz
--rw-r--r-- 2 wuyuhang docker     10116 Oct 17 17:52 openeuler-image-live-phytium-20251017095001.rootfs.manifest
--rw-r--r-- 2 wuyuhang docker    351031 Oct 17 17:52 openeuler-image-live-phytium-20251017095001.testdata.json
-lrwxrwxrwx 2 wuyuhang docker        58 Oct 17 17:52 openeuler-image-live-phytium.cpio.gz -> openeuler-image-live-phytium-20251017095001.rootfs.cpio.gz
-lrwxrwxrwx 2 wuyuhang docker        59 Oct 17 17:52 openeuler-image-live-phytium.manifest -> openeuler-image-live-phytium-20251017095001.rootfs.manifest
-lrwxrwxrwx 2 wuyuhang docker        57 Oct 17 17:52 openeuler-image-live-phytium.testdata.json -> openeuler-image-live-phytium-20251017095001.testdata.json
--rw-r--r-- 2 wuyuhang docker 398608384 Oct 17 17:53 openeuler-image-phytium-20251017095001.iso
--rw-r--r-- 2 wuyuhang docker 321165312 Oct 17 17:53 openeuler-image-phytium-20251017095001.rootfs.ext4
--rw-r--r-- 2 wuyuhang docker     25072 Oct 17 17:53 openeuler-image-phytium-20251017095001.rootfs.manifest
--rw-r--r-- 2 wuyuhang docker  69651439 Oct 17 17:53 openeuler-image-phytium-20251017095001.rootfs.tar.bz2
--rw-r--r-- 2 wuyuhang docker    349380 Oct 17 17:53 openeuler-image-phytium-20251017095001.testdata.json
-lrwxrwxrwx 2 wuyuhang docker        50 Oct 17 17:53 openeuler-image-phytium.ext4 -> openeuler-image-phytium-20251017095001.rootfs.ext4
-lrwxrwxrwx 2 wuyuhang docker        42 Oct 17 17:53 openeuler-image-phytium.iso -> openeuler-image-phytium-20251017095001.iso
-lrwxrwxrwx 2 wuyuhang docker        54 Oct 17 17:53 openeuler-image-phytium.manifest -> openeuler-image-phytium-20251017095001.rootfs.manifest
-lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:53 openeuler-image-phytium.tar.bz2 -> openeuler-image-phytium-20251017095001.rootfs.tar.bz2
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:53 openeuler-image-phytium.testdata.json -> openeuler-image-phytium-20251017095001.testdata.json
--rw-r--r-- 2 wuyuhang docker     21961 Oct 17 17:52 pe2201-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2201-demo-ddr4.dtb -> pe2201-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2201-demo-ddr4-phytium.dtb -> pe2201-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
--rw-r--r-- 2 wuyuhang docker     22785 Oct 17 17:52 pe2202-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2202-demo-ddr4.dtb -> pe2202-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2202-demo-ddr4-phytium.dtb -> pe2202-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
--rw-r--r-- 2 wuyuhang docker     23412 Oct 17 17:52 pe2204-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2204-demo-ddr4.dtb -> pe2204-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        52 Oct 17 17:52 pe2204-demo-ddr4-phytium.dtb -> pe2204-demo-ddr4--5.10-r0-phytium-20251017095001.dtb
--rw-r--r-- 2 wuyuhang docker     24639 Oct 17 17:52 phytiumpi_firefly--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:52 phytiumpi_firefly.dtb -> phytiumpi_firefly--5.10-r0-phytium-20251017095001.dtb
-lrwxrwxrwx 2 wuyuhang docker        53 Oct 17 17:52 phytiumpi_firefly-phytium.dtb -> phytiumpi_firefly--5.10-r0-phytium-20251017095001.dtb
--rwxr-xr-x 2 wuyuhang docker 206689256 Oct 17 17:33 vmlinux*
+cd phytium_build
+ln -s /home/wuyuhang/openeuler/workdir/build/phytium/tmp/work/phytium-openeuler-linux/linux-openeuler/5.10-r0/build/ dirty_kernel_src
+ln -s /home/wuyuhang/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source/ pure_kernel_src
 ```
 
-## 7. 定制设备树
+我们在 `pure_kernel_src` 目录下修改内核代码，并提交 commit message，生成补丁。
+每次构建后 `pure_kernel_src` 会回到最初的状态
 
-上面的构建流程使用的源码来自 oebuild 和 phytium bsp，为了支持我们的 target-board，我们需要编译自己的设备树。
+`dirty_kernel_src` 目录下可以看到生成的配置项 `.config`，方便我们检查内核编译开关。
+
+### 7.2 修改设备树
 
 这是 phytium
-提供的修改设备树的[方法](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp/wikis/%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E7%BC%96%E8%AF%91%E8%AE%BE%E5%A4%87%E6%A0%91)
+嵌入式软件部提供的修改设备树的[方法](https://gitee.com/phytium_embedded/phytium-openeuler-embedded-bsp/wikis/%E5%A6%82%E4%BD%95%E4%BF%AE%E6%94%B9%E7%BC%96%E8%AF%91%E8%AE%BE%E5%A4%87%E6%A0%91)
 
-### 7.1 先进入 Linux 内核源码目录
+#### 7.2.1 先进入 Linux 内核源码目录
 
 ```text
-cd ~/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source
+cd ~/phytium_build/pure_kernel_src
 ```
 
-设备树放在 arch 子目录下
+设备树在 arch 子目录下
 
 ```text
 cd arch/arm64/boot/dts/phytium/
 ```
 
-### 7.2 新增和修改设备树
+#### 7.2.2 新增和修改设备树
 
 D2000 CPU 使用pd2008前缀的dtb文件。
 
@@ -418,7 +287,7 @@ cp -v ~/device-tree/pd2008-devboard-dsk.dts ./
 如果要修改设备树的内容，
 例如添加节点, 修改文件 `arch/arm64/boot/dts/phytium/pd2008-devboard-dsk.dts`
 
-### 7.3 修改 Makefile
+#### 7.2.3 修改 Makefile
 
 增加的文件要编译需要修改这个目录下的 Makefile，添加新增的设备树文件名
 
@@ -426,18 +295,21 @@ cp -v ~/device-tree/pd2008-devboard-dsk.dts ./
 vim Makefile
 ```
 
+新增目标文件
+
 ```text
 ## d2000 dev board:
 dtb-$(CONFIG_ARCH_PHYTIUM) += pd2008-devboard-dsk.dtb
 ```
 
-### 7.4 修改编译配方
+#### 7.2.4 修改编译配方
 
 ```text
-vim ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/conf/machine/include/phy-base.inc
+cd ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/conf/machine/include/
+vim phy-base.inc
 ```
 
-在 `KERNEL_DEVICETREE` 字段增加我们的新设备树
+在 `KERNEL_DEVICETREE` 字段增加我们的新设备树 `pd2008-devboard-dsk.dtb`
 
 ```text
 KERNEL_DEVICETREE ??= " \
@@ -449,39 +321,48 @@ KERNEL_DEVICETREE ??= " \
     "
 ```
 
-### 7.5 生成补丁
+### 7.3 生成补丁
 
 回到源码目录
 
 ```text
-cd ~/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source
+cd ~/phytium_build/pure_kernel_src
 ```
 
 生成设备树补丁
 
 ```text
 git add .
-git commit -s -m "update dts"
+git commit -s -m "update d2000 dtb"
 git format-patch -1
 ```
 
-**0001-update-d2000-dtb.patch**
+生成的补丁：**0001-update-d2000-dtb.patch**
 
-### 7.6 修改内核构建配方
+> 注意：commit message 会影响补丁的名称。
 
-将补丁放到构建系统的 src 子目录中
+### 7.4 修改内核构建配方
 
-```text
-cp -v 0001-update-d2000-dtb.patch ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/recipes-kernel/linux/files/
-```
-
-进入配方所在目录并修改配方
+建立一个进入配方目录的软链接
 
 ```text
-cd ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/recipes-kernel/linux/
+cd ~/phytium_build
+ln -s ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/recipes-kernel/linux/ bbapend
 ```
 
-`vim linux-openeuler.bb`
+`~/phytium_build/bbappend` 目录下的 `files` 目录存放补丁，`linux-openeuler.bb` 文件是编译配方文件
+
+#### 7.4.1 将补丁放到构建系统的 src 子目录中
+
+```text
+cp -v 0001-update-d2000-dtb.patch ~/phytium_build/bbappend/files/
+```
+
+#### 7.4.2 修改配方
+
+```text
+vim ~/phytium_build/bbappend/linux-openeuler.bb
+```
 
 加入以下内容
 
@@ -491,16 +372,23 @@ file://0001-update-d2000-dtb.patch \
 "
 ```
 
-### 7.7 重新编译内核
+### 7.5 重新编译内核
 
 ```text
-source ~/venvs/oebuild/bin/activate
-cd ~/openeuler/workdir/build/phytium
+source ~/venvs/oebuild/bin/activate;cd ~/phytium_build
 ```
 
+启动构建环境：
+
 ```text
-oebuild bitbake linux-openeuler -c clean
-oebuild bitbake linux-openeuler
+oebuild bitbake 
+```
+
+清理并重新构建
+
+```text
+bitbake -c cleansstate linux-openeuler
+bitbake linux-openeuler
 ```
 
 ## 8. 修改定制 Linux 内核功能
@@ -510,8 +398,7 @@ oebuild bitbake linux-openeuler
 先进入平台目录，进入构建环境
 
 ```text
-source ~/venvs/oebuild/bin/activate
-cd ~/openeuler/workdir/build/phytium
+source ~/venvs/oebuild/bin/activate;cd ~/phytium_build
 oebuild bitbake
 ```
 
@@ -521,36 +408,188 @@ oebuild bitbake
 bitbake -c menuconfig linux-openeuler
 ```
 
-配置完成后退出
+> 注意 menuconfig 的配置在全量构建的时候可能会“失忆”，回退到默认配置，我们需要将差异片段导出
+> 然后将差异片段放到配方中让构建工具吸收我们的配置。
+
+生成“最小差异片段”：
+
+```text
+bitbake -c diffconfig linux-openeuler
+```
+
+> 该任务会把你相对内核基线的改动打印成一个极小的配置片段（只包含变更项，形如 `CONFIG_X=y / # CONFIG_Y is not set`）
+>
+> **fragment.cfg**
+
+创建一个指向差异文件目录的软链接（退出 `oebuild` 之后做）：
+
+```text
+ln -s ~/openeuler/build/phytium/tmp/work/phytium-openeuler-linux/linux-openeuler/5.10-r0 fragment
+```
+
+### 8.2 修改配方文件
+
+#### 8.2.1 处理配置片段文件
+
+将配置片段放到配方文件搜索路径下，构建时吸收有差异的内核配置项
+
+```text
+cd ~/phytium_build/fragment
+```
+
+根据配置修改配置片段的名称，比如打开 `INFINIBAND` 支持：
+
+```text
+cp fragment.cfg fragment-infiniband.cfg
+```
+
+将配置片段放到构建系统的 src 子目录中
+
+```text
+cp -v fragment-infiniband.cfg ~/phytium_build/bbappend/files/
+```
+
+#### 8.2.2 修改配方
+
+```text
+vim ~/phytium_build/bbappend/linux-openeuler.bb
+```
+
+在 `linux-openeuler.bb` 文件中增加这三个字段：
+
+```text
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+SRC_URI += " \
+        file://fragment-infiniband.cfg \
+"
+
+KERNEL_CONFIG_FRAGMENTS += " \
+        fragment-infiniband.cfg \
+"
+```
+
+### 8.3 清理并重新构建内核
+
+清理并重新构建内核
+
+```text
+bitbake -c cleansstate linux-openeuler
+bitbake linux-openeuler
+```
+
+退出构建环境
 
 ```text
 exit
 ```
 
-重新编译内核
+### 8.4 内核模块部署到根文件系统
 
-```text
-oebuild bitbake linux-openeuler
+* 内核模块标准放置位置（在目标机上）：`/lib/modules/$(uname -r)/**`。
+* 但 **只有当你全量构建镜像**（`bitbake <你的镜像>`）并且镜像“要安装这些模块”时，模块才会被放进根文件系统。
+* 你只编译内核（`bitbake linux-openeuler`）时，Yocto 只会生成**模块软件包**，不会改你的 rootfs。
+
+在 openEuler/Yocto 下模块会被打成 RPM 包，路径类似：
+
+```
+tmp/deploy/rpm/aarch64/
+  kernel-modules-<内核版本>-*.aarch64.rpm        # 打包好的“全量模块”集合
+  kernel-module-<驱动名>-<内核版本>-*.aarch64.rpm # 单个驱动拆包
 ```
 
-### 8.2 包管理器和安装软件
+要让它们进 rootfs，有三种常用方式：
 
-添加选项 `-f epkg`
-
-```text
-oebuild generate -p phytium -f epkg
-oebuild bitbake openeuler-image
-```
-
-开发板上安装软件包
+1. 镜像里装“全部模块”
 
 ```text
-epkg install <package>  (安装软件)
-epkg remove <package>   (卸载软件)
+# conf/local.conf 或你的镜像配方里：
+IMAGE_INSTALL:append = " kernel-modules"
 ```
 
-### 8.3 修改内核源码
+2. 只装所需驱动（更省空间）
+
+```text
+IMAGE_INSTALL:append = " kernel-module-xhci-hcd kernel-module-usbnet kernel-module-igb"
+```
+
+3. 已经烧好的系统上手动安装
+
+```bash
+# 把上面 deploy/rpm/aarch64/ 下的包拷到板子
+rpm -ivh kernel-module-xxx-*.aarch64.rpm
+depmod -a
+```
+
+验证与定位：
+
+* 构建完镜像后，在构建机临时根目录可看到：
+  `tmp/work/.../<image>/image/lib/modules/<uname-r>/`
+* 目标机上看：
+  `uname -r` 与 `/lib/modules/<uname-r>/` 是否匹配；`modinfo <模块名>`、`lsmod`。
+
+开机自动加载：
+
+* 最稳的是在镜像里放一个文件 `/etc/modules-load.d/xxx.conf`，写上需要自启动的模块名；或者写一个很小的配方/追加到 rootfs
+  去投放该文件。
+
+模块最终应当位于目标机的 `/lib/modules/<uname -r>/`，但是否“出现在根文件系统里”，取决于你是否把相关 **模块包** 安装进镜像（或事后用
+rpm 安装）。添加 `IMAGE_INSTALL` 是最直接的做法。
+
+#### 8.4.1 infiniband 模块
+
+在前面我们添加 `fragment-infiniband.cfg` 之后会构建出 `INFINIBAND` 相关的内核模块：
+
+打包进 `rootfs`:
+
+```text
+cd ~/phytium_build/conf
+```
+
+```text
+vim local.conf
+```
+
+增加以下行：
+
+```text
+IMAGE_INSTALL:append = " kernel-modules"
+```
+
+> 在目标板启动操作系统之后，可以到目录
+> ```text
+> cd /lib/modules/5.10.0-openeuler
+> ``` 
+> 查看
+
+### 8.5 修改内核源码
 
 与设备树修改的过程一致，注意不能直接修改源码，需要生成补丁，然后将补丁放到配方指定的位置。
+
+## 9. 版本管理问题
+
+构建稳定可复现的版本一定要仔细记录修改点
+
+### 9.1 使用 Git 跟踪构建配置和源码修改
+
+内核的修改 commit message 记录在这个目录
+
+```text
+cd ~/openeuler/workdir/build/phytium/tmp/work-shared/phytium/kernel-source
+git log
+```
+
+### 9.2 内核配置项
+
+内核配置项使用 `~/phytium_build/fragment` 下的 `fragment.cfg` 文件跟踪。
+
+### 9.3 配方
+
+我们修改过关于机器的配方在这个目录：
+
+```text
+cd ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/conf/machine/include/
+vim phy-base.inc
+```
 
 
