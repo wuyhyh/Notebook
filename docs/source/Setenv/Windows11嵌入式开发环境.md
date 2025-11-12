@@ -322,6 +322,28 @@ systemctl status ssh
 
 > 启用 systemd 后，**端口仍然建议用 2223**（避免 Windows 22 端口冲突）。若要改用 22，请先停用并禁用 Windows 的 `sshd` 服务。
 
+## 3. 安装激活 windows 设备
+
+### 3.1 安装 windows 的时候跳过登录 Microsoft 账户
+
+1. 在 OOBE（首次开机向导）出现“让我们连接到网络/Sign in with Microsoft”之前，**拔网线/关闭路由器/不要连接 Wi-Fi**。
+2. 在该界面按 **Shift + F10** 打开命令行（部分笔记本需 **Shift + Fn + F10**）。
+3. 输入并回车：
+
+   ```
+   OOBE\BYPASSNRO
+   ```
+
+   电脑会重启，回到 OOBE 后会多出 **“我没有 Internet（I don’t have Internet）”** → 继续选择 **“继续进行有限设置（Continue
+   with limited setup）”**，即可创建本地账户。([英特尔][1])
+
+### 3.2 激活 windows
+
+在 powershell 中以管理员身份运行
+
+```text
+irm https://massgrave.dev/get | iex
+```
 
 
 
