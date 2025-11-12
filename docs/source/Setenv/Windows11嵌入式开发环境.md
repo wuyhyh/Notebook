@@ -342,7 +342,7 @@ systemctl status ssh
 在 powershell 中以管理员身份运行
 
 ```text
-irm https://massgrave.dev/get | iex
+irm https://get.activated.win | iex
 ```
 
 
