@@ -478,6 +478,12 @@ bitbake -c cleansstate linux-openeuler
 bitbake linux-openeuler
 ```
 
+全量构建
+
+```text
+bitbake openeuler-image
+```
+
 退出构建环境
 
 ```text
@@ -591,5 +597,17 @@ git log
 cd ~/openeuler/workdir/src/yocto-meta-openeuler/bsp/meta-phytium/conf/machine/include/
 vim phy-base.inc
 ```
+
+在 `bbappend` 目录下的文件也使用 Git 跟踪。
+
+## 10. 配方问题
+
+看哪些 layer 已接入、路径在哪
+
+```text
+bitbake-layers show-layers
+```
+
+
 
 

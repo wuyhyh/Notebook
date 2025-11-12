@@ -292,41 +292,56 @@ cd /mnt/p2
 复制最新的版本到开发板 ssd 中
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/Image ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/hulin_images/* ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/pd2008-devboard-dsk.dtb ./
+scp -P 2223 wuyuhang@192.168.11.100:~/phytium_build/images/Image ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/images_openeuler/openeuler-image-phytium.tar.bz2 ./
+scp -P 2223 wuyuhang@192.168.11.100:~/phytium_build/images/pd2008-devboard-dsk.dtb ./
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/phytium_build/images/openeuler-image-phytium.tar.bz2 ./
 ```
 
 设置时间
 
+手工设置一个接近当前的时间
+
 ```text
-# 手工设置一个接近当前的时间
 date -s "2025-11-06 12:00:00"
-# 有 RTC 的话把系统时钟写回硬件
+```
+
+```text
+有 RTC 的话把系统时钟写回硬件
 hwclock --systohc 2>/dev/null || true
 ```
 
-解包
+安装内核和设备树
 
 ```text
-ROOT_MNT=/mnt/p2
-ROOT_TAR=openeuler-image-phytium.tar.bz2
-bzip2 -dc "$ROOT_TAR" | tar -xpf - -C "$ROOT_MNT" --numeric-owner
-sync
-mkdir -pv $ROOT_MNT/boot/dtbs
-cp Image boot/
-cp pd2008-devboard-dsk.dtb boot/dtbs/
+cd /mnt/p2
+mkdir -pv boot/dtbs
+cp -v Image boot/
+cp -v pd2008-devboard-dsk.dtb boot/dtbs/
+```
+
+解包根文件系统
+
+```text
+cd /mnt/p2
+bzip2 -dc openeuler-image-phytium.tar.bz2 | tar -xpf - -C ./ --numeric-owner
+```
+
+```text
+sync;cd
+```
+
+```text
+umount /dev/nvme0n1p2
 ```
 
 下一次 U-Boot 上电后，使用 nvme0n1p2 启动
-
-```text
-run bootcmd_nvme
-```
-
