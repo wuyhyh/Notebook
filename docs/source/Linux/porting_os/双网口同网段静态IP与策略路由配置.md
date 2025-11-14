@@ -217,6 +217,20 @@ ping -c2 -I 192.168.11.105 192.168.11.100
 
 ---
 
+### 4.3 固化到 SSD
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/sysctl.conf ./
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/resolv.conf ./
+```
+
+```text
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/interfaces ./
+```
+
 ## 5. 参数解释（为什么这样配置）
 
 | 项                       | 配置                                                          | 作用/理由                                               |

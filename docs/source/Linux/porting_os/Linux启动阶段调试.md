@@ -40,9 +40,7 @@ static const struct flash_info spansion_parts[] = {};
 
 打上补丁后重新编译内核
 
-## 2. 内核配置
-
-### 2.1 关闭 sound 卡
+## 2. 内核配置关闭 sound 卡支持
 
 ```text
 [    3.085344] ALSA device list:
@@ -51,14 +49,24 @@ static const struct flash_info spansion_parts[] = {};
 [    3.112660] EXT4-fs (nvme0n1p1): recovery complete
 ```
 
-### 2.2 打开 infiniband 支持
+## 3. 内核配置打开 infiniband 支持
 
+## 4. RTC 系统时间获取问题
 
-## 3. RTC 系统时间获取问题
-
+目前是手动设置
 打算临时采用从宿主机利用网络获取
 
-## 4. 清除 APM 模块
+## 5. 清除 APM 模块
 
+修改构建 conf 配置
 
+## 6. 网口配置为 static
+
+## 7. can 总线时钟修复
+
+## 8. 修改设备树，解决早期初始化端口 early console 读取问题
+
+## 9. 关闭 sshd
+
+## 10. 关闭 audit
 

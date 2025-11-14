@@ -361,7 +361,7 @@ cp -v 0001-update-d2000-dtb.patch ~/phytium_build/bbappend/files/
 #### 7.4.2 修改配方
 
 ```text
-vim ~/phytium_build/bbappend/linux-openeuler.bb
+vim ~/phytium_build/bbappend/linux-openeuler.bbappend
 ```
 
 加入以下内容
@@ -452,7 +452,7 @@ cp -v fragment-infiniband.cfg ~/phytium_build/bbappend/files/
 #### 8.2.2 修改配方
 
 ```text
-vim ~/phytium_build/bbappend/linux-openeuler.bb
+vim ~/phytium_build/bbappend/linux-openeuler.bbappend
 ```
 
 在 `linux-openeuler.bb` 文件中增加这三个字段：
