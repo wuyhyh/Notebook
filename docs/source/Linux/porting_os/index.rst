@@ -9,3 +9,4 @@
     APM模块清理
     双网口同网段静态IP与策略路由配置
     初始化earlycon
+    启动阶段daemon裁剪
