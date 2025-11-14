@@ -365,31 +365,31 @@ cd /mnt/p2/etc
 **CPU0**
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/resolv.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/resolv.conf ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/sysctl.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/sysctl.conf ./
 ```
 
 ```text
-cd /mnt/p1/etc/network
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/interfaces ./
+cd /mnt/p2/etc/network
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/interfaces ./
 ```
 
 **CPU1**
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/resolv.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/resolv.conf ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/sysctl.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/sysctl.conf ./
 ```
 
 ```text
-cd  /mnt/p1/etc/network
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/interfaces ./
+cd  /mnt/p2/etc/network
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/interfaces ./
 ```
 
 ```text
@@ -409,7 +409,6 @@ umount /dev/nvme0n1p2
 **配置步骤**
 
 ```text
-ls -l /etc/init.d/sshd
 ls -l /etc/rc*.d/*sshd 2>/dev/null
 ```
 
@@ -610,31 +609,31 @@ cd /mnt/p1/etc
 **CPU0**
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/resolv.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/resolv.conf ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/sysctl.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/sysctl.conf ./
 ```
 
 ```text
 cd /mnt/p1/etc/network
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu0/interfaces ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu0/interfaces ./
 ```
 
 **CPU1**
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/resolv.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/resolv.conf ./
 ```
 
 ```text
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/sysctl.conf ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/sysctl.conf ./
 ```
 
 ```text
 cd  /mnt/p1/etc/network
-scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_network_conf/cpu1/interfaces ./
+scp -P 2223 wuyuhang@192.168.11.100:~/downloads/board_conf/cpu1/interfaces ./
 ```
 
 ```text
