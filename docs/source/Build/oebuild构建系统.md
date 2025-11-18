@@ -608,6 +608,62 @@ vim phy-base.inc
 bitbake-layers show-layers
 ```
 
+## 11. 添加gcc make 到文件系统
 
+### 11.1 修改文件系统配置
+
+修改文件<build>conf/local.conf 添加如下变量:
+
+```text
+IMAGE_INSTALL:append = " gcc g++ make autoconf automake gcc-symlinks g++-symlinks"
+```
+
+### 11.2 去除 GCC 限制
+
+修改文件<work>src/yocto-meta-openeuler/meta-openeuler/conf/openeuler-ros-distro-recipe-blacklist.inc
+
+```text
+cd ~/openeuler/workdir/src/yocto-meta-openeuler/meta-openeuler/conf
+```
+
+```text
+vim openeuler-ros-distro-recipe-blacklist.inc
+```
+
+注释 :  #SKIP_RECIPE[gcc] = "Not building with openEuler Embedded ros runtime."
+
+### 11.3 解决编译安装 gcc 的错误
+
+修改文件<work>src/yocto-meta-openeuler/meta-openeuler/recipes-devtools/gcc/gcc-target.inc
+
+```text
+do_install () {
+        oe_runmake 'DESTDIR=${D}' install-host
+
+        # Add unwind.h, it comes from libgcc which we don't want to build again
+165行:  #install ${STAGING_LIBDIR_NATIVE}/${TARGET_SYS}/gcc/${TARGET_SYS}/${BINV}/include/unwind.h ${D}${libdir}/gcc/${TARGET_SYS}/${BINV}/include/
+```
+
+添加:
+
+```text
+install ${OPENEULER_NATIVESDK_SYSROOT}/usr/lib/gcc/x86_64-openeulersdk-linux/12.3.0/include/unwind.h  ${D}${libdir}/gcc/${TARGET_SYS}/${BINV}/include/
+```
+
+### 11.4 文件系统生成
+
+重新编译文件系统，其中就包括 `gcc g++ make autoconf automake gcc-symlinks` 这些工具了。
+
+```text
+bitbake openeuler-image
+```
+
+### 11.5 开发板上编译应用
+
+开发板上编译应用，需要设置如下环境变量
+
+```text
+export LIBRARY_PATH=/lib64/gcc/aarch64-openeuler-linux-gnu/12.3.1:$LIBRARY_PATH
+```
 
 
