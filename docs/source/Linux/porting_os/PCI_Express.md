@@ -171,8 +171,6 @@ optical-copper link
 
 ### Comparison table
 
-![img.png](img.png)
-
 ## Extensions and future directions
 
 ## Hardware protocol summary
