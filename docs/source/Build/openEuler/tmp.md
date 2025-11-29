@@ -1,4 +1,3 @@
-````markdown
 # 在 openEuler 5.10.0-216 上集成 Phytium D2000 BSP 并交叉编译内核的复现笔记
 
 > 目标：在 x86 + WSL Ubuntu 的环境中，对 `openEuler-5.10.0-216` 内核源码应用 Phytium D2000 BSP 补丁，集成 `pd2008` 设备树，并在合并服务器 `.config` 后成功交叉编译 `Image` + `dtb` + 模块。
@@ -380,6 +379,4 @@ SYSMAP  System.map
 
 后续如果需要补上 KVM、IOMMU SVA、显示等功能，再单独从飞腾 Yocto 原内核里挑选补丁，逐项打开即可。
 
-```
-```
 

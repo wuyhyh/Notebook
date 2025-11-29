@@ -302,7 +302,7 @@ make menuconfig
 
 错误示例：
 
-```c
+```text
 kvm_sve_max_vl = sve_max_virtualisable_vl();
                          ^~~~~~~~~~~~~~~~~~~
 error: implicit declaration of function ‘sve_max_virtualisable_vl’

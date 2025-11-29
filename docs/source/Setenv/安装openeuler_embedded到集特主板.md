@@ -10,12 +10,12 @@
 
 购买 USB-TTL 串口转接线，型号为 ，在[这个网站](https://www.z-tek.com)下载 `ZE773`驱动安装到 Windows 上
 
-![ze773.png](./ze773.png)
+![ze773.png](../_static/_pic/ze773.png)
 
 集特主板上有3 pin和4 pin的串口接线柱，我们选择连接 3pin。
 连接 `GND TX RX`
 
-![pin-3.png](./pin-3.png)
+![pin-3.png](../_static/_pic/pin-3.png)
 
 另一端连接 Windows PC，并配置串口波特率为 115200.
 
