@@ -59,3 +59,107 @@ article table.docutils th, article table.docutils td {
 
 /* 链接主色统一 */
 a, a:visited { color: var(--nb-brand); }
+
+/* ====== 2K/宽屏：满宽 + 三栏宽度可控 ====== */
+
+/* 你只需要调这两个值 */
+:root{
+    --wyh-nav-width: 260px;   /* 左侧文件树 */
+    --wyh-toc-width: 320px;   /* 右侧本页目录 */
+}
+
+/* 1) 解除主题默认的最大宽度限制（不然永远“像一张窄纸”） */
+.bd-page-width,
+.bd-header .navbar .container-xl,
+.bd-footer .container-xl,
+.bd-main .container-xl,
+.bd-main .bd-container,
+.bd-main .bd-container__inner{
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* 2) 左右侧栏宽度：缩小左侧，放大右侧 */
+.bd-sidebar-primary{
+    flex: 0 0 var(--wyh-nav-width) !important;
+    width: var(--wyh-nav-width) !important;
+    max-width: 45vw;
+}
+
+.bd-sidebar-secondary{
+    flex: 0 0 var(--wyh-toc-width) !important;
+    width: var(--wyh-toc-width) !important;
+    max-width: 40vw;
+}
+
+/* 3) 内容区占满剩余空间，并取消文章容器的“内层最大宽度” */
+.bd-main .bd-content{
+    flex: 1 1 auto !important;
+    min-width: 0; /* 防止长内容把布局顶坏 */
+}
+
+.bd-article-container,
+.bd-article,
+.bd-content .bd-article-container{
+    max-width: none !important;
+}
+
+/* 4) 顶栏标题别再固定一段死宽度：允许更长、更合理地显示 */
+.navbar-brand{
+    max-width: none !important;
+    min-width: 0;
+}
+.navbar-brand .logo__title{
+    max-width: none !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 5) 宽屏下代码块/表格别把页面挤爆 */
+pre, code, .highlight pre{
+    overflow-x: auto;
+}
+table{
+    display: block;
+    overflow-x: auto;
+}
+
+/* ====== 正文：居中阅读宽度（解决首页左对齐难看）====== */
+:root{
+    --wyh-content-max: 1180px;   /* 正文最大宽度，自己调：1100~1300 都行 */
+    --wyh-content-pad: 32px;     /* 正文左右内边距 */
+}
+
+/* 让文章在“可用区域”内居中，而不是贴左 */
+.bd-main .bd-content .bd-article-container{
+    max-width: var(--wyh-content-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: var(--wyh-content-pad) !important;
+    padding-right: var(--wyh-content-pad) !important;
+}
+
+/* ====== JS 拖拽手柄（左右各一个）====== */
+.wyh-drag-handle{
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    z-index: 9999;
+    background: transparent;
+}
+
+.wyh-drag-handle::after{
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--nb-left-border);
+    opacity: 0.25;
+}
+
+.wyh-drag-handle:hover::after{ opacity: 0.9; }
+

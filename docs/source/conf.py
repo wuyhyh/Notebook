@@ -61,5 +61,6 @@ html_favicon = "_static/logo.jpg"
 # 自定义样式（放在 _static/css/custom.css）
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
+html_js_files = ["js/resize.js"]
 
 # 打开搜索框（pydata 顶栏自带，会调用 Sphinx 内置搜索）
