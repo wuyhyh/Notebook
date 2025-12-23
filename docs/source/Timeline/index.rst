@@ -13,3 +13,4 @@
     Reading-List
     心理建设
     技术地图
+    HPSC_white_paper
