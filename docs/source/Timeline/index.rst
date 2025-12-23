@@ -9,7 +9,6 @@
     Linux操作系统移植
     技术问题时间线
     Blueprint
-    SMP混合部署OS的软硬件形态
     Reading-List
     心理建设
     技术地图
