@@ -52,6 +52,8 @@ html_theme_options = {
     # 左侧导航展开层级
     "show_nav_level": 2,  # 初始展开到2级
     "show_toc_level": 2,  # 右侧目录显示到2级
+    # 顶栏最多显示多少个链接，超过的才进 “More”
+    "header_links_before_dropdown": 10,
 }
 
 # 站点信息（可选）

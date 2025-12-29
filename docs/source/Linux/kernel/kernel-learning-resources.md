@@ -49,6 +49,17 @@
 - **Description**: 内核模块编程 GPL 书，示例较多；新版本维护在：
     - Repo: https://github.com/sysprog21/lkmpg
 
+
+### 2.3 Bootlin Linux kernel & driver development training（slides + labs）
+
+- **Title**: Linux Kernel and Driver Development Training
+- **Org**: Bootlin
+- **Materials**: https://bootlin.com/doc/training/linux-kernel/
+- **Slides (PDF)**: https://bootlin.com/doc/training/linux-kernel/linux-kernel-slides.pdf
+- **Keywords**: training, drivers, device model, DMA, interrupts, synchronization, debug
+- **Description**: 工程化训练材料（讲义 + 实验 + 数据包）。适合按 lab 把驱动开发关键机制系统走一遍。
+
+
 ---
 
 ## 3. 已出版书籍（Published books）
@@ -157,9 +168,6 @@
 - **URL**: https://elixir.bootlin.com/
 - **Keywords**: Browsing source code
 - **Description**: Web 版内核源码浏览器，函数/变量定义与引用交叉链接非常好用。
-- **Bootlin Linux kernel & driver development training（slides + labs）**([Bootlin][1])
-
-[1]: https://bootlin.com/doc/training/linux-kernel/linux-kernel-slides.pdf?utm_source=chatgpt.com "Linux Kernel and Driver Development Training"
 
 ### 4.2 Linux Weekly News（LWN）
 
