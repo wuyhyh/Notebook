@@ -1,4 +1,4 @@
-构建系统
+软件构建系统
 ==========================
 
 .. toctree::
@@ -6,5 +6,5 @@
 
     oebuild构建系统
     构建ramdisk系统
-
-    openEuler/index
+    oebuild构建可能出现的问题
+    openeuler服务器chroot用户态环境

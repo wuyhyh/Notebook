@@ -8,3 +8,4 @@ Linux 相关知识
     compile-kernel/index
     porting_os/index
     kernel/index
+    pcie/index

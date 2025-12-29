@@ -345,16 +345,6 @@ systemctl status ssh
 irm https://get.activated.win | iex
 ```
 
-## 1. 安装 WSL
-
-```text
-wsl --list --online
-```
-
-```text
-wsl --install -d Ubuntu-24.04
-```
-
 
 
 

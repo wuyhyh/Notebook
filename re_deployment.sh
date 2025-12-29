@@ -1,24 +1,50 @@
 #!/usr/bin/env bash
-# 通用本地备份脚本（Git Bash / Linux / macOS 皆可用）
+set -euo pipefail
 
-# === 配置部分 ===
-# 远程服务器配置
-REMOTE_USER="root"                  # 用户名
-REMOTE_HOST="192.168.1.6"        # IP 或域名
-REMOTE_DIR="/srv/www/notebook/"     # 部署路径
+REMOTE_USER="${REMOTE_USER:-root}"
+REMOTE_HOST="${REMOTE_HOST:-192.168.1.102}"
+REMOTE_DIR="${REMOTE_DIR:-/srv/www/notebook}"
 
-# 本地配置
-BUILD_SCRIPT="./build.sh"
-LOCAL_SITE_DIR="site/*"
+BUILD_SCRIPT="${BUILD_SCRIPT:-./build.sh}"
+LOCAL_SITE_DIR="${LOCAL_SITE_DIR:-./site}"
 
-# === 执行部分 ===
-# 1. 编译文档
-if [ -x "$BUILD_SCRIPT" ]; then
-    $BUILD_SCRIPT
-else
-    echo "错误: 找不到或无法执行 $BUILD_SCRIPT"
-    exit 1
-fi
+TS="$(date +%Y%m%d-%H%M%S)"
+# 临时目录放到 /srv/www 下，避免从 /tmp 搬过来导致 SELinux 标签不对
+REMOTE_TMP="/srv/www/.tmp-notebook-site-${TS}"
 
-# 2. 部署到远程服务器
-scp -r $LOCAL_SITE_DIR ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
+echo "[INFO] Build..."
+"$BUILD_SCRIPT"
+
+case "${REMOTE_DIR%/}" in
+  "/srv/www/notebook") ;;
+  *) echo "[ERROR] REMOTE_DIR must be /srv/www/notebook"; exit 1;;
+esac
+
+echo "[INFO] Prepare remote temp dir: ${REMOTE_TMP}"
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "set -e;
+  sudo mkdir -p '${REMOTE_TMP}';
+  sudo rm -rf '${REMOTE_TMP:?}/'*;
+  sudo mkdir -p '${REMOTE_DIR}';
+"
+
+echo "[INFO] Upload..."
+scp -r "${LOCAL_SITE_DIR}/"* "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_TMP}/"
+
+echo "[INFO] Atomic swap + fix selinux/perm..."
+ssh "${REMOTE_USER}@${REMOTE_HOST}" "set -e;
+  sudo rm -rf '${REMOTE_DIR}.old' 2>/dev/null || true;
+  sudo mv '${REMOTE_DIR}' '${REMOTE_DIR}.old' 2>/dev/null || true;
+  sudo mv '${REMOTE_TMP}' '${REMOTE_DIR}';
+
+  # 修复 SELinux 标签（关键，解决 403）
+  sudo restorecon -Rv '${REMOTE_DIR}' >/dev/null 2>&1 || true;
+
+  # 修复权限（确保 nginx 可读）
+  sudo chown -R nginx:nginx '${REMOTE_DIR}' || true;
+  sudo find '${REMOTE_DIR}' -type d -exec chmod 755 {} \; || true;
+  sudo find '${REMOTE_DIR}' -type f -exec chmod 644 {} \; || true;
+
+  sudo rm -rf '${REMOTE_DIR}.old' 2>/dev/null || true;
+"
+
+echo "[INFO] Done: http://${REMOTE_HOST}:8081/"

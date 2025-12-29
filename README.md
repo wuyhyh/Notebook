@@ -17,7 +17,8 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 ```
 
 > 在 macOS 上构建之前需要先激活虚拟环境
-> 使用 CLion 的编辑器打开一个 [conf.py](./docs/source/conf.py) 文件的时候会提示安装一个虚拟解释器环境，安装之后会创建一个 `.venv`目录
+> 使用 CLion 的编辑器打开一个 [conf.py](./docs/source/conf.py) 文件的时候会提示安装一个虚拟解释器环境，安装之后会创建一个
+`.venv`目录
 >
 > 激活环境并安装包:
 >
@@ -49,6 +50,7 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 ```bash
 ./preview.sh
 ```
+
 或者在文件浏览器上双击 [site/index.html](./site/index.html) 即可离线阅读
 
 ## 项目维护
@@ -110,4 +112,3 @@ git show stable1.0
 ```text
 ./re_deployment.sh
 ```
-

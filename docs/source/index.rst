@@ -43,3 +43,15 @@ About :doc:`蓝夜 <lanye>` 是谁？
     :maxdepth: 2
 
     LFS/index
+
+.. toctree::
+    :caption: DPU
+    :maxdepth: 2
+
+    dpu/index
+
+.. toctree::
+    :caption: openEuler 构建与移植
+    :maxdepth: 2
+
+    openeuler/index
