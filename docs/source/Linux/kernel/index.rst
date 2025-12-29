@@ -5,4 +5,3 @@ Linux 内核: 现代方法
     :maxdepth: 2
 
     kernel-learning-resources
-    kernel.org.doc
