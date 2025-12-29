@@ -2,7 +2,8 @@
 
 > Notes
 >
-> - 本清单来自内核文档中的 *Index of Further Kernel Documentation* 相关内容整理。
+> - 本清单来自内核文档中的 *[Index of Further Kernel Documentation](https://docs.kernel.org/process/kernel-docs.html)*
+    相关内容整理。
 > - 同一小节内资源按“新 → 旧”排序。
 > - 除“基础经典书”外，其它资源应定期淘汰过时条目。
 
@@ -156,6 +157,9 @@
 - **URL**: https://elixir.bootlin.com/
 - **Keywords**: Browsing source code
 - **Description**: Web 版内核源码浏览器，函数/变量定义与引用交叉链接非常好用。
+- **Bootlin Linux kernel & driver development training（slides + labs）**([Bootlin][1])
+
+[1]: https://bootlin.com/doc/training/linux-kernel/linux-kernel-slides.pdf?utm_source=chatgpt.com "Linux Kernel and Driver Development Training"
 
 ### 4.2 Linux Weekly News（LWN）
 
@@ -201,14 +205,3 @@
 - **URL**: https://lore.kernel.org
 - **Keywords**: linux-kernel, archives, search
 - **Description**: LKML 等邮件列表的归档与检索入口。
-
----
-
-## 7. 视频与会议（Videos & Conferences）
-
-### 7.1 The Linux Foundation YouTube channel
-
-- **Name**: The Linux Foundation YouTube channel
-- **URL**: https://www.youtube.com/user/thelinuxfoundation
-- **Keywords**: linux, videos, linux-foundation, youtube
-- **Description**: Linux Foundation 相关会议与活动录像、技术内容合集。
