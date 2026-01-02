@@ -145,16 +145,22 @@ rpm2cpio kernel-source-5.10.0-216.0.0.115.oe2203sp4.aarch64.rpm | cpio -idmv
 usr/src/linux-5.10.0-216.0.0.115.oe2203sp4.aarch64/
 ```
 
+验证一下：
+
+```bash
+tree usr/ -L 3
+```
+
 把源码树移到一个单独路径：
 
 ```bash
 cp -rf usr/src/linux-5.10.0-216.0.0.115.oe2203sp4.aarch64 \
-   ~/openEuler-5.10.0-216-src
+   ~/openeuler-5.10.0-216-src
 ```
 
 此时：
 
-* `~/openEuler-5.10.0-216-src/` 即为 openEuler 带补丁的内核源码目录。
+* `~/openeuler-5.10.0-216-src/` 即为 openEuler 带补丁的内核源码目录。
 
 ---
 
@@ -177,14 +183,14 @@ boot/config-5.10.0-216.0.0.115.oe2203sp4.aarch64
 把它作为源码树的 `.config`：
 
 ```bash
-cd ~/openEuler-5.10.0-216-src
+cd ~/openeuler-5.10.0-216-src
 cp -v ~/oe-kernel/boot/config-5.10.0-216.0.0.115.oe2203sp4.aarch64 .config
 ```
 
 至此已经完成：
 
-* 源码：`~/openEuler-5.10.0-216-src/`
-* 配置：`~/openEuler-5.10.0-216-src/.config`（与官方发行内核一致）
+* 源码：`~/openeuler-5.10.0-216-src/`
+* 配置：`~/openeuler-5.10.0-216-src/.config`（与官方发行内核一致）
 
 ---
 
@@ -192,7 +198,7 @@ cp -v ~/oe-kernel/boot/config-5.10.0-216.0.0.115.oe2203sp4.aarch64 .config
 
 在得到源码和配置之后，我们需要对这个内核源码进行管理，以当前提取出的内核作为 baseline 版本。
 
-从 kernel.org 的内核复制 `.clang-format` 和 `.gitignore` 文件，然后初始化仓库
+从 [kernel.org](https://www.kernel.org/) 的 **mainline** 内核复制 `.clang-format` 和 `.gitignore` 文件，然后初始化仓库
 
 ```text
 git init
@@ -207,12 +213,7 @@ git status
 commit message 如下
 
 ```text
-Author: wuyuhang <wuyuhang@aerospace.center.com>
-Date:   Sun Dec 7 15:29:57 2025 +0800
-
-    openeuler: import 5.10.0-216 kernel source
-
-    Import the openEuler 22.03 LTS SP4 kernel sources as our
+Import the openEuler 22.03 LTS SP4 kernel sources as our
     baseline tree.
 
     The code is extracted from:
@@ -228,8 +229,6 @@ Date:   Sun Dec 7 15:29:57 2025 +0800
     No functional changes are intended in this commit. It serves
     as the clean baseline for downstream BSP and Phytium-specific
     modifications.
-
-    Signed-off-by: Wu Yuhang <wuyuhang@aerospace.center.com>"
 ```
 
 ## 7. 后续工作（可选）
@@ -237,7 +236,7 @@ Date:   Sun Dec 7 15:29:57 2025 +0800
 在得到源码和配置之后，可以在 x86 主机上进行后续操作，例如：
 
 ```bash
-cd ~/openEuler-5.10.0-216-src
+cd ~/openeuler-5.10.0-216-src
 
 # 查看 / 微调配置
 make ARCH=arm64 menuconfig
@@ -258,5 +257,3 @@ make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image modules
 * 二进制包：`kernel-rt-*.aarch64.rpm`
 
 处理方式与上文完全相同，只需把包名换成 `kernel-rt-*` 对应的即可。
-
-

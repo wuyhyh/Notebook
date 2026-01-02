@@ -24,7 +24,7 @@ About :doc:`蓝夜 <lanye>` 是谁？
     :caption: Bootloader 相关知识
     :maxdepth: 2
 
-    Bootloader/index
+    bootloader/index
 
 .. toctree::
     :caption: Linux 相关知识

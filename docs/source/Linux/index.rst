@@ -5,7 +5,16 @@ Linux 相关知识
     :maxdepth: 2
 
     kernel/index
-    Embedded/index
+    用户空间初始化
+
+.. 编译 Linux 内核
+.. toctree::
+    :maxdepth: 2
+
     compile-kernel/index
-    porting_os/index
+
+.. PCIe
+.. toctree::
+    :maxdepth: 2
+
     pcie/index

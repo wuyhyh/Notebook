@@ -1,4 +1,4 @@
-# 在 WSL 中打包 openEuler 根文件系统并部署到 NVMe 的完整流程
+# 打包 openEuler 根文件系统
 
 目标：
 在 WSL Ubuntu 环境中，把已经编译好的 `5.10.0-phytium-embedded-v2.3` 内核 + 模块 + 设备树，和 `~/euler/oe-root` 里的 openEuler 根文件系统组装成一个 `oe-rootfs-5.10.0-phytium-embedded-v2.3.tar`（约 3.7G），再部署到开发板的 `nvme0n1p2` 上，由 U-Boot 引导启动。
