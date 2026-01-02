@@ -1,15 +1,10 @@
-# Rocky Linux 10（el10）+ GitLab CE Omnibus RPM 的标准流程
+# Rocky Linux 10 + GitLab CE 搭建流程
 
-我按 Rocky 10 / GitLab CE Omnibus 的标准流程，把从安装 rpm、写 external_url、开防火墙、初始化到验证访问的命令一条条给你，避免你再踩
-https/HSTS 的坑。
+## 1. 前置：主机名与 hosts（在 i5 上）
 
-下面按 Rocky Linux 10（el10）+ GitLab CE Omnibus RPM 的标准流程给你一套“照抄就能装起来”的命令序列。你已经有
-`gitlab-ce-18.6.2-ce.0.el10.x86_64.rpm`，我默认你要用 **HTTP**（避免你之前的 https/HSTS 坑），域名用你定的
-`rocky-server.lab`，IP 固定 `192.168.1.102`。
+首先安装 Rocky Linux 10 操作系统到 PC，处理器为 i5，做代码托管和文档服务器。
 
----
-
-## 0. 前置：主机名与 hosts（在 i5 上）
+安装后 hostname 设置为 `rocky-server`，固定 IP 为 `192.168.1.102`
 
 ```bash
 sudo hostnamectl set-hostname rocky-server
@@ -23,9 +18,11 @@ hostname
 getent hosts rocky-server.lab
 ```
 
+安装 gitlab 比较慢，我们可以先去下载安装包：`gitlab-ce-18.6.2-ce.0.el10.x86_64.rpm`
+
 ---
 
-## 1. 基础依赖与时钟
+## 2. 基础依赖与时钟
 
 ```bash
 sudo dnf -y update
@@ -36,7 +33,7 @@ sudo timedatectl set-timezone Asia/Shanghai
 
 ---
 
-## 2. 安装你下载的 GitLab RPM
+## 3. 安装下载的 GitLab RPM
 
 假设 rpm 在当前目录：
 
@@ -48,7 +45,7 @@ sudo dnf -y install ./gitlab-ce-18.6.2-ce.0.el10.x86_64.rpm
 
 ---
 
-## 3. 写 external_url（强制 HTTP，避免 https/HSTS）
+## 4. 写 external_url（强制 HTTP，避免 https/HSTS）
 
 ```text
 vim /etc/gitlab/gitlab.rb
@@ -66,7 +63,7 @@ gitlab_rails['gitlab_ssh_host'] = 'rocky-server.lab'
 
 ---
 
-## 4. 初始化配置并启动
+## 5. 初始化配置并启动
 
 ```bash
 sudo gitlab-ctl reconfigure
@@ -76,7 +73,7 @@ sudo gitlab-ctl status
 
 ---
 
-## 5. 防火墙放行（HTTP + SSH）
+## 6. 防火墙放行（HTTP + SSH）
 
 ```bash
 sudo firewall-cmd --permanent --add-service=http
@@ -87,9 +84,9 @@ sudo firewall-cmd --list-all
 
 ---
 
-## 6. 验证（在 i5 上）
+## 7. 验证 Nginx 配置里是否是新域名
 
-### 6.1 Nginx 配置里是否是新域名
+在 i5 上
 
 ```bash
 sudo grep -R "server_name" -n /var/opt/gitlab/nginx/conf | head -n 20
@@ -97,7 +94,7 @@ sudo grep -R "server_name" -n /var/opt/gitlab/nginx/conf | head -n 20
 
 ---
 
-## 7. 初始 root 密码
+## 8. 初始 root 密码
 
 首次安装后，root 初始密码通常在：
 
@@ -109,7 +106,7 @@ sudo cat /etc/gitlab/initial_root_password
 
 ---
 
-## 8. 客户端（Windows/WSL）侧 hosts
+## 9. 客户端（Windows/WSL）侧 hosts
 
 在浏览器那台机器上也要加：
 
@@ -124,4 +121,3 @@ sudo cat /etc/gitlab/initial_root_password
 ```powershell
 ipconfig /flushdns
 ```
-

@@ -1,39 +1,79 @@
 # Windows 11 嵌入式环境搭建
 
+## 1. 安装激活 windows 设备
+
+### 1.1 安装 windows 的时候跳过登录 Microsoft 账户
+
+1. 在 OOBE（首次开机向导）出现“让我们连接到网络/Sign in with Microsoft”之前，**拔网线/关闭路由器/不要连接 Wi-Fi**。
+2. 在该界面按 **Shift + F10** 打开命令行（部分笔记本需 **Shift + Fn + F10**）。
+3. 输入并回车：
+
+   ```
+   OOBE\BYPASSNRO
+   ```
+
+   电脑会重启，回到 OOBE 后会多出 **“我没有 Internet（I don’t have Internet）”** → 继续选择 **“继续进行有限设置（Continue
+   with limited setup）”**，即可创建本地账户。([英特尔][1])
+
+### 1.2 激活 windows
+
+在 powershell 中以管理员身份运行
+
+```text
+irm https://get.activated.win | iex
+```
+
+### 1.3 恢复 Windows 11 右键完整菜单显示
+
+使用文本编辑器创建 `right_click_config.bat` 文件
+
+```text
+@echo off
+reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /d "" /f
+taskkill /f /im explorer.exe & start explorer.exe
+echo 'Windows 11 right click menu has already recover！'
+pause
+```
+
+右键以**管理员**身份运行
+
+## 2. 安装开发工具 (Windows 11)
+
 windows 系统在 amd64 机器上是比较稳定的，我们需要安装一些工具方便我们的开发工作。
 
-## 1. 安装工具
-
-### 1.1 chrome 浏览器
+### 2.1 chrome 浏览器
 
 下载安装 [Chrome 浏览器](https://www.google.com/intl/zh-CN/chrome/)，使用 Google 账号登录，方便同步文件。
 
-### 1.2 VPN 软件
+### 2.2 VPN 软件
 
-- [pigcha](https://web.marslinkvpn.com/)
 - [letsvpn](https://www.nletsb.com/)
 
-### 1.3 截图软件
+### 2.3 截图软件
 
 [snipaste](https://zh.snipaste.com/download.html)
 
-### 1.4 终端软件
+### 2.4 终端软件
 
 [MaboXterm](https://mobaxterm.mobatek.net/download.html)
 
-### 1.5 虚拟机
+### 2.5 虚拟机
 
 安装完整的虚拟机管理器，现在已经完全免费，登录博通官网下载：
 
 VMware Workstation
 
-### 1.6 Adobe PDF reader
+### 2.6 Adobe PDF reader
 
 安装一个 PDF 阅读器，也是免费的。
 
-### 1.7 解压缩工具
+### 2.7 解压缩工具
 
-下载免费的 [7z](https://www.7-zip.org/)
+- 7z
+
+下载免费的 [7z](https://www.7-zip.org/), 方便在 windows 下解压各种压缩包
+
+- tar
 
 我更喜欢使用 Git bash 中集成的 tar
 
@@ -51,7 +91,7 @@ tar -czf file.tar.gz file/
 tar -zxf file.tar.gz
 ```
 
-### 1.8 安装 CLion
+### 2.8 集成开发环境 CLion
 
 CLion 用作底层软件开发是非常方便的。
 
@@ -59,29 +99,43 @@ CLion 用作底层软件开发是非常方便的。
 
 为了良好的 **coding style**，打开空白字符的显示选项。
 
-## 2. 配置
+### 2.9 Python
 
-### 2.1 安装 wsl
+安装 Python 解释器
 
-#### 2.1.1 安装指定版本的 wsl
+### 2.10 安装 Git
+
+[Git](https://git-scm.com/install/windows) 是必须安装和配置的
+
+## 3. WSL
+
+### 3.1 安装 wsl
+
+#### 3.1.1 安装指定 Linux 发行版
+
+以管理员身份打开 powershell:
 
 ```text
 wsl --list --online
-wsl --list --online FedoraLinux-42
-wsl --list --online Ubuntu-24.04
 ```
 
-在根目录创建与 windows 文件系统的关联
+安装 Ubuntu24.04 LTS
+
+```text
+wsl --install -d Ubuntu-24.04
+```
+
+在根目录创建软链接，方便与 windows 文件系统复制文件
 
 ```text
 cd ~
-echo 'export wuyh=/mnt/c/Users/wuyuhang/Downloads' >> .bashrc
-source .bashrc
+ln -s /mnt/c/Users/wuyuhang wuyh
+ln -s /mnt/c/Users/wuyuhang/Downloads downloads
 ```
 
 这样可以快速在两个文件系统之间切换。
 
-#### 2.1.2 文件系统权限问题
+#### 3.1.2 文件系统权限问题
 
 由于 WSL 和 Windows 文件系统之间的权限模型不同，导致在 `/mnt/c/` 等挂载点下的文件权限显示异常。
 
@@ -116,9 +170,19 @@ appendWindowsPath = true
 wsl --shutdown
 ```
 
-### 2.2 配置 Git
+### 3.2 配置 Git
 
-[Git](https://git-scm.com/install/windows) 是必须安装和配置的
+#### 3.2.1 安装
+
+Ubuntu 下：
+
+```shell
+sudo apt install git -y
+```
+
+#### 3.2.2 密钥
+
+生成密钥对，并把公钥复制到远端 Git 仓库 (Github、Gitlab), 这样才能使用 SSH 协议免密 clone 代码。
 
 ```text
 ssh-keygen
@@ -126,19 +190,17 @@ ssh-keygen
 
 复制 `~/.ssh` 目录下的公钥到远端服务器，方便代码下载和托管。
 
-```text
-sudo apt install git -y
-```
+#### 3.2.3 基本配置
 
-```text
-sudo dnf install git -y
-```
+要提交代码必须配置用户名和一个合法格式(但可以不真实)的邮箱
 
 ```text
 git config --global user.name wuyhyh
 git config --global user.email wuyhyh@gmail.com
 git config --global core.editor vim
 ```
+
+#### 3.2.4 windows 下的 Git
 
 在 **windows** 下也应该安装 Git，Git bash 可以在windows上执行很多有用的命令。
 
@@ -153,44 +215,23 @@ git config --global i18n.logoutputencoding utf8
 git config --global i18n.commitencoding utf8
 ```
 
-在 windows 的 `User/wuyuhang` 根目录下也该生成 `ssh-keygen`，这样 windows 机器才会被远端仓库认识。
+> 在 windows 的 `User/wuyuhang` 根目录下也该生成 `ssh-keygen`，这样 windows 机器才会被远端仓库认识。
 
-### 2.3 大模型
-
-- 免费的 **deepseek** 豆包
-
-- 记忆力很好的收费的 **ChatGPT**
-
-### 2.4 恢复 Windows 11 右键完整菜单显示
-
-使用文本编辑器创建 `right_click_config.bat` 文件
-
-```text
-@echo off
-reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /d "" /f
-taskkill /f /im explorer.exe & start explorer.exe
-echo Windows 11 右键菜单已恢复完整选项！
-pause
-```
-
-右键以管理员身份运行
-
-### 2.5 在开发板上通过 SSH/SCP 直接访问 WSL
+### 3.4 在开发板上通过 SSH/SCP 直接访问 WSL
 
 嵌入式开发板直接用 `ssh/scp` 访问 WSL 的 Linux 路径，不再经过Windows 用户目录或盘符路径。默认目标端口使用 **2223**，避免与
 Windows 自身的 OpenSSH（22）冲突。
 
 ---
 
-#### 2.5.1 前置条件
+#### 3.4.1 前置条件
 
-* Windows 10/11 + **WSL2（推荐商店版，`wsl --version` 可见版本号）**
+* Windows 10/11 + **WSL2（`wsl --version` 可见版本号）**
 * 开发板网络可达 Windows 主机的局域网 IP（示例：`192.168.11.100`）
-* 开发板端 `scp` 若是 Dropbear，**后续命令都需要 `-O`**（legacy scp）
 
 ---
 
-#### 2.5.2 把 WSL 放到与局域网同一网段（mirrored）
+#### 3.4.2 把 WSL 放到与局域网同一网段（mirrored）
 
 1）管理员 PowerShell：
 
@@ -222,7 +263,7 @@ ip a
 
 ---
 
-#### 2.5.3 在 WSL 中部署并启动 `sshd`（监听 2223）
+#### 3.4.3 在 WSL 中部署并启动 `sshd`（监听 2223）
 
 1）安装与准备：
 
@@ -259,7 +300,7 @@ ss -lntp | grep 2223      # 看到 0.0.0.0:2223 处于 LISTEN 即可
 
 ---
 
-#### 2.5.4 Windows 防火墙放行 2223（仅放行，不要让 Windows 占用端口）
+#### 3.4.4 Windows 防火墙放行 2223（仅放行，不要让 Windows 占用端口）
 
 管理员 PowerShell：
 
@@ -273,7 +314,7 @@ Get-NetTCPConnection -LocalPort 2223 -State Listen
 
 ---
 
-#### 2.5.5 连通性自检
+#### 3.4.5 连通性自检
 
 1）**在 Windows 本机测试**（确保链路到达 WSL，而非 Windows 自身）：
 
@@ -294,7 +335,7 @@ scp -O -P 2223 <wsl_user>@192.168.11.100:~/file.img /mnt/p2/
 
 ---
 
-#### 2.5.6 启用 systemd，让 sshd 自启动(可选)
+#### 3.4.6 启用 systemd，让 sshd 自启动(可选)
 
 如果你希望 WSL 每次启动自动运行 `sshd`：
 
@@ -322,35 +363,8 @@ systemctl status ssh
 
 > 启用 systemd 后，**端口仍然建议用 2223**（避免 Windows 22 端口冲突）。若要改用 22，请先停用并禁用 Windows 的 `sshd` 服务。
 
-## 3. 安装激活 windows 设备
+## 4. 大模型
 
-### 3.1 安装 windows 的时候跳过登录 Microsoft 账户
-
-1. 在 OOBE（首次开机向导）出现“让我们连接到网络/Sign in with Microsoft”之前，**拔网线/关闭路由器/不要连接 Wi-Fi**。
-2. 在该界面按 **Shift + F10** 打开命令行（部分笔记本需 **Shift + Fn + F10**）。
-3. 输入并回车：
-
-   ```
-   OOBE\BYPASSNRO
-   ```
-
-   电脑会重启，回到 OOBE 后会多出 **“我没有 Internet（I don’t have Internet）”** → 继续选择 **“继续进行有限设置（Continue
-   with limited setup）”**，即可创建本地账户。([英特尔][1])
-
-### 3.2 激活 windows
-
-在 powershell 中以管理员身份运行
-
-```text
-irm https://get.activated.win | iex
-```
-
-
-
-
-
-
-
-
-
-
+- **deepseek**
+- **豆包**
+- **ChatGPT**

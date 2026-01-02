@@ -33,25 +33,25 @@ About :doc:`蓝夜 <lanye>` 是谁？
     Linux/index
 
 .. toctree::
-    :caption: 构建系统
+    :caption: openEuler 移植
     :maxdepth: 2
 
-    Build/index
+    openeuler/index
+
+.. toctree::
+    :caption: 高速网络单元 DPU
+    :maxdepth: 2
+
+    dpu/index
+
+.. toctree::
+    :caption: 构建 embedded 系统
+    :maxdepth: 2
+
+    embedded/index
 
 .. toctree::
     :caption: LFS 构建自己的操作系统
     :maxdepth: 2
 
     LFS/index
-
-.. toctree::
-    :caption: DPU
-    :maxdepth: 2
-
-    dpu/index
-
-.. toctree::
-    :caption: openEuler 构建与移植
-    :maxdepth: 2
-
-    openeuler/index

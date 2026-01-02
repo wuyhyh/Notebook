@@ -57,7 +57,7 @@ git push
 * 统一用 `doc:` 前缀（例如 `doc: fix section 2.4 translation`）
 * 一次提交只做一类修改（便于回滚）
 
-## 4. Maintainer（吴宇航）本地集成到 master 流程
+## 4. Maintainer 本地集成到 master 流程
 
 目标：不改动成员远端分支历史，但 `master` 仍严格线性。
 
@@ -155,13 +155,3 @@ git log --graph --oneline --decorate --all --date-order
 ```bash
 git branch -r
 ```
-
----
-
-如果你愿意再进一步“把规则落到 GitLab 权限配置”，我建议你做两件事（不需要 MR，也能生效）：
-
-* 把 `master` 设为 Protected Branch：只允许 Maintainer push
-* 关闭/限制对 `master` 的 force push
-
-现在这套流程已经足够稳定，后面要引入代码协作和验证，再把第 4.3 和 4.4 中间插入“构建/格式检查/链接检查”即可。
-

@@ -161,7 +161,7 @@ echo 'UUID=<UUID>  /mnt/lfs  ext4  defaults  0  1' | sudo tee -a /etc/fstab
 
 ---
 
-## 5. 设置环境变量 `LFS`
+## 5. 设置环境变量 LFS
 
 LFS 全书要求使用变量 `LFS` 指向挂载点。为当前用户持久化：
 

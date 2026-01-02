@@ -1,6 +1,6 @@
 # oebuild 构建系统
 
-openEuler Embeddedd的核心构建系统是基于Yocto，但又根据自身的需求做了很多定制化的开发。
+openEuler Embedded的核心构建系统是基于Yocto，但又根据自身的需求做了很多定制化的开发。
 
 社区：
 
