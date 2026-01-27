@@ -44,7 +44,6 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 > ```text
 > ./preview.sh               # 默认 8000 端口
 > PORT=9000 ./preview.sh     # 自定义端口
-> SITE_DIR=_build/html ./preview.sh   # 如果你把产物放在 _build/html
 > ```
 
 ```bash
@@ -56,34 +55,6 @@ python -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r requiremen
 ## 项目维护
 
 增加目录和 md 文档，然后新增和修改 `index.rst` 配置文件
-
-## 版本管理
-
-配置完成后，本机上的远程仓库默认名为 `origin`，使用 `push` `pull` 实现数据传送
-
-```text
-git push origin master
-git pull origin master
-```
-
-创建带注释的标签：
-
-```text
-git tag -a stable1.0 -m "Stable version 1.0 release"
-```
-
-推送所有本地标签：
-
-```text
-git push origin --tags
-```
-
-查看标签
-
-```text
-git tag
-git show stable1.0
-```
 
 ## 部署网页到 Linux 服务器上
 

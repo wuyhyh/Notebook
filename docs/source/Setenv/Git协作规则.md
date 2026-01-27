@@ -155,3 +155,31 @@ git log --graph --oneline --decorate --all --date-order
 ```bash
 git branch -r
 ```
+
+# 7. 打标签
+
+配置完成后，本机上的远程仓库默认名为 `origin`，使用 `push` `pull` 实现数据传送
+
+```text
+git push origin master
+git pull origin master
+```
+
+创建带注释的标签：
+
+```text
+git tag -a stable1.0 -m "Stable version 1.0 release"
+```
+
+推送所有本地标签：
+
+```text
+git push origin --tags
+```
+
+查看标签
+
+```text
+git tag
+git show stable1.0
+```
