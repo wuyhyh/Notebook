@@ -199,6 +199,20 @@ source ~/env-aarch64.sh
 make O=build ARCH=arm64 olddefconfig
 ```
 
+修改内核配置
+
+```bash
+make O=build ARCH=arm64 menuconfig
+```
+
+修改内核的版本标签
+
+```text
+export LOCALVERSION=-baseline_2026Q1
+make O=build ARCH=arm64 olddefconfig
+make O=build kernelrelease
+```
+
 说明：
 
 * 以后不要再 `cp config .config` 放到源码根目录

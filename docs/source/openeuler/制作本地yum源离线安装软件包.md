@@ -273,4 +273,30 @@ dnf --disablerepo="*" --enablerepo="oe-local" install -y <pkgname>
 dnf --disablerepo="*" --enablerepo="oe-local" install -y
 ```
 
+```text
+dnf --disablerepo="*" --enablerepo="oe-local" install -y \
+  rpm-build rpmdevtools \
+  dnf-plugins-core
+```
+
+```text
+dnf --disablerepo="*" --enablerepo="oe-local" install -y \
+  git make gcc gcc-c++ \
+  bc bison flex \
+  patch diffutils \
+  perl python3 \
+  rsync which file \
+  tar gzip bzip2 xz cpio \
+  findutils grep gawk sed \
+  elfutils-libelf-devel \
+  openssl-devel \
+  ncurses-devel \
+  dwarves
+```
+
+```text
+
+```
+
+
 你现在只要把 `<pkgname>` 换成实际值，就能安装发行版支持的所有包。

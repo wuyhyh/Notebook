@@ -152,6 +152,60 @@ ip route
 ping -c 3 192.168.11.100
 ```
 
+网络配置
+
+行，那就说明结论很明确：
+
+* 网卡驱动、链路、NetworkManager 都没问题
+* 真正的问题是你之前那套 ifcfg 写法/解析链路没生效，NM 继续拿 “Wired connection 1/2” 去跑 DHCP，结果超时
+
+接下来你别停在“能用”就完了，把它收尾做干净，避免以后又被旧配置抢占。
+
+## 1) 清理旧的 DHCP 连接，避免抢默认
+
+你现在系统里还留着 `Wired connection 1/2`（DHCP），建议删掉或至少禁用自动连接，否则下次重启可能又被它“抢先激活”。
+
+删掉（推荐）：
+
+```bash
+nmcli con delete "Wired connection 1"
+nmcli con delete "Wired connection 2"
+```
+
+或者不删，只禁用 autoconnect：
+
+```bash
+nmcli con mod "Wired connection 1" connection.autoconnect no
+nmcli con mod "Wired connection 2" connection.autoconnect no
+```
+
+## 2) 你是直连 PC：别让它们抢默认路由
+
+直连测试网一般不需要 default route，防止影响你其他上网口（如果有的话）：
+
+```bash
+nmcli con mod eth0-static ipv4.never-default yes
+nmcli con mod eth1-static ipv4.never-default yes
+nmcli con up eth0-static
+nmcli con up eth1-static
+```
+
+## 3) 验证持久化
+
+```bash
+nmcli -f NAME,DEVICE,AUTOCONNECT,IP4.METHOD,IP4.ADDRESS con show
+ip -4 a
+```
+
+看到 eth0/eth1 都是 manual 且有 192.168.11.105/106 就稳了。
+
+## 4) 给你一句“这次为什么会这样”的复盘
+
+你之前 ifcfg 文件里用了 `KEY = value` 这种带空格写法，而且系统这边 NM 默认用的是 keyfile 插件，导致 ifcfg 没被正确解析/采用，所以一直在 DHCP 超时。现在用 nmcli 直接写入 NM 的连接配置，就绕开了那条脆弱链路。
+
+你要是愿意再把这事彻底闭环：把你之前写的 `/etc/sysconfig/network-scripts/ifcfg-eth0/eth1` 两个文件直接删掉（或备份走），避免未来你自己把自己绕进去。
+
+
 ---
 
 ## 3. 基于 PC ISO 的本地 dnf 仓库（oeiso-http）

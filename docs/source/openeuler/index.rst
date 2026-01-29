@@ -12,3 +12,12 @@ openEuler 移植
     制作本地yum源离线安装软件包
     打包openEuler根文件系统
     核心板openEuler用户态配置手册
+    openeuler-VM-从内核编译到生成rootfs镜像
+    ARM64_initramfs_配置流程
+    核心板操作系统部署
+    核心板操作系统部署_补全版
+
+.. toctree::
+    :maxdepth: 2
+
+    obsolete/index
