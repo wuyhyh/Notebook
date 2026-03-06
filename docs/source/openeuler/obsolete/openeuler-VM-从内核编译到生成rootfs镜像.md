@@ -87,6 +87,29 @@ make -C "$SRCDIR" O="$BUILDDIR" ARCH=arm64 olddefconfig
 ```bash
 make -C "$SRCDIR" O="$BUILDDIR" ARCH=arm64 menuconfig
 ```
+>`make menuconfig` 中配置了以下选项
+> * 1. NVMe 块设备支持
+> ```text
+> Device Drivers  --->
+> [*] Block devices  --->
+> NVME Support  --->
+>       <*> NVM Express block device
+> ```
+> *  2. ext4 文件系统支持
+> ```text
+> File systems  --->
+> <*> The Extended 4 (ext4) filesystem
+> <*> XFS filesystem support
+> ```
+> * 3. 添加飞腾补丁
+>```text
+>Device Drivers
+>Network device support
+>PHY Device support
+><*> Motorcomm PHYs
+>```
+> 
+> 
 
 ```bash
 cd $SRCDIR
@@ -171,7 +194,7 @@ sudo dnf -y   --installroot="$ROOTFS"   --disablerepo='*' --enablerepo='oe-local
          coreutils findutils grep sed gawk diffutils file which \
          bash bash-completion sudo tzdata \
          kmod kmod-libs \
-         parted e2fsprogs nvme-cli resize2fs\
+         parted e2fsprogs\
          pciutils ethtool tcpdump strace lsof psmisc bind-utils wget
 ```
 
@@ -186,7 +209,7 @@ sudo dnf -y   --installroot="$ROOTFS"   --nogpgcheck   install basesystem \
          coreutils findutils grep sed gawk diffutils file which \
          bash bash-completion sudo tzdata \
          kmod kmod-libs \
-         parted e2fsprogs nvme-cli resize2fs\
+         parted e2fsprogs\
          pciutils ethtool tcpdump strace lsof psmisc bind-utils wget
 ```
 
@@ -391,7 +414,7 @@ set -euo pipefail
 # -----------------------------
 # 0) 用户可改的默认变量
 # -----------------------------
-: "${SRCDIR:=$HOME/src/openEuler-5.10.0-136-src-master}"
+: "${SRCDIR:=$HOME/src/openeuler-5.10.0-136-src-master}"
 : "${BUILDDIR:=$HOME/build/oe-kernel-5.10.0-136}"
 : "${STGDIR:=$HOME/staging}"
 : "${ROOTFS:=/mnt/rootfs}"
@@ -419,10 +442,33 @@ PKGS=(
   passwd
   shadow-utils
   util-linux
+
+  # 基础调试
   vim-minimal
+  less
+  procps-ng
+  iproute
+  iputils
+
+  # 网络
   NetworkManager
   openssh-server
   openssh-clients
+  curl
+
+  # RPM / DNF 栈（关键）
+  dnf
+  python3
+  python3-libs
+  python3-dnf
+  libdnf
+  librepo
+  rpm
+  rpm-libs
+
+  # 安全 / 证书
+  ca-certificates
+  gnupg2
 )
 
 # -----------------------------
@@ -477,7 +523,7 @@ if [[ -n "$KCONFIG_FRAGMENTS" ]]; then
 
   # 先确保 .config 在 BUILDDIR
   # -O 指向输出目录，合并结果会写到该目录的 .config
-  "$MERGE_SH" -O "$BUILDDIR" "$BUILDDIR/.config" "${frags[@]}"
+  "$MERGE_SH" -m -O "$BUILDDIR" "$BUILDDIR/.config" "${frags[@]}"
   make -C "$SRCDIR" O="$BUILDDIR" ARCH=arm64 olddefconfig
 fi
 
@@ -560,6 +606,21 @@ sudo systemctl --root="$ROOTFS" enable NetworkManager
 sudo systemctl --root="$ROOTFS" enable sshd
 
 # -----------------------------
+# 8.1) 设置 root 密码（离线写 shadow，不 chroot）
+# -----------------------------
+: "${ROOT_PASSWORD:=wuyh12#\$}"   # 可通过环境变量覆盖
+
+log "set root password (offline shadow edit)"
+
+need_cmd openssl
+
+HASH="$(openssl passwd -6 "$ROOT_PASSWORD")"
+
+sudo chmod 600 "$ROOTFS/etc/shadow"
+sudo sed -i "s#^root:[^:]*:#root:${HASH}:#" "$ROOTFS/etc/shadow"
+
+
+# -----------------------------
 # 9) 打包 rootfs.ext4 镜像
 # -----------------------------
 log "make ext4 image: $IMG (size=$IMG_SIZE)"
@@ -614,8 +675,16 @@ LOCALVERSION=-baseline_2026Q1-2 ./build_all.sh
 MENUCONFIG=1 ./build_all.sh
 ```
 
-自动化改内核选项（可复现，推荐）：
+自动化改内核选项与版本号（可复现，推荐）：
 
 ```shell
-KCONFIG_FRAGMENTS=$HOME/kcfg/feat-a.cfg:$HOME/kcfg/feat-b.cfg ./build_all.sh
+KCONFIG_FRAGMENTS=$HOME/kcfg/feat-a.cfg LOCALVERSION=-baseline_2026Q1-3 ./build_all.sh
+```
+自定义用户密码
+```shell
+ROOT_PASSWORD='123456' ./build_rootfs.sh
+```
+使用飞腾内核源码
+```shell
+SRCDIR=$HOME/phytiumsrc/phytium-linux-kernel-linux-5.10 KCONF=$HOME/phytium_defconfig ./build_all.sh
 ```

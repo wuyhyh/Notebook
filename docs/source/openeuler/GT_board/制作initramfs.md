@@ -1,7 +1,7 @@
-# ARM64 initramfs 配置流程
+# 制作 ARM64 initramfs
 
 利用 U-Boot 的网络功能和 tftp 协议传输 Image dtb initramfs 到内存中，从内存启动一个轻量级 Linux 系统，完成 nvme
-ssd的分区创建并建立文件系统，然后固话操作系统到 nvme ssd 中。
+ssd 的分区创建并建立文件系统，然后固化操作系统到 nvme ssd 中。
 
 ---
 

@@ -7,7 +7,7 @@
 ## 0. 镜像下载
 
 选用工具链完善的 ARM64 架构的 openEuler 22.03 SP4 server edition.
-![openEuler.png](../_static/_pic/openEuler.png)
+![openEuler.png](../../_static/_pic/openEuler.png)
 操作系统镜像在[这里](https://www.openeuler.org/zh/download/archive/detail/?version=openEuler%2022.03%20LTS%20SP4)
 ，选择下载服务器版的Everything ISO 文件
 
@@ -27,7 +27,7 @@
 
 #### b. 准备一个 32G 或更大的U盘，使用 balenaEtcher 和下载好的 ISO 文件制作一个启动 U 盘
 
-![usb_stick.png](../_static/_pic/usb_stick.png)
+![usb_stick.png](../../_static/_pic/usb_stick.png)
 
 ### 1.2 配置本地 yum 源
 

@@ -49,10 +49,10 @@ bootefi ${kernel_addr_r} ${fdt_addr_r}
 ```
 
 CPU 压测
-![img.png](img.png)
+![img.png](../img.png)
 
 CPU + MM 压测
-![img_1.png](img_1.png)
+![img_1.png](../img_1.png)
 
 ```shell
 setenv bootargs 'console=ttyAMA1,115200 console=ttyAMA0,115200 earlycon=pl011,0x28001000 loglevel=8 ignore_loglevel root=/dev/nvme0n1p2 rootfstype=ext4 rw rootwait nr_cpus=8 nmi_watchdog=0 panic=-1 init=/lib/systemd/systemd'

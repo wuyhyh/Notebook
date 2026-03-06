@@ -1,4 +1,4 @@
-# 核心板操作系统部署_补全版
+# 核心板操作系统部署
 
 ## 0. 硬件与分区规划
 
@@ -197,7 +197,7 @@ lsblk -f
 blkid
 
 mkdir -p /mnt/p2
-mount /dev/nvme0n1p1 /mnt/p2
+mount /dev/nvme0n1p2 /mnt/p2
 ```
 
 然后拉 p2-rootfs.tar
@@ -231,6 +231,14 @@ blkid
 
 mkdir -p /mnt/p2
 mount /dev/nvme0n1p2 /mnt/p2
+```
+
+```bash
+lsblk -f
+blkid
+
+mkdir -p /mnt/p3
+mount /dev/nvme0n1p3 /mnt/p3
 ```
 
 然后拉 rootfs：

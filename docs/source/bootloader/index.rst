@@ -10,4 +10,5 @@ Bootloader 相关知识
     EM100Pro-G3闪存Emulator使用方法
     U-Boot编译配置问题
     U-Boot双网口问题复盘
+    U-Boot版本规则
     crc32校验程序

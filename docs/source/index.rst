@@ -18,7 +18,7 @@ About :doc:`蓝夜 <lanye>` 是谁？
     :caption: 环境搭建
     :maxdepth: 2
 
-    Setenv/index
+    setenv/index
 
 .. toctree::
     :caption: Bootloader 相关知识

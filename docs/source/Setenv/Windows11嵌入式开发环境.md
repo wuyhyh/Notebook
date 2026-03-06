@@ -111,6 +111,14 @@ CLion 用作底层软件开发是非常方便的。
 
 ### 3.1 安装 wsl
 
+#### 3.1.0 安装 WSL-OpenEuler-22.03
+
+可以先到[这里](https://apps.microsoft.com/detail/9p9rspjdkx9g?hl=zh-CN&gl=US)下载 installer
+
+也可以直接到微软软件商店搜索 `OpenEuler-22.03` 安装。
+
+![img.png](../_static/_pic/wsl2203.png)
+
 #### 3.1.1 安装指定 Linux 发行版
 
 以管理员身份打开 powershell:

@@ -27,39 +27,92 @@ set -euo pipefail
 : "${KCONFIG_FRAGMENTS:=}"
 
 PKGS=(
-  basesystem
-  systemd
-  passwd
-  shadow-utils
-  util-linux
+   # -----------------------------
+   # 系统基础
+   # -----------------------------
+   basesystem
+   systemd
+   passwd
+   shadow-utils
+   util-linux
 
-  # 基础调试
-  vim-minimal
-  less
-  procps-ng
-  iproute
-  iputils
+   # -----------------------------
+   # Shell / 基础工具
+   # -----------------------------
+   bash
+   bash-completion
+   coreutils
+   findutils
+   grep
+   sed
+   gawk
+   diffutils
+   file
+   which
+   sudo
+   tzdata
 
-  # 网络
-  NetworkManager
-  openssh-server
-  openssh-clients
-  curl
+   # -----------------------------
+   # 压缩 / 打包工具
+   # -----------------------------
+   tar
+   gzip
+   xz
+   bzip2
+   zstd
 
-  # RPM / DNF 栈（关键）
-  dnf
-  python3
-  python3-libs
-  python3-dnf
-  libdnf
-  librepo
-  rpm
-  rpm-libs
+   # -----------------------------
+   # 调试 / 监控
+   # -----------------------------
+   vim-minimal
+   less
+   procps-ng
+   iproute
+   iputils
+   strace
+   lsof
+   psmisc
 
-  # 安全 / 证书
-  ca-certificates
-  gnupg2
-)
+   # -----------------------------
+   # 网络工具
+   # -----------------------------
+   NetworkManager
+   openssh-server
+   openssh-clients
+   curl
+   wget
+   ethtool
+   tcpdump
+   bind-utils
+
+   # -----------------------------
+   # RPM / DNF 栈（关键）
+   # -----------------------------
+   dnf
+   python3
+   python3-libs
+   python3-dnf
+   libdnf
+   librepo
+   rpm
+   rpm-libs
+
+   # -----------------------------
+   # 内核 / 磁盘 / 设备管理
+   # -----------------------------
+   kmod
+   kmod-libs
+   parted
+   e2fsprogs
+   nvme-cli
+   pciutils
+
+   # -----------------------------
+   # 安全 / 证书
+   # -----------------------------
+   ca-certificates
+   gnupg2
+ )
 
 # -----------------------------
 # 1) 小工具函数
@@ -185,7 +238,7 @@ log "NetworkManager.conf"
 sudo mkdir -p "$ROOTFS/etc/NetworkManager"
 cat <<'EOF' | sudo tee "$ROOTFS/etc/NetworkManager/NetworkManager.conf" >/dev/null
 [main]
-plugins=keyfile
+plugins=keyfile：
 
 [device]
 wifi.scan-rand-mac-address=no
@@ -194,6 +247,21 @@ EOF
 log "enable services"
 sudo systemctl --root="$ROOTFS" enable NetworkManager
 sudo systemctl --root="$ROOTFS" enable sshd
+
+# -----------------------------
+# 8.1) 设置 root 密码（离线写 shadow，不 chroot）
+# -----------------------------
+: "${ROOT_PASSWORD:=wuyh12#\$}"   # 可通过环境变量覆盖
+
+log "set root password (offline shadow edit)"
+
+need_cmd openssl
+
+HASH="$(openssl passwd -6 "$ROOT_PASSWORD")"
+
+sudo chmod 600 "$ROOTFS/etc/shadow"
+sudo sed -i "s#^root:[^:]*:#root:${HASH}:#" "$ROOTFS/etc/shadow"
+
 
 # -----------------------------
 # 9) 打包 rootfs.ext4 镜像
