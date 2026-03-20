@@ -2,7 +2,7 @@
 
 ## 1.2 PCI Express Link
 
-![img.png](img.png)
+![img.png](pcie_pic/link.png)
 
 The primary Link attributes are:
 
@@ -14,7 +14,7 @@ The primary Link attributes are:
 
 ## 1.3 PCI Express Fabric Topology
 
-![img_1.png](img_1.png)
+![img_1.png](pcie_pic/topology.png)
 
 ### 1.3.1. Root Complex
 
