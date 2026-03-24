@@ -20,7 +20,7 @@
 * ACK/NAK timer
 * VC arbitration 具体算法
 
-这些东西当然重要，但**不是你当前最值钱的起点**。
+这些东西当然重要，但**不是你当前最有价值的起点**。
 
 ---
 
@@ -664,7 +664,7 @@
 
 * 协议分析仪抓链路层包
 * 调链路重传
-* 做 Switch/控制器 RTL 级实现
+* 做 Switch/控制器 RTL(Register Transfer Level) 级实现
 
 否则这章先知道：
 
