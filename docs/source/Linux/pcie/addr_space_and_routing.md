@@ -184,6 +184,40 @@ Switch address routing 有这3种情况：
 
 ID 路由以设备功能的逻辑位置为基础，路由配置事务、消息事务和完成事务。
 
+logic position: bus number, device number, function number.
+
+#### ID bus number, device number, function number 的限制
+
+PCIe 大系统里，最先碰到的通常是 bus number 限制，而不是 function 数限制。
+
+- Bus Number：8 位，最多 256 个 bus
+- Device Number：5 位，每 bus 最多 32 个 device
+- Function Number：3 位，每 device 最多 8 个 function
+
+#### ID routing 中的关键 TLP header 字段
+
+有 3DW 长度的 TLP header 和 4DW 长度的 TLP header。
+
+> Type 表示事务语义，Fmt 表示包格式。
+> 
+> 3DW 和 4DW 的区别主要来自地址字段是 32 位还是 64 位。
+> 
+> 带数据还是不带数据，也由 Fmt 体现。
+
+![img.png](pcie_pic/ID_routing_3DW.png)
+
+![img.png](pcie_pic/ID_routing_4DW.png)
+
+
+
+## 3.5 路由选项的即插即用配置 plug-and-play configuration 
+
+
+
+
+
+
+
 
 
 

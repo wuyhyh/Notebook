@@ -189,7 +189,7 @@ PCIe 设备使用存储器写 TLP 来发送中断 vector 给 RC, RC 再去中断
 
 ### 1.4.1 PCI Express 的拓扑结构
 
-![img_2.png](../../_static/_pic/pcie-topo.png)
+![img_2.png](pcie_pic/pcie-topo.png)
 
 #### RC
 
@@ -244,4 +244,4 @@ Links 按照 DFS 的方式进行计数和编号。
 
 所以每条 PCIe Link 只支持一个 device。
 
-![img_2.png](../../_static/_pic/PCIe_in_server.png)
+![img_2.png](pcie_pic/PCIe_in_server.png)
