@@ -199,28 +199,218 @@ PCIe 大系统里，最先碰到的通常是 bus number 限制，而不是 funct
 有 3DW 长度的 TLP header 和 4DW 长度的 TLP header。
 
 > Type 表示事务语义，Fmt 表示包格式。
-> 
+>
 > 3DW 和 4DW 的区别主要来自地址字段是 32 位还是 64 位。
-> 
+>
 > 带数据还是不带数据，也由 Fmt 体现。
 
 ![img.png](pcie_pic/ID_routing_3DW.png)
 
 ![img.png](pcie_pic/ID_routing_4DW.png)
 
+#### EP 检测 ID 路由的 TLP
 
+configuration write type0 会对 EP 进行配置，之后 EP 会比较 TLP header 中的 BDF，然后选择接受还是拒绝。
 
-## 3.5 路由选项的即插即用配置 plug-and-play configuration 
+reset 之后，bus number 和 device number 都会被置为0，这个时候 EP 将只响应 configuration write。
 
+#### Switch 检测 ID 路由的 TLP
 
+switch 接收 ID-routed TLP 也会进行 two checks.
 
+1. if it is for me?
+2. if it is for downstream links?
 
+![img.png](pcie_pic/ID_routing_for_switch.png)
 
+### 3.4.3 Implicit Routing
 
+Implicit Routing 是 PCIe Message TLP 的一种典型路由方式。
 
+message 也可以使用地址或 ID 路由方法。
 
+它的特点是：TLP 不依赖显式的地址或 ID 来指定目标，而是由 Message 的类型和协议规定的路由规则决定转发方向，例如向上游、向下游或广播。
 
+许多与系统管理相关的功能都会通过 Message TLP 传递，例如：
 
+- power management
+- INTx legacy interrupt signaling
+- error signaling
+- hot plug signaling
+- vendor-specific message
+- slot power limit message
 
+这些消息经常会涉及 Root Complex，但并不能简单理解为大多数 Message 都只是由 RC 发出和接收；具体的发送方、接收方和转发方式取决于消息类型本身。
 
+注意 message TLP 总是使用 4DW header。
 
+![img.png](pcie_pic/4DW_message_TLP_header.png)
+
+header 中的关键字段主要是 type 和 code，这决定 TLP implicit routing 的处理方案
+
+![img.png](pcie_pic/table-3.7.png)
+
+## 3.5 路由选项的即插即用配置（plug-and-play configuration）
+
+这里概述与 routing 相关的 configuration space register 的编程方法。
+
+> 注意：Configuration Space 在设备/function 里面，是寄存器空间。
+> TLP Header 在传输包里面，是访问这些寄存器空间时携带的控制和寻址信息。
+
+**1. Configuration Space 是什么**
+
+它是每个 PCIe Function 自己实现的一块寄存器空间。
+
+也就是说：
+
+- RC 里的某些 function 有自己的 configuration space
+- EP 的每个 function 有自己的 configuration space
+- Switch 的每个 port function 也有自己的 configuration space
+
+所以它本质上是：
+
+设备内部的一组可被访问的配置寄存器
+
+**2. TLP Header 是什么**
+
+它是在线上传输的包头，属于传输中的数据格式。
+
+它里面会带：
+
+- 这是 Memory Read 还是 Config Write
+- 目标 Bus/Device/Function
+- 地址
+- Tag
+- 长度
+- 属性位
+
+所以它本质上是：
+
+“怎么去访问某个东西”的请求描述
+
+**3. 配置过程**
+
+```text
+CPU / RC software
+    ↓
+生成 Configuration Read/Write 请求
+    ↓
+TLP Header 中携带：
+  - Type0/Type1
+  - Bus/Device/Function
+  - Register Number
+    ↓
+桥 / Switch 根据规则转发
+    ↓
+目标 Function
+    ↓
+访问该 Function 内部的 Configuration Space
+    ↓
+返回 Completion
+```
+
+### 3.5.1 Routing configuration 与 PCI 兼容（compatible）
+
+PCIe configuration space 总大小为 4KB，其中前 256B 与传统 PCI configuration space 兼容。
+
+#### 两种 configuration header format：Type 0 / Type 1
+
+- Type 0 header：用于 Endpoint 等非桥设备
+- Type 1 header：用于桥设备，如 Root Port、Switch Port 等
+
+![img_1.png](pcie_pic/figure.3-15.png)
+
+#### 与 routing 相关的关键寄存器主要位于 configuration header 中
+
+主要包括：
+
+- BARs（主要用于设备声明自己响应的地址窗口）
+- Base/Limit register pairs（Type 1 header，用于桥定义下游地址窗口）
+- 3 Bus Number registers（Type 1 header，用于配置请求的路由）
+
+![img.png](pcie_pic/Figure.3-16.png)
+
+### 3.5.2 BARs in Type 0 and Type 1 headers
+
+如果设备需要向主机暴露寄存器或本地资源，通常通过 BAR 由系统分配地址。
+
+BAR 用于描述一个 function 需要响应的 Memory Space 或 I/O Space 地址窗口。
+如果某个设备 function 需要作为 Memory Space 或 I/O Space 访问的目标，
+则它会实现相应的 BAR（通常是 Memory BAR）。
+
+现代 PCIe 设备通常主要使用 Memory BAR。
+MMIO（memory-mapped I/O）本质上是将设备寄存器映射到 Memory Space 中进行访问，并不是独立于 Memory Space 和 I/O Space
+之外的第三类地址空间。
+
+### 3.5.3 Base/Limit Registers Type1 header only
+
+Base/Limit registers 位于 Type 1 header 中，用于桥设备的 address routing。
+
+它们定义桥下游可访问的地址窗口，包括：
+
+- Prefetchable Memory Base and Limit Registers
+- Non-Prefetchable Memory Base and Limit Registers
+- I/O Base and Limit Registers
+
+当桥收到 Memory / I/O Request TLP 时，会根据目标地址是否落入这些窗口来决定是否向下游转发。
+
+因此，Base/Limit registers 描述的是桥的下游地址转发范围；
+而 endpoint 的 BAR 描述的是设备自身响应的地址范围。
+
+#### prefetchable 问题
+
+因为上游系统、桥和 host 对这两类空间可以采取**不同处理策略**。
+
+Non-Prefetchable
+
+不能假设多读几字节无害。
+常见于寄存器，访问可能有副作用。
+
+Prefetchable
+
+允许系统更激进优化。
+更像普通内存窗口、frame buffer、大块 buffer aperture。
+
+所以桥要把这两类空间分开管理，避免错误优化。
+
+### 3.5.4 Bus Number Registers Type 1 header only
+
+Type 1 header 中包含三个与配置请求路由密切相关的寄存器：
+
+- Primary Bus Number
+- Secondary Bus Number
+- Subordinate Bus Number
+
+它们用于描述桥设备连接的 bus 拓扑范围：
+
+- Primary Bus Number：桥上游所在的 bus
+- Secondary Bus Number：桥下游紧邻的 bus
+- Subordinate Bus Number：桥下游整个子树中最大的 bus number
+
+对于 Type 1 Configuration Request，桥通过比较目标 Bus Number 与 [Secondary, Subordinate] 区间来决定是否向下游转发：
+
+- 若目标 Bus 不在该区间内，则不向下游转发
+- 若目标 Bus = Secondary，则将 Type 1 request 转换为 Type 0 request 发到下游
+- 若 Secondary < 目标 Bus <= Subordinate，则继续向下游转发 Type 1 request
+
+因此，这组寄存器主要用于 Configuration TLP 的 routing 和即插即用枚举过程。
+
+> Primary/Secondary/Subordinate 三个寄存器定义了一座桥所负责的下游 bus number 范围，
+> 桥据此决定 Configuration TLP 是否转发，以及何时把 Type 1 转成 Type 0。
+
+![img.png](pcie_pic/Figure.3-23.png)
+
+#### Switch = a two-level Bridge structure
+
+PCIe switch 由一个 Upstream Port 和多个 Downstream Port 组成；这些 port 在配置/路由语义上表现为桥功能。
+
+> 这里转发的主要是 Type 1 Configuration Request（包括 Config Read 和 Config Write）。
+> 桥根据目标 Bus Number 是否落在 Secondary~Subordinate 范围内来决定是否向下游转发，
+> 并在目标 Bus 等于 Secondary 时把 Type 1 转换为 Type 0
+
+> 注意区分 ID routing 和 configuration space register
+>
+>Configuration Request 不是靠普通 Memory Address Routing 来找设备，而是按目标 BDF 进行访问。
+> 桥设备并不是简单按某个 ID 直接转发，而是利用 Type 1 header 中的 Secondary/Subordinate Bus Number 寄存器，判断目标 Bus
+> Number 是否属于自己的下游范围。
+> 因此，这三个 Bus Number 寄存器不是 TLP 中的 ID，而是桥实现 Configuration TLP 转发的本地路由配置。
