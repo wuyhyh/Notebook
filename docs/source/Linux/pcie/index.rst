@@ -11,3 +11,4 @@ PCI Express
     arch_perspective
     arch_overview
     addr_space_and_routing
+    packet_based_transaction
