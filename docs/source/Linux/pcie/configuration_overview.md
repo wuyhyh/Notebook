@@ -1,9 +1,9 @@
 # chapter 19 配置简介：configuration overview
 
-> PCIe 继承了 PCI-compatible configuration space，并扩展了 enhanced/extended configuration space。
+> PCIe 继承了 PCI-compatible configuration space，并扩展了 extended configuration space。
 
 - PCI-compatible configuration
-- PCIe enhanced configuration
+- PCIe extended configuration
 
 ## 19.1 设备与功能的定义
 

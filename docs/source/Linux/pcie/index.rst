@@ -15,3 +15,4 @@ PCI Express
     packet_based_transaction
 
     configuration_overview
+    configuration_mechanisms
