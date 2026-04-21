@@ -240,7 +240,7 @@ Switch 支持端口仲裁和 VC 仲裁，Switch 还支持锁定请求。
 
 Links 按照 DFS 的方式进行计数和编号。
 
-每条 PCIe Link 等同与一条 PCI bus，所以有一个 bus number.
+每条 PCIe Link 等同于一条 PCI bus，所以有一个 bus number.
 
 所以每条 PCIe Link 只支持一个 device。
 

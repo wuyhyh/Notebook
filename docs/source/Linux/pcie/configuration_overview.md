@@ -73,6 +73,6 @@ Configuration transaction 按 Bus / Device / Function 目标进行路由，而�
 - bit 7：是否为 multi-function
 - lower 7 bits：header type
     - Type 0：non-bridge function
-    - Type 1：PCI-to-PCI Bridge
+    - Type 1：PCI-to-PCI Bridge function
 
 ![img.png](pcie_pic/figure.19-4.png)
