@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="390" viewBox="0 0 780 390">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+    <style>
+      .box { fill:#f7f7f7; stroke:#333; stroke-width:1.6; rx:12; }
+      .dark { fill:#e8eef7; stroke:#333; stroke-width:1.6; rx:12; }
+      .green { fill:#e9f5ec; stroke:#333; stroke-width:1.6; rx:12; }
+      .orange { fill:#fff1df; stroke:#333; stroke-width:1.6; rx:12; }
+      .pink { fill:#f8e9ef; stroke:#333; stroke-width:1.6; rx:12; }
+      .text { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:16px; fill:#111; }
+      .small { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:13px; fill:#333; }
+      .title { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:22px; font-weight:bold; fill:#111; }
+      .line { stroke:#333; stroke-width:1.6; fill:none; marker-end:url(#arrow); }
+      .plainline { stroke:#333; stroke-width:1.2; fill:none; }
+    </style>
+  </defs>
+  
+<text x="40" y="38" class="title">ARM64 Exception Level 分层</text>
+<rect x="120" y="80" width="520" height="55" class="pink"/><text x="180" y="114" class="text">EL3：Secure Monitor / TF-A</text>
+<rect x="120" y="155" width="520" height="55" class="orange"/><text x="180" y="189" class="text">EL2：Hypervisor / KVM</text>
+<rect x="120" y="230" width="520" height="55" class="green"/><text x="180" y="264" class="text">EL1：Linux Kernel</text>
+<rect x="120" y="305" width="520" height="55" class="dark"/><text x="180" y="339" class="text">EL0：User Space Applications</text>
+<text x="680" y="114" class="small">最高权限</text>
+<text x="680" y="339" class="small">最低权限</text>
+<line x1="665" y1="100" x2="665" y2="342" class="plainline"/>
+
+</svg>

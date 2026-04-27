@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1110" height="330" viewBox="0 0 1110 330">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+    <style>
+      .box { fill:#f7f7f7; stroke:#333; stroke-width:1.6; rx:12; }
+      .dark { fill:#e8eef7; stroke:#333; stroke-width:1.6; rx:12; }
+      .green { fill:#e9f5ec; stroke:#333; stroke-width:1.6; rx:12; }
+      .orange { fill:#fff1df; stroke:#333; stroke-width:1.6; rx:12; }
+      .pink { fill:#f8e9ef; stroke:#333; stroke-width:1.6; rx:12; }
+      .text { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:16px; fill:#111; }
+      .small { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:13px; fill:#333; }
+      .title { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:22px; font-weight:bold; fill:#111; }
+      .line { stroke:#333; stroke-width:1.6; fill:none; marker-end:url(#arrow); }
+      .plainline { stroke:#333; stroke-width:1.2; fill:none; }
+    </style>
+  </defs>
+  
+<text x="40" y="38" class="title">从 head.S 到 start_kernel()</text>
+<rect x="70" y="90" width="170" height="60" class="green"/><text x="119" y="126" class="text">head.S</text>
+<line x1="240" y1="120" x2="300" y2="120" class="line"/>
+<rect x="300" y="90" width="210" height="60" class="dark"/><text x="347" y="126" class="text">保存 DTB 地址</text>
+<line x1="510" y1="120" x2="570" y2="120" class="line"/>
+<rect x="570" y="90" width="210" height="60" class="dark"/><text x="624" y="126" class="text">建立页表</text>
+<line x1="780" y1="120" x2="840" y2="120" class="line"/>
+<rect x="840" y="90" width="210" height="60" class="orange"/><text x="895" y="126" class="text">打开 MMU</text>
+
+<line x1="945" y1="150" x2="945" y2="220" class="line"/>
+<rect x="840" y="220" width="210" height="60" class="green"/><text x="882" y="256" class="text">start_kernel</text>
+<line x1="840" y1="250" x2="780" y2="250" class="line"/>
+<rect x="570" y="220" width="210" height="60" class="green"/><text x="621" y="256" class="text">setup_arch</text>
+<line x1="570" y1="250" x2="510" y2="250" class="line"/>
+<rect x="300" y="220" width="210" height="60" class="green"/><text x="348" y="256" class="text">rest_init</text>
+<line x1="300" y1="250" x2="240" y2="250" class="line"/>
+<rect x="70" y="220" width="170" height="60" class="green"/><text x="102" y="256" class="text">init/systemd</text>
+
+</svg>

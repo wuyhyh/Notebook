@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1130" height="390" viewBox="0 0 1130 390">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+    <style>
+      .box { fill:#f7f7f7; stroke:#333; stroke-width:1.6; rx:12; }
+      .dark { fill:#e8eef7; stroke:#333; stroke-width:1.6; rx:12; }
+      .green { fill:#e9f5ec; stroke:#333; stroke-width:1.6; rx:12; }
+      .orange { fill:#fff1df; stroke:#333; stroke-width:1.6; rx:12; }
+      .pink { fill:#f8e9ef; stroke:#333; stroke-width:1.6; rx:12; }
+      .text { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:16px; fill:#111; }
+      .small { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:13px; fill:#333; }
+      .title { font-family: "Arial", "Microsoft YaHei", sans-serif; font-size:22px; font-weight:bold; fill:#111; }
+      .line { stroke:#333; stroke-width:1.6; fill:none; marker-end:url(#arrow); }
+      .plainline { stroke:#333; stroke-width:1.2; fill:none; }
+    </style>
+  </defs>
+  
+<text x="40" y="38" class="title">MMU 打开前后的地址空间变化</text>
+<rect x="70" y="95" width="260" height="90" class="orange"/><text x="118" y="130" class="text">MMU 关闭</text><text x="103" y="158" class="small">CPU 地址 = 物理地址</text>
+<line x1="330" y1="140" x2="435" y2="140" class="line"/>
+<rect x="435" y="95" width="260" height="90" class="dark"/><text x="500" y="130" class="text">早期页表</text><text x="475" y="158" class="small">identity map + kernel map</text>
+<line x1="695" y1="140" x2="800" y2="140" class="line"/>
+<rect x="800" y="95" width="260" height="90" class="green"/><text x="858" y="130" class="text">MMU 打开</text><text x="837" y="158" class="small">CPU 地址 = 虚拟地址</text>
+
+<rect x="160" y="255" width="360" height="90" class="pink"/>
+<text x="205" y="288" class="text">Identity Mapping</text>
+<text x="205" y="318" class="small">虚拟地址 = 物理地址，用于安全打开 MMU</text>
+
+<rect x="610" y="255" width="360" height="90" class="pink"/>
+<text x="665" y="288" class="text">Kernel Mapping</text>
+<text x="655" y="318" class="small">内核物理区域映射到内核虚拟地址空间</text>
+
+</svg>

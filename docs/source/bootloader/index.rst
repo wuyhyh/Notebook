@@ -11,4 +11,6 @@ Bootloader 相关知识
     U-Boot编译配置问题
     U-Boot双网口问题复盘
     U-Boot版本规则
+    ARM64_Linux_启动流程详解
+    gcc_basic_usage_and_options
     crc32校验程序
