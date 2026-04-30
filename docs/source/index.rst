@@ -15,6 +15,12 @@ About :doc:`蓝夜 <lanye>` 是谁？
     Timeline/index
 
 .. toctree::
+    :caption: 快速入门
+    :maxdepth: 2
+
+    intern/index
+
+.. toctree::
     :caption: 环境搭建
     :maxdepth: 2
 
